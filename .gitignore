@@ -1,0 +1,5 @@
+/node_modules
+/signing_and_verification
+/prisma/migrations
+
+.env

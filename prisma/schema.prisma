@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String        @id @default(uuid())
+  settings UserSetting[]
+  addresses Address[]
+  tasks    Task[]
+  carts    Cart[]
+  @@index([id])
+}
+
+model UserSetting {
+  id      Int     @id @default(autoincrement())
+  userId  String
+  key     String
+  value   String
+  user    User    @relation(fields: [userId], references: [id])
+  @@index([key])
+  @@index([userId])
+}
+
+model Address {
+  id         Int     @id @default(autoincrement())
+  userId     String
+  street     String
+  city       String
+  state      String
+  country    String
+  postalCode String  @map("postal_code")
+  user       User    @relation(fields: [userId], references: [id])
+  @@index([userId])
+}
+
+model Cart {
+  id      String      @id @default(uuid())
+  userId  String
+  items   CartItem[]
+  user    User        @relation(fields: [userId], references: [id])
+  Order   Order[]
+  @@index([userId])
+}
+
+model CartItem {
+  id          Int      @id @default(autoincrement())
+  cartId      String
+  name        String
+  description String
+  quantity    Int
+  units       String
+  price       Float
+  cart        Cart     @relation(fields: [cartId], references: [id])
+  @@index([cartId])
+}
+
+model Order {
+  id      String  @id @default(uuid())
+  cartId  String
+  status  String
+  cart    Cart    @relation(fields: [cartId], references: [id])
+  @@index([cartId])
+}
+
+model Task {
+  id         String      @id @default(uuid())
+  status     String
+  summary    String
+  userId     String
+  user       User        @relation(fields: [userId], references: [id])
+  lineItems  LineItem[]
+  @@index([userId])
+}
+
+model LineItem {
+  id       Int     @id @default(autoincrement())
+  taskId   String
+  name     String
+  quantity String
+  task     Task    @relation(fields: [taskId], references: [id])
+  @@index([taskId])
+}
+
