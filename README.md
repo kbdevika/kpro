@@ -1,8 +1,11 @@
-Newly generated Key-Pairs:
+# Setup
 
-{
-    Signing_private_key: 'gJHwtOfg6kKlLpXrw1wACAjTrOcOhdqxXVKoFUj7nnjSE3J0+G1MmQgQvwXwE8EIgMdY/5SQiScgGTP8Gdi+mg==',
-    Signing_public_key: '0hNydPhtTJkIEL8F8BPBCIDHWP+UkIknIBkz/BnYvpo=',
-    Encryption_Privatekey: 'MC4CAQAwBQYDK2VuBCIEIFDAUxzzfi+DPq35EWglOIB2oQI0Ao9b2trOtzbP/hl2',
-    Encryption_Publickey: 'MCowBQYDK2VuAyEA9I12QQiWwsfnVekmSl8GZgMcll/d278zbgnKKZ8MaHo='
-}
+1. git clone `https://github.com/kiranapro/node-backend.git`.
+2. Change directory and run a `npm install`.
+3. Populate `.env` file after copy pasting `.env.example`.
+4. Do a migration for prisma if you're using new prisma pg database `npx prisma migrate dev --name init` for a developmental database.
+5. Run the app through `npm run dev` for development or `npm run develop` for developing tsc build.
+
+# Deployment
+
+For deployment, use `/dist` folder
