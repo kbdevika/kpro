@@ -3,3 +3,4 @@
 /prisma/migrations
 
 .env
+key_pairs.json

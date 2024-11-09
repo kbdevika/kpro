@@ -42,6 +42,8 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const ws_1 = require("ws");
 const razorpay_1 = __importDefault(require("razorpay"));
 const dotenv = __importStar(require("dotenv"));
+const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
+const swagger_1 = __importDefault(require("./swagger"));
 dotenv.config();
 const app = (0, express_1.default)();
 const prisma = new client_1.PrismaClient();
@@ -85,6 +87,41 @@ const createAccessToken = (userId) => {
 // Routes
 const v1Router = express_1.default.Router();
 // Auth Routes
+/**
+ * @swagger
+ * /auth/truecaller:
+ *   post:
+ *     summary: Authenticate user via Truecaller token
+ *     description: Authenticate the user using a token from Truecaller and provide a JWT.
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: The Truecaller token to authenticate.
+ *     responses:
+ *       200:
+ *         description: Successful authentication
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 access_token:
+ *                   type: string
+ *                   description: The JWT token for accessing the API.
+ *                 token_type:
+ *                   type: string
+ *                   example: bearer
+ *       500:
+ *         description: Internal server error
+ */
 v1Router.post('/auth/truecaller', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { token } = req.body;
@@ -106,6 +143,43 @@ v1Router.post('/auth/truecaller', (req, res) => __awaiter(void 0, void 0, void 0
     }
 }));
 // User Settings Routes
+/**
+ * @swagger
+ * /v1/user/settings:
+ *   get:
+ *     summary: Get user settings
+ *     description: Retrieve all settings for the authenticated user.
+ *     tags:
+ *       - User Settings
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of user settings.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     example: "1"
+ *                   userId:
+ *                     type: string
+ *                     example: "user_123"
+ *                   key:
+ *                     type: string
+ *                     example: "theme"
+ *                   value:
+ *                     type: string
+ *                     example: "dark"
+ *       401:
+ *         description: Authentication error.
+ *       500:
+ *         description: Internal server error.
+ */
 v1Router.get('/user/settings', authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const settings = yield prisma.userSetting.findMany({
@@ -117,6 +191,45 @@ v1Router.get('/user/settings', authenticateToken, (req, res) => __awaiter(void 0
         res.status(500).json({ error: 'Internal server error' });
     }
 }));
+/**
+ * @swagger
+ * /v1/user/settings:
+ *   post:
+ *     summary: Create a new user setting
+ *     description: Add a new setting for the authenticated user.
+ *     tags:
+ *       - User Settings
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               key:
+ *                 type: string
+ *                 example: "theme"
+ *               value:
+ *                 type: string
+ *                 example: "dark"
+ *     responses:
+ *       200:
+ *         description: Setting created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Setting created successfully"
+ *       401:
+ *         description: Authentication error.
+ *       500:
+ *         description: Internal server error.
+ */
 v1Router.post('/user/settings', authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { key, value } = req.body;
@@ -133,6 +246,51 @@ v1Router.post('/user/settings', authenticateToken, (req, res) => __awaiter(void 
         res.status(500).json({ error: 'Internal server error' });
     }
 }));
+/**
+ * @swagger
+ * /v1/user/settings/{key}:
+ *   put:
+ *     summary: Update an existing user setting
+ *     description: Update a setting for the authenticated user based on the key.
+ *     tags:
+ *       - User Settings
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: key
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The key of the setting to update.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               value:
+ *                 type: string
+ *                 example: "light"
+ *     responses:
+ *       200:
+ *         description: Setting updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Setting updated successfully"
+ *       401:
+ *         description: Authentication error.
+ *       404:
+ *         description: Setting not found.
+ *       500:
+ *         description: Internal server error.
+ */
 v1Router.put('/user/settings/:key', authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { key } = req.params;
@@ -153,6 +311,41 @@ v1Router.put('/user/settings/:key', authenticateToken, (req, res) => __awaiter(v
         res.status(500).json({ error: 'Internal server error' });
     }
 }));
+/**
+ * @swagger
+ * /v1/user/settings/{key}:
+ *   delete:
+ *     summary: Delete a user setting
+ *     description: Delete a specific setting for the authenticated user based on the key.
+ *     tags:
+ *       - User Settings
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: key
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The key of the setting to delete.
+ *     responses:
+ *       200:
+ *         description: Setting deleted successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Setting deleted successfully"
+ *       401:
+ *         description: Authentication error.
+ *       404:
+ *         description: Setting not found.
+ *       500:
+ *         description: Internal server error.
+ */
 v1Router.delete('/user/settings/:key', authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { key } = req.params;
@@ -172,6 +365,52 @@ v1Router.delete('/user/settings/:key', authenticateToken, (req, res) => __awaite
     }
 }));
 // Address Routes
+/**
+ * @swagger
+ * /v1/user/address:
+ *   get:
+ *     summary: Get user addresses
+ *     description: Retrieve all addresses for the authenticated user.
+ *     tags:
+ *       - Address
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of user addresses.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     example: "1"
+ *                   userId:
+ *                     type: string
+ *                     example: "user_123"
+ *                   street:
+ *                     type: string
+ *                     example: "123 Main St"
+ *                   city:
+ *                     type: string
+ *                     example: "New York"
+ *                   state:
+ *                     type: string
+ *                     example: "NY"
+ *                   country:
+ *                     type: string
+ *                     example: "USA"
+ *                   postalCode:
+ *                     type: string
+ *                     example: "10001"
+ *       401:
+ *         description: Authentication error.
+ *       500:
+ *         description: Internal server error.
+ */
 v1Router.get('/user/address', authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const addresses = yield prisma.address.findMany({
@@ -183,6 +422,57 @@ v1Router.get('/user/address', authenticateToken, (req, res) => __awaiter(void 0,
         res.status(500).json({ error: 'Internal server error' });
     }
 }));
+/**
+ * @swagger
+ * /v1/user/address:
+ *   post:
+ *     summary: Create a new user address
+ *     description: Add a new address for the authenticated user.
+ *     tags:
+ *       - Address
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               street:
+ *                 type: string
+ *                 example: "123 Main St"
+ *               city:
+ *                 type: string
+ *                 example: "New York"
+ *               state:
+ *                 type: string
+ *                 example: "NY"
+ *               country:
+ *                 type: string
+ *                 example: "USA"
+ *               postalCode:
+ *                 type: string
+ *                 example: "10001"
+ *     responses:
+ *       200:
+ *         description: Address created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Address created successfully"
+ *                 id:
+ *                   type: string
+ *                   example: "address_123"
+ *       401:
+ *         description: Authentication error.
+ *       500:
+ *         description: Internal server error.
+ */
 v1Router.post('/user/address', authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { street, city, state, country, postalCode } = req.body;
@@ -203,6 +493,32 @@ v1Router.post('/user/address', authenticateToken, (req, res) => __awaiter(void 0
     }
 }));
 // Cart Routes
+/**
+ * @swagger
+ * /v1/cart:
+ *   post:
+ *     summary: Create a new cart for the user
+ *     description: Creates a new cart associated with the authenticated user.
+ *     tags:
+ *       - Cart
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Cart created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 cart_id:
+ *                   type: string
+ *                   example: "cart_123"
+ *       401:
+ *         description: Authentication error.
+ *       500:
+ *         description: Internal server error.
+ */
 v1Router.post('/cart', authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const cart = yield prisma.cart.create({
@@ -216,6 +532,67 @@ v1Router.post('/cart', authenticateToken, (req, res) => __awaiter(void 0, void 0
         res.status(500).json({ error: 'Internal server error' });
     }
 }));
+/**
+ * @swagger
+ * /v1/cart/{id}:
+ *   get:
+ *     summary: Get cart details
+ *     description: Retrieve cart details, including items, subtotal, shipping, and total for the authenticated user.
+ *     tags:
+ *       - Cart
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the cart to retrieve.
+ *     responses:
+ *       200:
+ *         description: Cart details retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   example: "cart_123"
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         example: "item_123"
+ *                       name:
+ *                         type: string
+ *                         example: "Sample Item"
+ *                       price:
+ *                         type: number
+ *                         example: 20.0
+ *                       quantity:
+ *                         type: integer
+ *                         example: 2
+ *                 subTotal:
+ *                   type: number
+ *                   example: 40.0
+ *                 shipping:
+ *                   type: number
+ *                   example: 10.0
+ *                 total:
+ *                   type: number
+ *                   example: 50.0
+ *       401:
+ *         description: Authentication error.
+ *       404:
+ *         description: Cart not found.
+ *       500:
+ *         description: Internal server error.
+ */
 v1Router.get('/cart/:id', authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const cart = yield prisma.cart.findFirst({
@@ -246,6 +623,41 @@ v1Router.get('/cart/:id', authenticateToken, (req, res) => __awaiter(void 0, voi
     }
 }));
 // Order Routes
+/**
+ * @swagger
+ * /v1/cart/{id}:
+ *   post:
+ *     summary: Create an order from a cart
+ *     description: Converts a cart to an order with a 'created' status for the authenticated user.
+ *     tags:
+ *       - Order
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the cart to convert to an order.
+ *     responses:
+ *       200:
+ *         description: Order created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 order_id:
+ *                   type: string
+ *                   example: "order_123"
+ *       401:
+ *         description: Authentication error.
+ *       404:
+ *         description: Cart not found.
+ *       500:
+ *         description: Internal server error.
+ */
 v1Router.post('/cart/:id', authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const cart = yield prisma.cart.findFirst({
@@ -270,6 +682,51 @@ v1Router.post('/cart/:id', authenticateToken, (req, res) => __awaiter(void 0, vo
     }
 }));
 // Payment Routes
+/**
+ * @swagger
+ * /v1/payment:
+ *   post:
+ *     summary: Initiate a payment
+ *     description: Creates a payment order with Razorpay for the specified amount.
+ *     tags:
+ *       - Payment
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               order_id:
+ *                 type: string
+ *                 example: "order_123"
+ *     responses:
+ *       200:
+ *         description: Payment created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   example: "pay_123"
+ *                 amount:
+ *                   type: number
+ *                   example: 50000
+ *                 currency:
+ *                   type: string
+ *                   example: "INR"
+ *                 payment_capture:
+ *                   type: boolean
+ *                   example: true
+ *       401:
+ *         description: Authentication error.
+ *       500:
+ *         description: Internal server error.
+ */
 v1Router.post('/payment', authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { order_id } = req.body;
@@ -285,6 +742,32 @@ v1Router.post('/payment', authenticateToken, (req, res) => __awaiter(void 0, voi
     }
 }));
 // Task Routes
+/**
+ * @swagger
+ * /v1/agent:
+ *   post:
+ *     summary: Create a new task
+ *     description: Initiates a task in 'processing' status for the authenticated user.
+ *     tags:
+ *       - Task
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Task created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 task_id:
+ *                   type: string
+ *                   example: "task_123"
+ *       401:
+ *         description: Authentication error.
+ *       500:
+ *         description: Internal server error.
+ */
 v1Router.post('/agent', authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const task = yield prisma.task.create({
@@ -300,6 +783,58 @@ v1Router.post('/agent', authenticateToken, (req, res) => __awaiter(void 0, void 
         res.status(500).json({ error: 'Internal server error' });
     }
 }));
+/**
+ * @swagger
+ * /v1/task/{taskId}:
+ *   get:
+ *     summary: Get task status and details
+ *     description: Retrieves the status and details of a task for the authenticated user.
+ *     tags:
+ *       - Task
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: taskId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the task to retrieve.
+ *     responses:
+ *       200:
+ *         description: Task status and details retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "success"
+ *                 output:
+ *                   type: object
+ *                   properties:
+ *                     summary:
+ *                       type: string
+ *                       example: "Task summary"
+ *                     lineItems:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             example: "lineItem_123"
+ *                           description:
+ *                             type: string
+ *                             example: "Sample line item"
+ *       401:
+ *         description: Authentication error.
+ *       404:
+ *         description: Task not found.
+ *       500:
+ *         description: Internal server error.
+ */
 v1Router.get('/task/:taskId', authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const task = yield prisma.task.findFirst({
@@ -353,6 +888,7 @@ const handleWebSocket = (socket, req) => {
 };
 // Apply routes
 app.use('/v1', v1Router);
+app.use('/v1/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.default));
 // Start server
 const server = app.listen(8000, () => {
     console.log('Server is running on port 8000');
