@@ -3,7 +3,7 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import { Options } from 'swagger-jsdoc';
 
 // import the BASE_URL from the process.env object or .env file
-const BASE_URL = process.env.BASE_URL || 'http://localhost:8000/v1';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:8000';
 
 const options: Options = {
   definition: {
@@ -20,7 +20,7 @@ const options: Options = {
       }
     ],
   },
-  apis: ['./app.ts'],
+  apis: ['./app.ts', './dist/app.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
