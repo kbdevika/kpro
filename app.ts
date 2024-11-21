@@ -7,6 +7,7 @@ import RazorPay from 'razorpay';
 import * as dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './swagger';
+import winston from 'winston';
 
 dotenv.config();
 
@@ -26,6 +27,34 @@ const razorpay = new RazorPay({
   key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_xxx',
   key_secret: process.env.RAZORPAY_SECRET || 'xxx'
 });
+
+// Add logger configuration after dotenv.config()
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' })
+  ]
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.simple()
+  }));
+}
+
+// Helper function for error responses
+const handleError = (error: any, res: any) => {
+  logger.error('Error occurred:', { error: error.message, stack: error.stack });
+  res.status(500).json({
+    error: 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { details: error.message })
+  });
+};
 
 // Auth Middleware
 const authenticateToken = async (req: any, res: any, next: any) => {
@@ -121,7 +150,7 @@ v1Router.post('/auth/truecaller', async (req, res) => {
     const accessToken = createAccessToken(user.id);
     res.json({ access_token: accessToken, token_type: 'bearer' });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    handleError(error, res);
   }
 });
 
@@ -171,7 +200,7 @@ v1Router.get('/user/settings', authenticateToken, async (req: any, res) => {
     });
     res.json(settings);
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    handleError(error, res);
   }
 });
 
@@ -226,7 +255,7 @@ v1Router.post('/user/settings', authenticateToken, async (req: any, res) => {
     });
     res.json({ message: 'Setting created successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    handleError(error, res);
   }
 });
 
@@ -294,7 +323,7 @@ v1Router.put('/user/settings/:key', authenticateToken, async (req: any, res: any
 
     res.json({ message: 'Setting updated successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    handleError(error, res);
   }
 });
 
@@ -350,7 +379,7 @@ v1Router.delete('/user/settings/:key', authenticateToken, async (req: any, res: 
 
     res.json({ message: 'Setting deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    handleError(error, res);
   }
 });
 
@@ -409,7 +438,7 @@ v1Router.get('/user/address', authenticateToken, async (req: any, res: any) => {
     });
     res.json(addresses);
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    handleError(error, res);
   }
 });
 
@@ -479,7 +508,7 @@ v1Router.post('/user/address', authenticateToken, async (req: any, res) => {
     });
     res.json({ message: 'Address created successfully', id: address.id });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    handleError(error, res);
   }
 });
 
@@ -519,7 +548,7 @@ v1Router.post('/cart', authenticateToken, async (req: any, res) => {
     });
     res.json({ cart_id: cart.id });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    handleError(error, res);
   }
 });
 
@@ -613,7 +642,7 @@ v1Router.get('/cart/:id', authenticateToken, async (req: any, res: any) => {
       total
     });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    handleError(error, res);
   }
 });
 
@@ -675,7 +704,7 @@ v1Router.post('/cart/:id', authenticateToken, async (req: any, res: any) => {
 
     res.json({ order_id: order.id });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    handleError(error, res);
   }
 });
 
@@ -736,7 +765,7 @@ v1Router.post('/payment', authenticateToken, async (req: any, res: any) => {
     });
     res.json(payment);
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    handleError(error, res);
   }
 });
 
@@ -778,7 +807,7 @@ v1Router.post('/agent', authenticateToken, async (req: any, res) => {
     });
     res.json({ task_id: task.id });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    handleError(error, res);
   }
 });
 
@@ -862,7 +891,7 @@ v1Router.get('/task/:taskId', authenticateToken, async (req: any, res: any) => {
       res.json({ status: task.status });
     }
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    handleError(error, res);
   }
 });
 
