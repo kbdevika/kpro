@@ -26,6 +26,9 @@ FROM node:22-alpine As build
 ENV HOST 0.0.0.0
 WORKDIR /usr/src/app
 
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
+
 COPY --chown=node:node package*.json ./
 COPY --chown=node:node prisma ./prisma/
 
