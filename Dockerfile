@@ -37,7 +37,6 @@ COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modul
 COPY --chown=node:node . .
 
 RUN npx prisma generate
-RUN npx prisma migrate deploy
 
 RUN npm run build
 RUN npm ci --only=production && npm cache clean --force
