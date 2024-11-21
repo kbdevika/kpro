@@ -4,11 +4,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc -p tsconfig.json",
-    "start": "npm run build && node dist/app.js",
-    "develop": "ts-node ./app.ts",
-    "dev": "concurrently \"tsc -w\" \"nodemon dist/app.js\"",
-    "serve": "node dist/app.js"
+    "build": "npx prisma generate && tsc -p tsconfig.json",
+    "start": "NODE_ENV=production npm run build && node dist/app.js",
+    "develop": "NODE_ENV=development ts-node ./app.ts",
+    "dev": "NODE_ENV=development concurrently \"tsc -w\" \"nodemon dist/app.js\"",
+    "serve": "NODE_ENV=production node dist/app.js",
+    "prisma:deploy": "npx prisma migrate deploy",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:generate": "npx prisma generate",
+    "docker:build": "docker build -t kiranapro-backend .",
+    "docker:dev": "docker-compose up -d"
   },
   "keywords": [],
   "author": "",
