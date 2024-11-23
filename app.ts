@@ -22,7 +22,7 @@ app.use(express.json());
 
 // JWT Configuration
 const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key';
-const ACCESS_TOKEN_EXPIRE_MINUTES = 30;
+const ACCESS_TOKEN_EXPIRE_MINUTES = 525600;
 
 // Razorpay Configuration
 const razorpay = new RazorPay({
