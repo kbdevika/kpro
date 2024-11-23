@@ -961,6 +961,49 @@ v1Router.get('/task/:taskId', authenticateToken, async (req: any, res: any) => {
   }
 });
 
+v1Router.get('/home', authenticateToken, async (req: any, res: any) => {
+  try {
+
+    type Banner = string;
+
+    interface CarouselItem {
+      id: string;
+      image_url: string;
+    }
+
+    function createBanners(count: number): Banner[] {
+      return Array.from({ length: count }, (_, i) => `https://placehold.co/240x320`);
+    }
+
+    function createCarousel(count: number): CarouselItem[] {
+      return Array.from({ length: count }, (_, i) => ({
+        id: (i + 1).toString(),
+        image_url: `https://placehold.co/240x320`,
+      }));
+    }
+
+    function createCategories(count: number): CarouselItem[] {
+      return Array.from({ length: count }, (_, i) => ({
+        id: (i + 1).toString(),
+        image_url: `https://placehold.co/240x320`,
+      }));
+    }
+
+    const banners = createBanners(5);
+    const carousels = createCarousel(5);
+    const categories = createCategories(5);
+
+    res.status(200).json({
+      banner: banners,
+      carousel: carousels,
+      categories: categories
+    })
+  } 
+  catch (error) {
+    handleError(error, res);
+  }
+});
+
 // Route for handling ONDC subscription requests
 /**
  * @swagger
