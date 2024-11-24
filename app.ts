@@ -459,7 +459,7 @@ v1Router.delete('/user/settings/:key', authenticateToken, async (req: any, res: 
  *     summary: Create user settings as key-value pairs
  *     description: Creates user settings such as name, email, and phone as individual key-value pairs in the database.
  *     tags:
- *       - User Settings
+ *       - User
  *     security:
  *       - bearerAuth: [] # Use token-based authentication
  *     requestBody:
@@ -988,7 +988,7 @@ v1Router.get('/cart/:id', authenticateToken, async (req: any, res: any) => {
  *     summary: Create an order from a cart
  *     description: Converts a cart to an order with a 'created' status for the authenticated user.
  *     tags:
- *       - Order
+ *       - Orders
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -1149,7 +1149,7 @@ v1Router.get('/order', authenticateToken, async (req: any, res: any) => {
 // Notification Routes
 /**
  * @swagger
- * /v1/notification:
+ * /v1/notifications:
  *   get:
  *     summary: Get all notifications
  *     description: Retrieve a list of all notifications.
@@ -1201,7 +1201,7 @@ v1Router.get('/notifications', authenticateToken, async (req: any, res: any) => 
 
 /**
  * @swagger
- * /v1/notification:
+ * /v1/notifications:
  *   post:
  *     summary: Add a new notification
  *     description: Creates a new notification in the system.
@@ -1280,7 +1280,7 @@ v1Router.post('/notifications', authenticateToken, async (req: any, res: any) =>
 
 /**
  * @swagger
- * /v1/notification/{id}:
+ * /v1/notifications/{id}:
  *   delete:
  *     summary: Delete a notification by ID
  *     description: Deletes a specific notification by its unique ID.
