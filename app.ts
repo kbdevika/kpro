@@ -1146,6 +1146,24 @@ v1Router.get('/order', authenticateToken, async (req: any, res: any) => {
   }
 });
 
+v1Router.get('/order/:id', authenticateToken, async (req: any, res: any) => {
+  try {
+    const orders = await prisma.order.findFirst({
+      where: {
+        id: req.params.id
+      }
+    });
+
+    if (!orders) {
+      return res.status(404).json({ error: 'No orders found for this user' });
+    }
+
+    res.json({ orders });
+  } catch (error) {
+    handleError(error, res);
+  }
+});
+
 // Notification Routes
 /**
  * @swagger
@@ -1363,9 +1381,9 @@ v1Router.delete('/notifications/:id', authenticateToken, async (req: any, res: a
  *           schema:
  *             type: object
  *             properties:
- *               order_id:
- *                 type: string
- *                 example: "order_123"
+ *               amount:
+ *                 type: number
+ *                 example: 2000
  *     responses:
  *       200:
  *         description: Payment created successfully.
@@ -1393,13 +1411,13 @@ v1Router.delete('/notifications/:id', authenticateToken, async (req: any, res: a
  */
 v1Router.post('/payment', authenticateToken, async (req: any, res: any) => {
   try {
-    const { order_id } = req.body;
+    const { amount } = req.body;
     const payment = await razorpay.orders.create({
-      amount: 50000,
+      amount: amount,
       currency: 'INR',
       payment_capture: true
     });
-    res.json(payment);
+    res.status(200).json(payment);
   } catch (error) {
     handleError(error, res);
   }
@@ -1883,6 +1901,28 @@ v1Router.post(
     handleError(error, res);
   }
 })
+
+// Routes for handling kiko integrations
+
+// {
+//   "orderId": "KikoOrderId",
+//   "orderStatus": "In-progress/Completed/Cancelled",
+//   "deliveryStatus": "Agent-assigned/Order-picked-up/Out-for-delivery/Order-delivered/RTO-Initiated/RTO-Delivered/Cancelled"
+// }
+
+v1Router.post('/kikoOrderStatus', authenticateToken, (req: any, res: any) => {
+  try {
+    const { orderId, orderStatus, deliveryStatus } = req.body;
+    res.status(200).json({
+      message: "Order status updated successfully",
+      orderStatus: orderStatus,
+      deliveryStatus: deliveryStatus
+    })
+  } catch (error) {
+    handleError(error, res);
+  }
+})
+
 
 // Route for handling ONDC subscription requests
 /**
