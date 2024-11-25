@@ -454,7 +454,7 @@ v1Router.delete('/user/settings/:key', authenticateToken, async (req: any, res: 
 
 /**
  * @swagger
- * /user:
+ * /v1/user:
  *   post:
  *     summary: Create user settings as key-value pairs
  *     description: Creates user settings such as name, email, and phone as individual key-value pairs in the database.
@@ -553,7 +553,7 @@ v1Router.post('/user', authenticateToken, async (req: any, res: any) => {
 
 /**
  * @swagger
- * /user:
+ * /v1/user:
  *   put:
  *     summary: Update user profile
  *     description: Updates the user's profile settings such as name, email, and phone. If the keys already exist, their values are updated.
@@ -653,7 +653,7 @@ v1Router.put('/user', authenticateToken, async (req: any, res: any) => {
 
 /**
  * @swagger
- * /user:
+ * /v1/user:
  *   get:
  *     summary: Fetch user profile
  *     description: Retrieves user profile information such as name, email, and phone in a structured format.
@@ -1046,7 +1046,7 @@ v1Router.post('/cart/:id', authenticateToken, async (req: any, res: any) => {
 
 /**
  * @swagger
- * /order:
+ * /v1/order:
  *   get:
  *     summary: Get all orders for the authenticated user
  *     description: Retrieve all orders placed by the authenticated user, including associated cart and cart items details.
