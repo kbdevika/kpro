@@ -2058,12 +2058,12 @@ v1Router.post('/cancel-order-kiko', authenticateToken, async (req: any, res: any
 
   try {
     // Fetch request to the external API
-    const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/ondc-seller-v2/kiranapro-cancel-order', {
+    const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/kiranapro-cancel-order', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ orderId }),
+      body: JSON.stringify({ kiranaProOrderId: orderId }),
     });
 
     // Parse the response
