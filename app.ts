@@ -2019,6 +2019,34 @@ v1Router.post('/search-kiko', authenticateToken, async (req: any, res: any) => {
   }
 })
 
+v1Router.post('/create-order-kiko', authenticateToken, async (req: any, res: any) => {
+  const order = req.body;
+
+  // Ensure the request body contains `pincode`
+  if (!order) {
+    return res.status(400).json({ error: 'order is required' });
+  }
+
+  try {
+    // Fetch request to the external API
+    const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/ondc-seller-v2/kiranapro-create-order', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: order,
+    });
+
+    // Parse the response
+    const data = await response.json();
+
+    // Forward the external API response back to the client
+    return res.status(200).json(data);
+  } catch (error) {
+    handleError(error, res);
+  }
+})
+
 v1Router.post('/cancel-order-kiko', authenticateToken, async (req: any, res: any) => {
   const { orderId } = req.body;
 
