@@ -1933,6 +1933,7 @@ v1Router.post('/kikoOrderStatus', authenticateToken, async (req: any, res: any) 
 
   const orderStatusRef = ['in-progress', 'completed', 'cancelled'];
   const deliveryStatusRef = [
+    'accepted',
     'agent-assigned',
     'order-picked-up',
     'out-for-delivery',
