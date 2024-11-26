@@ -1036,8 +1036,6 @@ v1Router.post('/cart/:id', authenticateToken, async (req: any, res: any) => {
       }
     });
 
-   order.id
-
     res.json({ order_id: order.id });
   } catch (error) {
     handleError(error, res);
@@ -1724,31 +1722,22 @@ v1Router.get('/home', authenticateToken, async (req: any, res: any) => {
     }
 
     function createBanners(count: number): Banner[] {
-      return Array.from({ length: count }, (_, i) => `https://placehold.co/240x320`);
+      return Array.from({ length: count }, (_, i) => `https://picsum.photos/seed/picsum/200/300`);
     }
 
     function createCarousel(count: number): CarouselItem[] {
       return Array.from({ length: count }, (_, i) => ({
         id: (i + 1).toString(),
-        image_url: `https://placehold.co/240x320`,
-      }));
-    }
-
-    function createCategories(count: number): CarouselItem[] {
-      return Array.from({ length: count }, (_, i) => ({
-        id: (i + 1).toString(),
-        image_url: `https://placehold.co/240x320`,
+        image_url: `https://picsum.photos/200/300?grayscale`,
       }));
     }
 
     const banners = createBanners(5);
     const carousels = createCarousel(5);
-    const categories = createCategories(5);
 
     res.status(200).json({
       banner: banners,
-      carousel: carousels,
-      categories: categories
+      carousel: carousels
     })
   } 
   catch (error) {
@@ -1881,22 +1870,57 @@ v1Router.post(
 
           // Respond with the cart ID
           res.status(200).json({
-              message: 'File uploaded successfully',
-              cart: {
-                id: "cart_123",
-                items: [
-                  {
-                    id: "item_123",
-                    name: "Sample Item",
-                    price: 20,
-                    quantity: 2
-                  }
-                ],
-                subTotal: 40,
-                shipping: 10,
-                total: 50
+            "message":"File uploaded successfully",
+            "deliverytime":"20 minutes",
+            "saved":"100.50",
+            "cart":{
+            "id":"cart_123",
+            "items":[
+            {
+            "id":"item_123",
+            "name":"Sample Item",
+            "price":20,
+            "quantity":2,
+            "unit":"kg",
+            "image":"https://picsum.photos/id/237/200/300"
+            },
+            {
+            "id":"item_124",
+            "name":"Sample Item 2",
+            "price":40,
+            "unit":"",
+            "quantity":2,
+            "image":"https://picsum.photos/id/237/200/300"
+            }
+            ],
+            "orderSummary":{
+              "items":[
+              {
+              "id":"item_123",
+              "name":"Sample Item",
+              "price":20,
+              "amount":35,
+              "quantity":2,
+              "unit":"kg",
+              "image":"https://picsum.photos/id/237/200/300"
               },
-          });
+              {
+              "id":"item_124",
+              "name":"Sample Item 2",
+              "price":40,
+              "amount":35,
+              "unit":"",
+              "quantity":2,
+              "image":"https://picsum.photos/id/237/200/300"
+              }
+              ],
+              "subTotal":40,
+              "shipping":10,
+              "discount":10,
+              "total":60
+              }
+              }
+              });
   } catch (error) {
     handleError(error, res);
   }
@@ -1910,14 +1934,92 @@ v1Router.post(
 //   "deliveryStatus": "Agent-assigned/Order-picked-up/Out-for-delivery/Order-delivered/RTO-Initiated/RTO-Delivered/Cancelled"
 // }
 
-v1Router.post('/kikoOrderStatus', authenticateToken, (req: any, res: any) => {
+v1Router.post('/kikoOrderStatus', authenticateToken, async (req: any, res: any) => {
+  const { orderId, orderStatus, deliveryStatus } = req.body;
+
+  const orderStatusRef = ['in-progress', 'completed', 'cancelled'];
+  const deliveryStatusRef = [
+    'agent-assigned',
+    'order-picked-up',
+    'out-for-delivery',
+    'order-delivered',
+    'rto-initiated',
+    'rto-delivered',
+    'cancelled',
+  ];
+
   try {
-    const { orderId, orderStatus, deliveryStatus } = req.body;
-    res.status(200).json({
-      message: "Order status updated successfully",
+    // Validate all required fields
+    if (!orderId || !orderStatus || !deliveryStatus) {
+      return res.status(400).json({ error: 'Order ID, orderStatus, and deliveryStatus are required' });
+    }
+
+    // Normalize to lowercase for validation
+    const normalizedOrderStatus = orderStatus.toLowerCase();
+    const normalizedDeliveryStatus = deliveryStatus.toLowerCase();
+
+    // Validate orderStatus
+    if (!orderStatusRef.includes(normalizedOrderStatus)) {
+      return res.status(400).json({
+        error: `Invalid order status`,
+      });
+    }
+
+    // Validate deliveryStatus
+    if (!deliveryStatusRef.includes(normalizedDeliveryStatus)) {
+      return res.status(400).json({
+        error: `Invalid delivery status`,
+      });
+    }
+
+
+    // Update the order with the new statuses
+    await prisma.order.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        status: normalizedOrderStatus,      
+        deliveryStatus: normalizedDeliveryStatus,
+      },
+    });
+
+    return res.status(200).json({ 
+      message: 'Order updated successfully', 
+      orderId: orderId,
       orderStatus: orderStatus,
       deliveryStatus: deliveryStatus
-    })
+    });
+  } catch (error) {
+    handleError(error, res);
+  }
+})
+
+// Search by Pincode
+
+v1Router.post('/search-kiko', authenticateToken, async (req: any, res: any) => {
+  const { pincode } = req.body;
+
+  // Ensure the request body contains `pincode`
+  if (!pincode) {
+    return res.status(400).json({ error: 'Pincode is required' });
+  }
+
+  try {
+    // Fetch request to the external API
+    const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/kiranaProSearch', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ pincode }), // Forward the request body
+    });
+
+    // Parse the response
+    const data = await response.json();
+
+    // Forward the external API response back to the client
+    return res.status(response.status).json(data);
   } catch (error) {
     handleError(error, res);
   }
