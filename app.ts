@@ -2029,7 +2029,7 @@ v1Router.post('/create-order-kiko', authenticateToken, async (req: any, res: any
 
   try {
     // Fetch request to the external API
-    const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/ondc-seller-v2/kiranapro-create-order', {
+    const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/kiranapro-create-order', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
