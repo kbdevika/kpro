@@ -1995,6 +1995,36 @@ v1Router.post('/kikoOrderStatus', authenticateToken, async (req: any, res: any) 
   }
 })
 
+// Search by Pincode
+
+v1Router.post('/search-kiko', authenticateToken, async (req: any, res: any) => {
+  const { pincode } = req.body;
+
+  // Ensure the request body contains `pincode`
+  if (!pincode) {
+    return res.status(400).json({ error: 'Pincode is required' });
+  }
+
+  try {
+    // Fetch request to the external API
+    const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/kiranaProSearch', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ pincode }), // Forward the request body
+    });
+
+    // Parse the response
+    const data = await response.json();
+
+    // Forward the external API response back to the client
+    return res.status(response.status).json(data);
+  } catch (error) {
+    handleError(error, res);
+  }
+})
+
 
 // Route for handling ONDC subscription requests
 /**
