@@ -55,21 +55,23 @@ model Cart {
 
 model CartItem {
   id          Int      @id @default(autoincrement())
-  cartId      String
+  cartId      String  
   name        String
   description String
   quantity    Int
   units       String
   price       Float
+  image       String
   cart        Cart     @relation(fields: [cartId], references: [id])
   @@index([cartId])
 }
 
 model Order {
-  id      String  @id @default(uuid())
-  cartId  String
-  status  String
-  cart    Cart    @relation(fields: [cartId], references: [id])
+  id              String  @id @default(uuid())
+  cartId          String
+  status          String
+  deliveryStatus  String  @default("Not-Initiated")
+  cart            Cart    @relation(fields: [cartId], references: [id])
   @@index([cartId])
 }
 
