@@ -1933,6 +1933,7 @@ v1Router.post('/kikoOrderStatus', authenticateToken, async (req: any, res: any) 
 
   const orderStatusRef = ['in-progress', 'completed', 'cancelled'];
   const deliveryStatusRef = [
+    'accepted',
     'agent-assigned',
     'order-picked-up',
     'out-for-delivery',
@@ -2050,26 +2051,80 @@ v1Router.post('/create-order-kiko', authenticateToken, async (req: any, res: any
 v1Router.post('/cancel-order-kiko', authenticateToken, async (req: any, res: any) => {
   const { orderId } = req.body;
 
+  const orderStatusRef = ['in-progress', 'cancelled'];
+  const deliveryStatusRef = [
+    'order-picked-up',
+    'out-for-delivery',
+    'order-delivered',
+    'rto-initiated',
+    'rto-delivered',
+  ];
+
   // Ensure the request body contains `pincode`
   if (!orderId) {
     return res.status(400).json({ error: 'orderId is required' });
   }
 
   try {
+    const orders = await prisma.order.findFirst({
+      where: {
+        id: orderId
+      },
+      include: {
+        cart: true
+      }
+    });
+
+    // Check if the order exists
+    if(orders){
+      // Check if the user owns the order
+      if (orders.cart.userId !== req.user.id) {
+        return res.status(403).json({ error: 'You are not authorized to cancel this order' });
+      }
+
+      // Check if the order is already marked completed
+      if(orders.status === 'completed'){
+        return res.status(400).json({ 
+          error: 'Order is delivered'
+        })
+      }
+
+      // Check if the order is already marked cancelled
+      if(orders.deliveryStatus === 'cancelled'){
+        return res.status(400).json({ 
+          error: 'Order has been cancelled'
+        })
+      }
+  
+      // Check if the order is already left the warehouse
+      if(deliveryStatusRef.includes(orders.deliveryStatus) && orderStatusRef.includes(orders.status)){
+        return res.status(400).json({ 
+          error: 'Order has been picked-up. No more cancellation possible'
+        })
+      }
+    } else {
+      return res.status(400).json({
+        error: 'Order not found'
+      })
+    }
+
     // Fetch request to the external API
-    const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/ondc-seller-v2/kiranapro-cancel-order', {
+    const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/kiranapro-cancel-order', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ orderId }),
+      body: JSON.stringify({ kiranaProOrderId: orderId }),
     });
 
     // Parse the response
     const data = await response.json();
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Failed to cancel the order' });
+    }
 
-    // Forward the external API response back to the client
-    return res.status(response.status).json(data);
+    // Return the response from the external API
+    return res.status(200).json(data);
   } catch (error) {
     handleError(error, res);
   }
