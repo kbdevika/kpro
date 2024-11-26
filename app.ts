@@ -2034,7 +2034,7 @@ v1Router.post('/create-order-kiko', authenticateToken, async (req: any, res: any
       headers: {
         'Content-Type': 'application/json',
       },
-      body: order,
+      body: JSON.stringify(order),
     });
 
     // Parse the response
