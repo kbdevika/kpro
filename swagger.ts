@@ -1,9 +1,18 @@
-// src/swagger.ts
 import swaggerJsdoc from 'swagger-jsdoc';
 import { Options } from 'swagger-jsdoc';
 
-// import the BASE_URL from the process.env object or .env file
-const BASE_URL = process.env.BASE_URL || 'http://localhost:8000';
+// Define base URLs for different environments
+const BASE_URLS = {
+  localhost: 'http://localhost:8000',
+  development: 'https://dev-api.kpro42.com',
+  production: 'https://api.kpro42.com',
+} as const; // Use 'as const' to create a readonly object with literal types
+
+// Define ENV as a key of BASE_URLS
+const ENV: keyof typeof BASE_URLS = (process.env.NODE_ENV as keyof typeof BASE_URLS) || 'development';
+
+// Get the base URL for the current environment
+const BASE_URL = BASE_URLS[ENV];
 
 const options: Options = {
   definition: {
@@ -11,16 +20,30 @@ const options: Options = {
     info: {
       title: 'API Documentation',
       version: '1.0.0',
-      description: 'API documentation for your server'
+      description: 'API documentation for your server',
     },
     servers: [
       {
-        url: BASE_URL + '/v1',
-        description: 'Server'
-      }
+        url: `${BASE_URL}/v1`,
+        description: `${ENV.toUpperCase()} Server`, // Descriptive label for the environment
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT', // Optional: Inform Swagger that this token uses JWT format
+        },
+      },
+    },
+    security: [
+      {
+        bearerAuth: [], // Applies this security scheme globally if needed
+      },
     ],
   },
-  apis: ['./app.ts', './dist/app.js'],
+  apis: ['./definition.swagger.ts', './dist/definition.swagger.js', './app.ts', './dist/app.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);

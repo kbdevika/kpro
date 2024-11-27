@@ -33,14 +33,20 @@ model UserSetting {
 }
 
 model Address {
-  id         Int     @id @default(autoincrement())
-  userId     String
-  street     String
-  city       String
-  state      String
-  country    String
-  postalCode String  @map("postal_code")
-  user       User    @relation(fields: [userId], references: [id])
+  id            Int     @id @default(autoincrement())
+  userId        String
+  address_line1 String  @default("NaN")
+  address_line2 String  @default("NaN")
+  street        String
+  city          String
+  state         String
+  country       String
+  latitude      Float   @default(0.00)
+  longitude     Float   @default(0.00)
+  addressType   String  @default("Home")
+  landmark      String  @default("NaN")
+  postalCode    String  @map("postal_code")
+  user          User    @relation(fields: [userId], references: [id])
   @@index([userId])
 }
 
