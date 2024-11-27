@@ -15,7 +15,7 @@ var serviceAccount = JSON.stringify({
 })
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount)
 });
 
 export default admin
