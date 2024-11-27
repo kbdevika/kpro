@@ -11,6 +11,7 @@ import winston from 'winston';
 import _sodium from 'libsodium-wrappers';
 import crypto from 'crypto';
 import multer from 'multer';
+import middleware from './src/middleware';
 
 dotenv.config();
 
@@ -187,6 +188,18 @@ v1Router.post('/auth/truecaller', async (req, res) => {
 
     const accessToken = createAccessToken(user.id);
     res.json({ access_token: accessToken, token_type: 'bearer' });
+  } catch (error) {
+    handleError(error, res);
+  }
+});
+
+// Auth Verify token
+v1Router.get('/auth/verify-token', async (req, res) => {
+  try {
+    res.json({ 
+      verified: true, 
+      auth: req.headers.authorization 
+    });
   } catch (error) {
     handleError(error, res);
   }
@@ -1125,10 +1138,10 @@ const handleWebSocket = (socket: WebSocket, req: any) => {
 };
 
 // Apply routes
-app.use('/', ondcRouter);
-app.use('/v1', v1Router);
 app.use('/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get('/health-check', (req: any, res: any) => { res.status(200).json({ health: "OK" }) });
+app.use('/', ondcRouter);
+app.use('/v1', middleware.decodeToken, v1Router);
 
 // Start server
 const server = app.listen(8000, () => {

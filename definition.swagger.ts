@@ -969,7 +969,7 @@
  *     summary: Initiate a payment
  *     description: Creates a payment order with Razorpay for the specified amount.
  *     tags:
- *       - Payment*
+ *       - Payment
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -1015,7 +1015,7 @@
  *     summary: Verify payment using Razorpay payment details
  *     description: This endpoint verifies the payment by comparing the generated signature with the provided signature from Razorpay.
  *     tags:
- *       - Payment*
+ *       - Payment
  *     parameters:
  *       - in: body
  *         name: body
@@ -1191,18 +1191,6 @@
  *                         type: string
  *                         example: https://placehold.co/240x320
  *                   description: A list of carousel items with IDs and image URLs.
- *                 categories:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                         example: "1"
- *                       image_url:
- *                         type: string
- *                         example: https://placehold.co/240x320
- *                   description: A list of category items with IDs and image URLs.
  *       401:
  *         description: Unauthorized - Invalid or missing token.
  *         content:
@@ -1339,9 +1327,9 @@
  *             type: object
  *             properties:
  *               pincode:
- *                 type: string
+ *                 type: number
  *                 description: The pincode to search for sellers.
- *                 example: "560001"
+ *                 example: 560001
  *     responses:
  *       200:
  *         description: Successfully retrieved seller information.

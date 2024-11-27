@@ -20,12 +20,12 @@ const options: Options = {
     info: {
       title: 'API Documentation',
       version: '1.0.0',
-      description: 'API documentation for your server',
+      description: 'V1.0.0 release package swagger',
     },
     servers: [
       {
         url: `${BASE_URL}/v1`,
-        description: `${ENV.toUpperCase()} Server`, // Descriptive label for the environment
+        description: `${ENV.toUpperCase()} Server`,
       },
     ],
     components: {
