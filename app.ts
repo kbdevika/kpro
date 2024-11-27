@@ -161,43 +161,14 @@ const createAccessToken = (userId: string): string => {
 const v1Router = express.Router();
 const ondcRouter = express.Router();
 
-// Auth Routes
-
 /**
- * @swagger
- * /auth/truecaller:
- *   post:
- *     summary: Authenticate user via Truecaller token
- *     description: Authenticate the user using a token from Truecaller and provide a JWT.
- *     tags:
- *       - Authentication
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               token:
- *                 type: string
- *                 description: The Truecaller token to authenticate.
- *     responses:
- *       200:
- *         description: Successful authentication
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 access_token:
- *                   type: string
- *                   description: The JWT token for accessing the API.
- *                 token_type:
- *                   type: string
- *                   example: bearer
- *       500:
- *         description: Internal server error
+ * Authentication Routes for 
+ *      Auth Tokens, 
+ *      Refresh Tokens,
+ *      Logout
  */
+
+// Auth Token Route
 v1Router.post('/auth/truecaller', async (req, res) => {
   try {
     const { token } = req.body;
@@ -222,44 +193,6 @@ v1Router.post('/auth/truecaller', async (req, res) => {
 });
 
 // User Settings Routes
-
-/**
- * @swagger
- * /v1/user/settings:
- *   get:
- *     summary: Get user settings
- *     description: Retrieve all settings for the authenticated user.
- *     tags:
- *       - User Settings
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: A list of user settings.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                     example: "1"
- *                   userId:
- *                     type: string
- *                     example: "user_123"
- *                   key:
- *                     type: string
- *                     example: "theme"
- *                   value:
- *                     type: string
- *                     example: "dark"
- *       401:
- *         description: Authentication error.
- *       500:
- *         description: Internal server error.
- */
 v1Router.get('/user/settings', authenticateToken, async (req: any, res) => {
   try {
     const settings = await prisma.userSetting.findMany({
@@ -271,45 +204,7 @@ v1Router.get('/user/settings', authenticateToken, async (req: any, res) => {
   }
 });
 
-/**
- * @swagger
- * /v1/user/settings:
- *   post:
- *     summary: Create a new user setting
- *     description: Add a new setting for the authenticated user.
- *     tags:
- *       - User Settings
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               key:
- *                 type: string
- *                 example: "theme"
- *               value:
- *                 type: string
- *                 example: "dark"
- *     responses:
- *       200:
- *         description: Setting created successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Setting created successfully"
- *       401:
- *         description: Authentication error.
- *       500:
- *         description: Internal server error.
- */
+// Create User Settings
 v1Router.post('/user/settings', authenticateToken, async (req: any, res) => {
   try {
     const { key, value } = req.body;
@@ -326,51 +221,7 @@ v1Router.post('/user/settings', authenticateToken, async (req: any, res) => {
   }
 });
 
-/**
- * @swagger
- * /v1/user/settings/{key}:
- *   put:
- *     summary: Update an existing user setting
- *     description: Update a setting for the authenticated user based on the key.
- *     tags:
- *       - User Settings
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - name: key
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *         description: The key of the setting to update.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               value:
- *                 type: string
- *                 example: "light"
- *     responses:
- *       200:
- *         description: Setting updated successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Setting updated successfully"
- *       401:
- *         description: Authentication error.
- *       404:
- *         description: Setting not found.
- *       500:
- *         description: Internal server error.
- */
+// Update User Settings
 v1Router.put('/user/settings/:key', authenticateToken, async (req: any, res: any) => {
   try {
     const { key } = req.params;
@@ -394,41 +245,7 @@ v1Router.put('/user/settings/:key', authenticateToken, async (req: any, res: any
   }
 });
 
-/**
- * @swagger
- * /v1/user/settings/{key}:
- *   delete:
- *     summary: Delete a user setting
- *     description: Delete a specific setting for the authenticated user based on the key.
- *     tags:
- *       - User Settings
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - name: key
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *         description: The key of the setting to delete.
- *     responses:
- *       200:
- *         description: Setting deleted successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Setting deleted successfully"
- *       401:
- *         description: Authentication error.
- *       404:
- *         description: Setting not found.
- *       500:
- *         description: Internal server error.
- */
+// Delete User Settings
 v1Router.delete('/user/settings/:key', authenticateToken, async (req: any, res: any) => {
   try {
     const { key } = req.params;
@@ -450,91 +267,34 @@ v1Router.delete('/user/settings/:key', authenticateToken, async (req: any, res: 
   }
 });
 
-// Profile Routes
-
 /**
- * @swagger
- * /v1/user:
- *   post:
- *     summary: Create user settings as key-value pairs
- *     description: Creates user settings such as name, email, and phone as individual key-value pairs in the database.
- *     tags:
- *       - User
- *     security:
- *       - bearerAuth: [] # Use token-based authentication
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 example: John Doe
- *               email:
- *                 type: string
- *                 example: john.doe@example.com
- *               phone:
- *                 type: string
- *                 example: +1234567890
- *             required:
- *               - name
- *               - email
- *               - phone
- *     responses:
- *       201:
- *         description: User settings created successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Settings created successfully
- *       400:
- *         description: Bad Request - Invalid input data
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Validation error
- *       401:
- *         description: Unauthorized - Token missing or invalid
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Unauthorized
- *       500:
- *         description: Internal Server Error - An error occurred while processing the request
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Internal server error
+ * Profile Routes
  */
+
+// Create User Profile
 v1Router.post('/user', authenticateToken, async (req: any, res: any) => {
   try {
     const { name, email, phone } = req.body;
 
+    // Check if the user already has a profile
+    const existingProfile = await prisma.userSetting.findMany({
+      where: {
+        userId: req.user.id,
+        key: { in: ['name', 'email', 'phone'] }, // Check for any of the profile keys
+      },
+    });
+
+    if (existingProfile.length > 0) {
+      return res.status(400).json({ error: 'User profile already exists' });
+    }
+
+    // If no profile exists, create the new profile
     const data = [
-      { key: "name", value: name },
-      { key: "email", value: email },
-      { key: "phone", value: phone },
+      { key: 'name', value: name },
+      { key: 'email', value: email },
+      { key: 'phone', value: phone },
     ];
 
-    // Use a loop for await Prisma calls
     for (const item of data) {
       await prisma.userSetting.create({
         data: {
@@ -551,77 +311,8 @@ v1Router.post('/user', authenticateToken, async (req: any, res: any) => {
   }
 });
 
-/**
- * @swagger
- * /v1/user:
- *   put:
- *     summary: Update user profile
- *     description: Updates the user's profile settings such as name, email, and phone. If the keys already exist, their values are updated.
- *     tags:
- *       - User
- *     security:
- *       - bearerAuth: [] # Token-based authentication
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 description: The user's name.
- *                 example: user
- *               email:
- *                 type: string
- *                 description: The user's email address.
- *                 example: user@website.com
- *               phone:
- *                 type: string
- *                 description: The user's phone number.
- *                 example: +919999999999
- *     responses:
- *       201:
- *         description: User profile updated successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Settings updated successfully
- *       400:
- *         description: Bad request - Invalid or missing request body.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Invalid input
- *       401:
- *         description: Unauthorized - Invalid or missing authentication token.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Unauthorized
- *       500:
- *         description: Internal server error.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Internal server error
- */
+
+// Update User Profile
 v1Router.put('/user', authenticateToken, async (req: any, res: any) => {
   try {
     const { name, email, phone } = req.body;
@@ -651,54 +342,7 @@ v1Router.put('/user', authenticateToken, async (req: any, res: any) => {
   }
 });
 
-/**
- * @swagger
- * /v1/user:
- *   get:
- *     summary: Fetch user profile
- *     description: Retrieves user profile information such as name, email, and phone in a structured format.
- *     tags:
- *       - User
- *     security:
- *       - bearerAuth: [] # Use token-based authentication
- *     responses:
- *       200:
- *         description: User profile retrieved successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 name:
- *                   type: string
- *                   example: user
- *                 email:
- *                   type: string
- *                   example: user@website.com
- *                 phone:
- *                   type: string
- *                   example: +919999999999
- *       401:
- *         description: Unauthorized - Token missing or invalid
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Unauthorized
- *       500:
- *         description: Internal Server Error - An error occurred while processing the request
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Internal server error
- */
+// Fetch user profile
 v1Router.get('/user', authenticateToken, async (req: any, res) => {
   try {
     const settings = await prisma.userSetting.findMany({
@@ -718,53 +362,7 @@ v1Router.get('/user', authenticateToken, async (req: any, res) => {
 });
 
 // Address Routes
-
-/**
- * @swagger
- * /v1/user/address:
- *   get:
- *     summary: Get user addresses
- *     description: Retrieve all addresses for the authenticated user.
- *     tags:
- *       - Address
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: A list of user addresses.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                     example: "1"
- *                   userId:
- *                     type: string
- *                     example: "user_123"
- *                   street:
- *                     type: string
- *                     example: "123 Main St"
- *                   city:
- *                     type: string
- *                     example: "New York"
- *                   state:
- *                     type: string
- *                     example: "NY"
- *                   country:
- *                     type: string
- *                     example: "USA"
- *                   postalCode:
- *                     type: string
- *                     example: "10001"
- *       401:
- *         description: Authentication error.
- *       500:
- *         description: Internal server error.
- */
+// Fetch User Address
 v1Router.get('/user/address', authenticateToken, async (req: any, res: any) => {
   try {
     const addresses = await prisma.address.findMany({
@@ -776,67 +374,23 @@ v1Router.get('/user/address', authenticateToken, async (req: any, res: any) => {
   }
 });
 
-/**
- * @swagger
- * /v1/user/address:
- *   post:
- *     summary: Create a new user address
- *     description: Add a new address for the authenticated user.
- *     tags:
- *       - Address
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               street:
- *                 type: string
- *                 example: "123 Main St"
- *               city:
- *                 type: string
- *                 example: "New York"
- *               state:
- *                 type: string
- *                 example: "NY"
- *               country:
- *                 type: string
- *                 example: "USA"
- *               postalCode:
- *                 type: string
- *                 example: "10001"
- *     responses:
- *       200:
- *         description: Address created successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Address created successfully"
- *                 id:
- *                   type: string
- *                   example: "address_123"
- *       401:
- *         description: Authentication error.
- *       500:
- *         description: Internal server error.
- */
+// Create User Address
 v1Router.post('/user/address', authenticateToken, async (req: any, res) => {
   try {
-    const { street, city, state, country, postalCode } = req.body;
+    const { address_line1, address_line2, street, city, state, country,latitude, longitude, addressType, landmark, postalCode } = req.body;
     const address = await prisma.address.create({
       data: {
         userId: req.user.id,
+        address_line1,
+        address_line2,
         street,
         city,
         state,
         country,
+        latitude,
+        longitude,
+        addressType,
+        landmark,
         postalCode
       }
     });
@@ -847,32 +401,7 @@ v1Router.post('/user/address', authenticateToken, async (req: any, res) => {
 });
 
 // Cart Routes
-/**
- * @swagger
- * /v1/cart:
- *   post:
- *     summary: Create a new cart for the user
- *     description: Creates a new cart associated with the authenticated user.
- *     tags:
- *       - Cart
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Cart created successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 cart_id:
- *                   type: string
- *                   example: "cart_123"
- *       401:
- *         description: Authentication error.
- *       500:
- *         description: Internal server error.
- */
+// Create Cart Details with Items
 v1Router.post('/cart', authenticateToken, async (req: any, res) => {
   try {
     const cart = await prisma.cart.create({
@@ -886,67 +415,7 @@ v1Router.post('/cart', authenticateToken, async (req: any, res) => {
   }
 });
 
-/**
- * @swagger
- * /v1/cart/{id}:
- *   get:
- *     summary: Get cart details
- *     description: Retrieve cart details, including items, subtotal, shipping, and total for the authenticated user.
- *     tags:
- *       - Cart
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *         description: The ID of the cart to retrieve.
- *     responses:
- *       200:
- *         description: Cart details retrieved successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   example: "cart_123"
- *                 items:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                         example: "item_123"
- *                       name:
- *                         type: string
- *                         example: "Sample Item"
- *                       price:
- *                         type: number
- *                         example: 20.0
- *                       quantity:
- *                         type: integer
- *                         example: 2
- *                 subTotal:
- *                   type: number
- *                   example: 40.0
- *                 shipping:
- *                   type: number
- *                   example: 10.0
- *                 total:
- *                   type: number
- *                   example: 50.0
- *       401:
- *         description: Authentication error.
- *       404:
- *         description: Cart not found.
- *       500:
- *         description: Internal server error.
- */
+// Fetch Cart Details
 v1Router.get('/cart/:id', authenticateToken, async (req: any, res: any) => {
   try {
     const cart = await prisma.cart.findFirst({
@@ -981,41 +450,7 @@ v1Router.get('/cart/:id', authenticateToken, async (req: any, res: any) => {
 });
 
 // Order Routes
-/**
- * @swagger
- * /v1/cart/{id}:
- *   post:
- *     summary: Create an order from a cart
- *     description: Converts a cart to an order with a 'created' status for the authenticated user.
- *     tags:
- *       - Orders
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *         description: The ID of the cart to convert to an order.
- *     responses:
- *       200:
- *         description: Order created successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 order_id:
- *                   type: string
- *                   example: "order_123"
- *       401:
- *         description: Authentication error.
- *       404:
- *         description: Cart not found.
- *       500:
- *         description: Internal server error.
- */
+// Create Order with a Cart
 v1Router.post('/cart/:id', authenticateToken, async (req: any, res: any) => {
   try {
     const cart = await prisma.cart.findFirst({
@@ -1042,81 +477,7 @@ v1Router.post('/cart/:id', authenticateToken, async (req: any, res: any) => {
   }
 });
 
-/**
- * @swagger
- * /v1/order:
- *   get:
- *     summary: Get all orders for the authenticated user
- *     description: Retrieve all orders placed by the authenticated user, including associated cart and cart items details.
- *     tags:
- *       - Orders
- *     security:
- *       - BearerAuth: [] # Use Bearer token for authentication
- *     responses:
- *       200:
- *         description: A list of orders with their cart details
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 orders:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                         description: Order ID
- *                         example: "order_12345"
- *                       status:
- *                         type: string
- *                         description: Order status
- *                         example: "completed"
- *                       cart:
- *                         type: object
- *                         properties:
- *                           id:
- *                             type: string
- *                             description: Cart ID
- *                             example: "cart_67890"
- *                           items:
- *                             type: array
- *                             items:
- *                               type: object
- *                               properties:
- *                                 id:
- *                                   type: integer
- *                                   description: Cart item ID
- *                                   example: 1
- *                                 name:
- *                                   type: string
- *                                   description: Name of the item
- *                                   example: "Laptop"
- *                                 description:
- *                                   type: string
- *                                   description: Description of the item
- *                                   example: "A high-end gaming laptop"
- *                                 quantity:
- *                                   type: integer
- *                                   description: Quantity of the item
- *                                   example: 2
- *                                 units:
- *                                   type: string
- *                                   description: Units of the item
- *                                   example: "pieces"
- *                                 price:
- *                                   type: number
- *                                   format: float
- *                                   description: Price of the item
- *                                   example: 1500.50
- *       401:
- *         description: Unauthorized - Missing or invalid token
- *       404:
- *         description: No orders found for this user
- *       500:
- *         description: Internal server error
- */
+// Fetch Orders of a User
 v1Router.get('/order', authenticateToken, async (req: any, res: any) => {
   try {
     const orders = await prisma.order.findMany({
@@ -1144,6 +505,7 @@ v1Router.get('/order', authenticateToken, async (req: any, res: any) => {
   }
 });
 
+// Fetch single order of a User 
 v1Router.get('/order/:id', authenticateToken, async (req: any, res: any) => {
   try {
     const orders = await prisma.order.findFirst({
@@ -1163,40 +525,7 @@ v1Router.get('/order/:id', authenticateToken, async (req: any, res: any) => {
 });
 
 // Notification Routes
-/**
- * @swagger
- * /v1/notifications:
- *   get:
- *     summary: Get all notifications
- *     description: Retrieve a list of all notifications.
- *     tags:
- *       - Notification
- *     responses:
- *       200:
- *         description: Successfully retrieved notifications.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                     description: Unique identifier for the notification.
- *                   message:
- *                     type: string
- *                     description: The message content of the notification.
- *                   media_url:
- *                     type: string
- *                     description: URL to the media associated with the notification (if any).
- *                   created_date:
- *                     type: string
- *                     format: date-time
- *                     description: The date and time when the notification was created.
- *       500:
- *         description: Server error or issue retrieving notifications.
- */
+// Fetch all notifications for a user
 v1Router.get('/notifications', authenticateToken, async (req: any, res: any) => {
   try {
     const notifications = await prisma.notification.findMany({
@@ -1215,59 +544,7 @@ v1Router.get('/notifications', authenticateToken, async (req: any, res: any) => 
   }
 });
 
-/**
- * @swagger
- * /v1/notifications:
- *   post:
- *     summary: Add a new notification
- *     description: Creates a new notification in the system.
- *     tags:
- *       - Notification
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               message:
- *                 type: string
- *                 description: The message content of the notification.
- *               media_url:
- *                 type: string
- *                 description: Optional URL for media associated with the notification.
- *     responses:
- *       201:
- *         description: Successfully added the notification.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: A success message.
- *                 notification:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       description: Unique identifier of the created notification.
- *                     message:
- *                       type: string
- *                       description: The content of the notification.
- *                     media_url:
- *                       type: string
- *                       description: URL to the media associated with the notification.
- *                     created_date:
- *                       type: string
- *                       format: date-time
- *                       description: The date and time when the notification was created.
- *       400:
- *         description: Invalid request body (e.g., missing message).
- *       500:
- *         description: Internal server error.
- */
+// Create notifications for a User
 v1Router.post('/notifications', authenticateToken, async (req: any, res: any) => {
   try {
     const { message, media_url } = req.body;
@@ -1294,53 +571,7 @@ v1Router.post('/notifications', authenticateToken, async (req: any, res: any) =>
   }
 });
 
-/**
- * @swagger
- * /v1/notifications/{id}:
- *   delete:
- *     summary: Delete a notification by ID
- *     description: Deletes a specific notification by its unique ID.
- *     tags:
- *       - Notification
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The ID of the notification to delete.
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Successfully deleted the notification.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: A success message indicating that the notification has been deleted.
- *                 notification:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       description: ID of the deleted notification.
- *                     message:
- *                       type: string
- *                       description: The content of the deleted notification.
- *                     media_url:
- *                       type: string
- *                       description: URL to the media associated with the deleted notification.
- *                     created_date:
- *                       type: string
- *                       format: date-time
- *                       description: The date and time when the notification was created.
- *       404:
- *         description: Notification not found for the specified ID.
- *       500:
- *         description: Internal server error.
- */
+// Delete Notification of a User
 v1Router.delete('/notifications/:id', authenticateToken, async (req: any, res: any) => {
   const notificationId = req.params.id;
 
@@ -1362,51 +593,6 @@ v1Router.delete('/notifications/:id', authenticateToken, async (req: any, res: a
 });
 
 // Payment Routes
-/**
- * @swagger
- * /v1/payment:
- *   post:
- *     summary: Initiate a payment
- *     description: Creates a payment order with Razorpay for the specified amount.
- *     tags:
- *       - Payment
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               amount:
- *                 type: number
- *                 example: 2000
- *     responses:
- *       200:
- *         description: Payment created successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   example: "pay_123"
- *                 amount:
- *                   type: number
- *                   example: 50000
- *                 currency:
- *                   type: string
- *                   example: "INR"
- *                 payment_capture:
- *                   type: boolean
- *                   example: true
- *       401:
- *         description: Authentication error.
- *       500:
- *         description: Internal server error.
- */
 v1Router.post('/payment', authenticateToken, async (req: any, res: any) => {
   try {
     const { amount } = req.body;
@@ -1421,72 +607,7 @@ v1Router.post('/payment', authenticateToken, async (req: any, res: any) => {
   }
 });
 
-/**
- * @swagger
- * /v1/payment/verify:
- *   post:
- *     summary: Verify payment using Razorpay payment details
- *     description: This endpoint verifies the payment by comparing the generated signature with the provided signature from Razorpay.
- *     tags:
- *       - Payment
- *     parameters:
- *       - in: body
- *         name: body
- *         required: true
- *         description: The details required to verify the payment.
- *         schema:
- *           type: object
- *           properties:
- *             order_id:
- *               type: string
- *               description: The unique order ID from Razorpay.
- *             payment_id:
- *               type: string
- *               description: The payment ID generated by Razorpay for the payment.
- *             signature:
- *               type: string
- *               description: The signature generated by Razorpay, used to verify the payment.
- *     responses:
- *       200:
- *         description: Payment successfully verified.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   description: Indicates if the payment verification was successful.
- *                 message:
- *                   type: string
- *                   description: Message indicating the verification result.
- *       400:
- *         description: Payment verification failed due to signature mismatch or other errors.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   description: Indicates if the payment verification failed.
- *                 message:
- *                   type: string
- *                   description: Message explaining the failure reason.
- *       500:
- *         description: Internal server error.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   description: Indicates that an error occurred during payment verification.
- *                 message:
- *                   type: string
- *                   description: Error message for internal issues.
- */
+
 v1Router.post('/payment/verify', authenticateToken, async (req: any, res: any) => {
   try {
     const { order_id, payment_id, signature } = req.body;
@@ -1514,32 +635,6 @@ v1Router.post('/payment/verify', authenticateToken, async (req: any, res: any) =
 });
 
 // Task Routes
-/**
- * @swagger
- * /v1/agent:
- *   post:
- *     summary: Create a new task
- *     description: Initiates a task in 'processing' status for the authenticated user.
- *     tags:
- *       - Task
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Task created successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 task_id:
- *                   type: string
- *                   example: "task_123"
- *       401:
- *         description: Authentication error.
- *       500:
- *         description: Internal server error.
- */
 v1Router.post('/agent', authenticateToken, async (req: any, res) => {
   try {
     const task = await prisma.task.create({
@@ -1555,58 +650,6 @@ v1Router.post('/agent', authenticateToken, async (req: any, res) => {
   }
 });
 
-/**
- * @swagger
- * /v1/task/{taskId}:
- *   get:
- *     summary: Get task status and details
- *     description: Retrieves the status and details of a task for the authenticated user.
- *     tags:
- *       - Task
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - name: taskId
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *         description: The ID of the task to retrieve.
- *     responses:
- *       200:
- *         description: Task status and details retrieved successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: "success"
- *                 output:
- *                   type: object
- *                   properties:
- *                     summary:
- *                       type: string
- *                       example: "Task summary"
- *                     lineItems:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           id:
- *                             type: string
- *                             example: "lineItem_123"
- *                           description:
- *                             type: string
- *                             example: "Sample line item"
- *       401:
- *         description: Authentication error.
- *       404:
- *         description: Task not found.
- *       500:
- *         description: Internal server error.
- */
 v1Router.get('/task/:taskId', authenticateToken, async (req: any, res: any) => {
   try {
     const task = await prisma.task.findFirst({
@@ -1641,75 +684,6 @@ v1Router.get('/task/:taskId', authenticateToken, async (req: any, res: any) => {
 
 
 // Home banner and Carousel Asset
-/**
- * @swagger
- * /v1/home:
- *   get:
- *     summary: Retrieve home screen data
- *     description: Returns banners, carousels, and categories for the home screen.
- *     tags:
- *       - Home
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully retrieved home screen data.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 banner:
- *                   type: array
- *                   items:
- *                     type: string
- *                     example: https://placehold.co/240x320
- *                   description: A list of banner image URLs.
- *                 carousel:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                         example: "1"
- *                       image_url:
- *                         type: string
- *                         example: https://placehold.co/240x320
- *                   description: A list of carousel items with IDs and image URLs.
- *                 categories:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                         example: "1"
- *                       image_url:
- *                         type: string
- *                         example: https://placehold.co/240x320
- *                   description: A list of category items with IDs and image URLs.
- *       401:
- *         description: Unauthorized - Invalid or missing token.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Unauthorized
- *       500:
- *         description: Internal Server Error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: An unexpected error occurred
- */
 
 v1Router.get('/home', authenticateToken, async (req: any, res: any) => {
   try {
@@ -1760,101 +734,6 @@ const upload = multer({
 });
 
 // Upload audio endpoint
-/**
- * @swagger
- * /v1/audio:
- *   post:
- *     summary: Upload an audio file and retrieve cart details
- *     description: This endpoint allows users to upload an audio file (MP3 format only) and receive a response containing a sample cart structure.
- *     tags:
- *       - Audio
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               audio:
- *                 type: string
- *                 format: binary
- *                 description: The MP3 file to upload.
- *     responses:
- *       200:
- *         description: Audio file uploaded successfully and cart details returned.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: File uploaded successfully
- *                 cart:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       example: cart_123
- *                     items:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           id:
- *                             type: string
- *                             example: item_123
- *                           name:
- *                             type: string
- *                             example: Sample Item
- *                           price:
- *                             type: number
- *                             example: 20
- *                           quantity:
- *                             type: integer
- *                             example: 2
- *                     subTotal:
- *                       type: number
- *                       example: 40
- *                     shipping:
- *                       type: number
- *                       example: 10
- *                     total:
- *                       type: number
- *                       example: 50
- *       400:
- *         description: Bad Request - No file uploaded or invalid file type.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: No file uploaded
- *       401:
- *         description: Unauthorized - Invalid or missing token.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Unauthorized
- *       500:
- *         description: Internal Server Error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: An unexpected error occurred
- */
 
 v1Router.post(
   '/audio',
@@ -1927,7 +806,9 @@ v1Router.post(
 })
 
 // Routes for handling kiko integrations
-
+/**
+ * No swagger
+ */
 v1Router.post('/kikoOrderStatus', authenticateToken, async (req: any, res: any) => {
   const { orderId, orderStatus, deliveryStatus } = req.body;
 
@@ -1991,7 +872,6 @@ v1Router.post('/kikoOrderStatus', authenticateToken, async (req: any, res: any) 
 })
 
 // Search by Pincode
-
 v1Router.post('/search-kiko', authenticateToken, async (req: any, res: any) => {
   const { pincode } = req.body;
 
@@ -2020,6 +900,10 @@ v1Router.post('/search-kiko', authenticateToken, async (req: any, res: any) => {
   }
 })
 
+
+/**
+ * Swagger Required
+ */
 v1Router.post('/create-order-kiko', authenticateToken, async (req: any, res: any) => {
   const order = req.body;
 
@@ -2048,6 +932,9 @@ v1Router.post('/create-order-kiko', authenticateToken, async (req: any, res: any
   }
 })
 
+/**
+ * Swagger Required
+ */
 v1Router.post('/cancel-order-kiko', authenticateToken, async (req: any, res: any) => {
   const { orderId } = req.body;
 
@@ -2136,7 +1023,7 @@ v1Router.post('/cancel-order-kiko', authenticateToken, async (req: any, res: any
  * @swagger
  * /on_subscribe:
  *   post:
- *     summary: ONDC Subscribe API
+ *     summary: ONDC Subscribe BACKEND API
  *     description: Decrypts the provided 'string' using AES-256-ECB and returns the answer.
  *     tags:
  *       - ONDC
@@ -2188,7 +1075,7 @@ ondcRouter.post('/on_subscribe', function (req: any, res: any) {
  * @swagger
  * /ondc-site-verification.html:
  *   get:
- *     summary: ONDC HTML verification file API
+ *     summary: ONDC HTML verification file BACKEND API
  *     description: DO NOT TAMPER! Returns a verification HTML file with a signed unique request ID, using the specified signing key.
  *     tags:
  *       - ONDC    
