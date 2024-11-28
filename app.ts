@@ -1,6 +1,5 @@
 // src/server.ts
-import express, { Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import express from 'express';
 import jwt from 'jsonwebtoken';
 import { WebSocket, WebSocketServer } from 'ws';
 import RazorPay from 'razorpay';
@@ -11,11 +10,13 @@ import winston from 'winston';
 import _sodium from 'libsodium-wrappers';
 import crypto from 'crypto';
 import multer from 'multer';
+import middleware from './src/middleware';
+import convertToCart from './src/helper/convertToCart';
+import prisma from './src/prisma.config';
 
 dotenv.config();
 
 const app = express();
-const prisma = new PrismaClient();
 const wss = new WebSocketServer({ noServer: true });
 
 // Middleware
@@ -192,8 +193,20 @@ v1Router.post('/auth/truecaller', async (req, res) => {
   }
 });
 
+// Auth Verify token
+v1Router.get('/auth/verify-token', async (req, res) => {
+  try {
+    res.json({ 
+      verified: true, 
+      auth: req.headers.authorization 
+    });
+  } catch (error) {
+    handleError(error, res);
+  }
+});
+
 // User Settings Routes
-v1Router.get('/user/settings', authenticateToken, async (req: any, res) => {
+v1Router.get('/user/settings', async (req: any, res) => {
   try {
     const settings = await prisma.userSetting.findMany({
       where: { userId: req.user.id }
@@ -205,7 +218,7 @@ v1Router.get('/user/settings', authenticateToken, async (req: any, res) => {
 });
 
 // Create User Settings
-v1Router.post('/user/settings', authenticateToken, async (req: any, res) => {
+v1Router.post('/user/settings', async (req: any, res) => {
   try {
     const { key, value } = req.body;
     await prisma.userSetting.create({
@@ -222,7 +235,7 @@ v1Router.post('/user/settings', authenticateToken, async (req: any, res) => {
 });
 
 // Update User Settings
-v1Router.put('/user/settings/:key', authenticateToken, async (req: any, res: any) => {
+v1Router.put('/user/settings/:key', async (req: any, res: any) => {
   try {
     const { key } = req.params;
     const { value } = req.body;
@@ -246,7 +259,7 @@ v1Router.put('/user/settings/:key', authenticateToken, async (req: any, res: any
 });
 
 // Delete User Settings
-v1Router.delete('/user/settings/:key', authenticateToken, async (req: any, res: any) => {
+v1Router.delete('/user/settings/:key', async (req: any, res: any) => {
   try {
     const { key } = req.params;
     
@@ -272,7 +285,7 @@ v1Router.delete('/user/settings/:key', authenticateToken, async (req: any, res: 
  */
 
 // Create User Profile
-v1Router.post('/user', authenticateToken, async (req: any, res: any) => {
+v1Router.post('/user', async (req: any, res: any) => {
   try {
     const { name, email, phone } = req.body;
 
@@ -313,7 +326,7 @@ v1Router.post('/user', authenticateToken, async (req: any, res: any) => {
 
 
 // Update User Profile
-v1Router.put('/user', authenticateToken, async (req: any, res: any) => {
+v1Router.put('/user', async (req: any, res: any) => {
   try {
     const { name, email, phone } = req.body;
 
@@ -343,7 +356,7 @@ v1Router.put('/user', authenticateToken, async (req: any, res: any) => {
 });
 
 // Fetch user profile
-v1Router.get('/user', authenticateToken, async (req: any, res) => {
+v1Router.get('/user', async (req: any, res) => {
   try {
     const settings = await prisma.userSetting.findMany({
       where: { userId: req.user.id }
@@ -363,7 +376,7 @@ v1Router.get('/user', authenticateToken, async (req: any, res) => {
 
 // Address Routes
 // Fetch User Address
-v1Router.get('/user/address', authenticateToken, async (req: any, res: any) => {
+v1Router.get('/user/address', async (req: any, res: any) => {
   try {
     const addresses = await prisma.address.findMany({
       where: { userId: req.user.id }
@@ -375,7 +388,7 @@ v1Router.get('/user/address', authenticateToken, async (req: any, res: any) => {
 });
 
 // Create User Address
-v1Router.post('/user/address', authenticateToken, async (req: any, res) => {
+v1Router.post('/user/address', async (req: any, res) => {
   try {
     const { address_line1, address_line2, street, city, state, country,latitude, longitude, addressType, landmark, postalCode } = req.body;
     const address = await prisma.address.create({
@@ -402,7 +415,7 @@ v1Router.post('/user/address', authenticateToken, async (req: any, res) => {
 
 // Cart Routes
 // Create Cart Details with Items
-v1Router.post('/cart', authenticateToken, async (req: any, res) => {
+v1Router.post('/cart', async (req: any, res) => {
   try {
     const cart = await prisma.cart.create({
       data: {
@@ -416,7 +429,7 @@ v1Router.post('/cart', authenticateToken, async (req: any, res) => {
 });
 
 // Fetch Cart Details
-v1Router.get('/cart/:id', authenticateToken, async (req: any, res: any) => {
+v1Router.get('/cart/:id', async (req: any, res: any) => {
   try {
     const cart = await prisma.cart.findFirst({
       where: {
@@ -451,7 +464,7 @@ v1Router.get('/cart/:id', authenticateToken, async (req: any, res: any) => {
 
 // Order Routes
 // Create Order with a Cart
-v1Router.post('/cart/:id', authenticateToken, async (req: any, res: any) => {
+v1Router.post('/cart/:id', async (req: any, res: any) => {
   try {
     const cart = await prisma.cart.findFirst({
       where: {
@@ -478,7 +491,7 @@ v1Router.post('/cart/:id', authenticateToken, async (req: any, res: any) => {
 });
 
 // Fetch Orders of a User
-v1Router.get('/order', authenticateToken, async (req: any, res: any) => {
+v1Router.get('/order', async (req: any, res: any) => {
   try {
     const orders = await prisma.order.findMany({
       where: {
@@ -506,13 +519,20 @@ v1Router.get('/order', authenticateToken, async (req: any, res: any) => {
 });
 
 // Fetch single order of a User 
-v1Router.get('/order/:id', authenticateToken, async (req: any, res: any) => {
+v1Router.get('/order/:id', async (req: any, res: any) => {
   try {
     const orders = await prisma.order.findFirst({
       where: {
         id: req.params.id
+      },
+      include: {
+        cart: true
       }
     });
+
+    if (orders && orders.cart.userId === req.userId) {
+      return res.status(403).json({ error: 'Unauthorized user' });
+    }
 
     if (!orders) {
       return res.status(404).json({ error: 'No orders found for this user' });
@@ -524,9 +544,110 @@ v1Router.get('/order/:id', authenticateToken, async (req: any, res: any) => {
   }
 });
 
+v1Router.get('/order/:id/track', async (req: any, res: any) => {
+  try {
+    const orders = await prisma.order.findFirst({
+      where: {
+        id: req.params.id
+      },
+      include: {
+        cart: true
+      }
+    });
+
+    if (orders && orders.cart.userId === req.userId) {
+      return res.status(403).json({ error: 'Unauthorized user' });
+    }
+
+    if (!orders) {
+      return res.status(404).json({ error: 'No orders found for this user' });
+    }
+
+    res.json({ orderStatus: orders.status, deliveryStatus: orders.deliveryStatus });
+  } catch (error) {
+    handleError(error, res);
+  }
+});
+
+v1Router.post('/order/:id/cancel', async (req: any, res: any) => {
+
+  const orderStatusRef = ['in-progress', 'cancelled'];
+  const deliveryStatusRef = [
+    'order-picked-up',
+    'out-for-delivery',
+    'order-delivered',
+    'rto-initiated',
+    'rto-delivered',
+  ];
+
+  try {
+    const orders = await prisma.order.findFirst({
+      where: {
+        id: req.params.id
+      },
+      include: {
+        cart: true
+      }
+    });
+
+    // Check if the order exists
+    if(orders){
+      // Check if the user owns the order
+      if (orders.cart.userId !== req.user.id) {
+        return res.status(403).json({ error: 'You are not authorized to cancel this order' });
+      }
+
+      // Check if the order is already marked completed
+      if(orders.status === 'completed'){
+        return res.status(400).json({ 
+          error: 'Order is delivered'
+        })
+      }
+
+      // Check if the order is already marked cancelled
+      if(orders.deliveryStatus === 'cancelled'){
+        return res.status(400).json({ 
+          error: 'Order has been cancelled'
+        })
+      }
+  
+      // Check if the order is already left the warehouse
+      if(deliveryStatusRef.includes(orders.deliveryStatus) && orderStatusRef.includes(orders.status)){
+        return res.status(400).json({ 
+          error: 'Order has been picked-up. No more cancellation possible'
+        })
+      }
+    } else {
+      return res.status(400).json({
+        error: 'Order not found'
+      })
+    }
+
+    // Fetch request to the external API
+    const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/kiranapro-cancel-order', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ kiranaProOrderId: req.params.id }),
+    });
+
+    // Parse the response
+    const data = await response.json();
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Failed to cancel the order' });
+    }
+
+    // Return the response from the external API
+    return res.status(200).json(data);
+  } catch (error) {
+    handleError(error, res);
+  }
+})
+
 // Notification Routes
 // Fetch all notifications for a user
-v1Router.get('/notifications', authenticateToken, async (req: any, res: any) => {
+v1Router.get('/notifications', async (req: any, res: any) => {
   try {
     const notifications = await prisma.notification.findMany({
       orderBy: {
@@ -545,7 +666,7 @@ v1Router.get('/notifications', authenticateToken, async (req: any, res: any) => 
 });
 
 // Create notifications for a User
-v1Router.post('/notifications', authenticateToken, async (req: any, res: any) => {
+v1Router.post('/notifications', async (req: any, res: any) => {
   try {
     const { message, media_url } = req.body;
 
@@ -572,7 +693,7 @@ v1Router.post('/notifications', authenticateToken, async (req: any, res: any) =>
 });
 
 // Delete Notification of a User
-v1Router.delete('/notifications/:id', authenticateToken, async (req: any, res: any) => {
+v1Router.delete('/notifications/:id', async (req: any, res: any) => {
   const notificationId = req.params.id;
 
   try {
@@ -593,7 +714,7 @@ v1Router.delete('/notifications/:id', authenticateToken, async (req: any, res: a
 });
 
 // Payment Routes
-v1Router.post('/payment', authenticateToken, async (req: any, res: any) => {
+v1Router.post('/payment', async (req: any, res: any) => {
   try {
     const { amount } = req.body;
     const payment = await razorpay.orders.create({
@@ -608,7 +729,7 @@ v1Router.post('/payment', authenticateToken, async (req: any, res: any) => {
 });
 
 
-v1Router.post('/payment/verify', authenticateToken, async (req: any, res: any) => {
+v1Router.post('/payment/verify', async (req: any, res: any) => {
   try {
     const { order_id, payment_id, signature } = req.body;
     const secret = process.env.RAZORPAY_SECRET || 'rzp_secret_xxx';
@@ -635,7 +756,7 @@ v1Router.post('/payment/verify', authenticateToken, async (req: any, res: any) =
 });
 
 // Task Routes
-v1Router.post('/agent', authenticateToken, async (req: any, res) => {
+v1Router.post('/agent', async (req: any, res) => {
   try {
     const task = await prisma.task.create({
       data: {
@@ -650,7 +771,7 @@ v1Router.post('/agent', authenticateToken, async (req: any, res) => {
   }
 });
 
-v1Router.get('/task/:taskId', authenticateToken, async (req: any, res: any) => {
+v1Router.get('/task/:taskId', async (req: any, res: any) => {
   try {
     const task = await prisma.task.findFirst({
       where: {
@@ -685,7 +806,7 @@ v1Router.get('/task/:taskId', authenticateToken, async (req: any, res: any) => {
 
 // Home banner and Carousel Asset
 
-v1Router.get('/home', authenticateToken, async (req: any, res: any) => {
+v1Router.get('/home', async (req: any, res: any) => {
   try {
 
     type Banner = string;
@@ -737,69 +858,63 @@ const upload = multer({
 
 v1Router.post(
   '/audio',
-  authenticateToken,
   upload.single('audio'), // Expect an 'audio' file in the request
   async (req: any, res: any) => {
-      try {
-          // Use type assertion to access `file`
-          const file = (req as any).file;
-          if (!file) {
-              return res.status(400).json({ error: 'No file uploaded' });
-          }
+  try {
+      // Extract the User-Agent header
+      const userAgent = req.headers['user-agent'];
 
-          // Respond with the cart ID
-          res.status(200).json({
-            "message":"File uploaded successfully",
-            "deliverytime":"20 minutes",
-            "saved":"100.50",
-            "cart":{
-            "id":"cart_123",
-            "items":[
-            {
-            "id":"item_123",
-            "name":"Sample Item",
-            "price":20,
-            "quantity":2,
-            "unit":"kg",
-            "image":"https://picsum.photos/id/237/200/300"
-            },
-            {
-            "id":"item_124",
-            "name":"Sample Item 2",
-            "price":40,
-            "unit":"",
-            "quantity":2,
-            "image":"https://picsum.photos/id/237/200/300"
-            }
-            ],
-            "orderSummary":{
-              "items":[
-              {
-              "id":"item_123",
-              "name":"Sample Item",
-              "price":20,
-              "amount":35,
-              "quantity":2,
-              "unit":"kg",
-              "image":"https://picsum.photos/id/237/200/300"
-              },
-              {
-              "id":"item_124",
-              "name":"Sample Item 2",
-              "price":40,
-              "amount":35,
-              "unit":"",
-              "quantity":2,
-              "image":"https://picsum.photos/id/237/200/300"
-              }
-              ],
-              "subTotal":40,
-              "shipping":10,
-              "discount":10,
-              "total":60
-              }
-              }
-              });
+      if (!userAgent && !userAgent.includes('lat:') && !userAgent.includes('lon:')) {
+        return res.status(400).json({ error: 'Some headers are missing' });
+      }
+      
+      const latLonRegex = /lat:\s*([\d.-]+);\s*lon:\s*([\d.-]+)/;
+      const match = userAgent.match(latLonRegex);
+
+      if (!match) {
+        return res.status(400).json({ error: 'Latitude and longitude not found in header' });
+      }
+
+      // Extract latitude and longitude
+      const latitude = parseFloat(match[1]);
+      const longitude = parseFloat(match[2]);
+
+      // Use type assertion to access `file`
+      const file = req.file;
+      if (!file) {
+          return res.status(400).json({ error: 'No file uploaded' });
+      }
+
+      // Create FormData to send the file
+      const formData = new FormData();
+
+      try {
+        // Convert the buffer into a Blob
+        const audioBlob = new Blob([file.buffer], { type: file.mimetype });
+        formData.append('audio', audioBlob, file.originalname);
+         
+      } catch (error: any) {
+        res.json({ error: error.message})
+      }
+
+      // Perform the fetch call with multipart/form-data
+      const response = await fetch('https://dev-ai-api.kpro42.com/api/process-audio', {
+        method: 'POST',
+        body: formData, // Use FormData as the body
+      });
+
+      // Parse the response
+      if (!response.ok) {
+        return res.status(response.status).json({ error: 'Failed to process audio' });
+      }
+      const data = await response.json();
+
+      try {
+        const cart = await convertToCart(data, latitude, longitude)
+        res.status(200).json(cart)
+      } catch (error: any) {
+        res.json({ error: error.message})
+      }
   } catch (error) {
     handleError(error, res);
   }
@@ -809,7 +924,7 @@ v1Router.post(
 /**
  * No swagger
  */
-v1Router.post('/kikoOrderStatus', authenticateToken, async (req: any, res: any) => {
+v1Router.post('/kikoOrderStatus', async (req: any, res: any) => {
   const { orderId, orderStatus, deliveryStatus } = req.body;
 
   const orderStatusRef = ['in-progress', 'completed', 'cancelled'];
@@ -871,40 +986,10 @@ v1Router.post('/kikoOrderStatus', authenticateToken, async (req: any, res: any) 
   }
 })
 
-// Search by Pincode
-v1Router.post('/search-kiko', authenticateToken, async (req: any, res: any) => {
-  const { pincode } = req.body;
-
-  // Ensure the request body contains `pincode`
-  if (!pincode) {
-    return res.status(400).json({ error: 'Pincode is required' });
-  }
-
-  try {
-    // Fetch request to the external API
-    const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/kiranaProSearch', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ pincode }), // Forward the request body
-    });
-
-    // Parse the response
-    const data = await response.json();
-
-    // Forward the external API response back to the client
-    return res.status(response.status).json(data);
-  } catch (error) {
-    handleError(error, res);
-  }
-})
-
-
 /**
  * Swagger Required
  */
-v1Router.post('/create-order-kiko', authenticateToken, async (req: any, res: any) => {
+v1Router.post('/order', async (req: any, res: any) => {
   const order = req.body;
 
   // Ensure the request body contains `pincode`
@@ -932,92 +1017,6 @@ v1Router.post('/create-order-kiko', authenticateToken, async (req: any, res: any
   }
 })
 
-/**
- * Swagger Required
- */
-v1Router.post('/cancel-order-kiko', authenticateToken, async (req: any, res: any) => {
-  const { orderId } = req.body;
-
-  const orderStatusRef = ['in-progress', 'cancelled'];
-  const deliveryStatusRef = [
-    'order-picked-up',
-    'out-for-delivery',
-    'order-delivered',
-    'rto-initiated',
-    'rto-delivered',
-  ];
-
-  // Ensure the request body contains `pincode`
-  if (!orderId) {
-    return res.status(400).json({ error: 'orderId is required' });
-  }
-
-  try {
-    const orders = await prisma.order.findFirst({
-      where: {
-        id: orderId
-      },
-      include: {
-        cart: true
-      }
-    });
-
-    // Check if the order exists
-    if(orders){
-      // Check if the user owns the order
-      if (orders.cart.userId !== req.user.id) {
-        return res.status(403).json({ error: 'You are not authorized to cancel this order' });
-      }
-
-      // Check if the order is already marked completed
-      if(orders.status === 'completed'){
-        return res.status(400).json({ 
-          error: 'Order is delivered'
-        })
-      }
-
-      // Check if the order is already marked cancelled
-      if(orders.deliveryStatus === 'cancelled'){
-        return res.status(400).json({ 
-          error: 'Order has been cancelled'
-        })
-      }
-  
-      // Check if the order is already left the warehouse
-      if(deliveryStatusRef.includes(orders.deliveryStatus) && orderStatusRef.includes(orders.status)){
-        return res.status(400).json({ 
-          error: 'Order has been picked-up. No more cancellation possible'
-        })
-      }
-    } else {
-      return res.status(400).json({
-        error: 'Order not found'
-      })
-    }
-
-    // Fetch request to the external API
-    const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/kiranapro-cancel-order', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ kiranaProOrderId: orderId }),
-    });
-
-    // Parse the response
-    const data = await response.json();
-    if (!response.ok) {
-      return res.status(response.status).json({ error: 'Failed to cancel the order' });
-    }
-
-    // Return the response from the external API
-    return res.status(200).json(data);
-  } catch (error) {
-    handleError(error, res);
-  }
-})
-
-
 // Route for handling ONDC subscription requests
 /**
  * @swagger
@@ -1026,7 +1025,7 @@ v1Router.post('/cancel-order-kiko', authenticateToken, async (req: any, res: any
  *     summary: ONDC Subscribe BACKEND API
  *     description: Decrypts the provided 'string' using AES-256-ECB and returns the answer.
  *     tags:
- *       - ONDC
+ *       - ONDC - Backend
  *     requestBody:
  *       required: true
  *       content:
@@ -1078,7 +1077,7 @@ ondcRouter.post('/on_subscribe', function (req: any, res: any) {
  *     summary: ONDC HTML verification file BACKEND API
  *     description: DO NOT TAMPER! Returns a verification HTML file with a signed unique request ID, using the specified signing key.
  *     tags:
- *       - ONDC    
+ *       - ONDC - Backend
  *     responses:
  *       200:
  *         description: HTML verification file with signed request ID.
@@ -1125,10 +1124,10 @@ const handleWebSocket = (socket: WebSocket, req: any) => {
 };
 
 // Apply routes
-app.use('/', ondcRouter);
-app.use('/v1', v1Router);
 app.use('/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get('/health-check', (req: any, res: any) => { res.status(200).json({ health: "OK" }) });
+app.use('/', ondcRouter);
+app.use('/v1', middleware.decodeToken, v1Router);
 
 // Start server
 const server = app.listen(8000, () => {
