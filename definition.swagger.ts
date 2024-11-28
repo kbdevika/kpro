@@ -827,6 +827,250 @@
 
 /**
  * @swagger
+ * /order/{id}/cancel:
+ *   post:
+ *     summary: Cancel an order
+ *     description: Cancels an order if it meets certain conditions.
+ *     operationId: cancelOrder
+ *     tags:
+ *       - Orders
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The ID of the order to be canceled.
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       description: Request body to cancel the order (not needed in this case).
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties: {}
+ *     responses:
+ *       '200':
+ *         description: Order successfully canceled
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Order has been successfully cancelled."
+ *       '400':
+ *         description: |
+ *           Bad request due to one of the following reasons:
+ *           - Order not found
+ *           - Order already delivered
+ *           - Order already cancelled
+ *           - Order has been picked-up and no more cancellations possible
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Order has been picked-up. No more cancellation possible."
+ *       '403':
+ *         description: User not authorized to cancel the order
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "You are not authorized to cancel this order."
+ *       '500':
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
+ *     security:
+ *       - bearerAuth: []
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
+
+/**
+ * @swagger
+ * /order/{id}/track:
+ *   get:
+ *     summary: Track the status of an order
+ *     description: Fetches the current status and delivery status of an order.
+ *     operationId: trackOrder
+ *     tags:
+ *       - Orders
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The ID of the order to track.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Successfully fetched the order status and delivery status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 orderStatus:
+ *                   type: string
+ *                   description: The current status of the order.
+ *                   example: "in-progress"
+ *                 deliveryStatus:
+ *                   type: string
+ *                   description: The current delivery status of the order.
+ *                   example: "out-for-delivery"
+ *       '403':
+ *         description: Unauthorized user trying to track an order they do not own
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized user"
+ *       '404':
+ *         description: Order not found for the specified ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No orders found for this user"
+ *       '500':
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
+ *     security:
+ *       - bearerAuth: []  # Assuming you're using a bearer token for authentication
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
+
+/**
+ * @swagger
+ * /order/{id}:
+ *   get:
+ *     summary: Get details of a specific order
+ *     description: Fetches the details of an order by its ID. Returns order details such as the status, delivery status, and associated cart items.
+ *     operationId: getOrderById
+ *     tags:
+ *       - Orders
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The ID of the order to fetch details for.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Successfully fetched order details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 orders:
+ *                   type: object
+ *                   description: The details of the order.
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: The ID of the order.
+ *                       example: "12345"
+ *                     status:
+ *                       type: string
+ *                       description: The current status of the order.
+ *                       example: "in-progress"
+ *                     deliveryStatus:
+ *                       type: string
+ *                       description: The current delivery status of the order.
+ *                       example: "out-for-delivery"
+ *                     cart:
+ *                       type: object
+ *                       description: Cart details associated with the order.
+ *                       properties:
+ *                         userId:
+ *                           type: string
+ *                           description: The user ID who owns the cart.
+ *                           example: "user123"
+ *       '403':
+ *         description: Unauthorized user trying to access an order they do not own
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized user"
+ *       '404':
+ *         description: No orders found for the specified ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No orders found for this user"
+ *       '500':
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
+ *     security:
+ *       - bearerAuth: []  # Assuming you're using a bearer token for authentication
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
+
+
+/**
+ * @swagger
  * /notifications:
  *   get:
  *     summary: Get all notifications
@@ -1082,7 +1326,7 @@
  *     summary: Create a new task
  *     description: Initiates a task in 'processing' status for the authenticated user.
  *     tags:
- *       - Task*
+ *       - Task
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -1109,7 +1353,7 @@
  *     summary: Get task status and details
  *     description: Retrieves the status and details of a task for the authenticated user.
  *     tags:
- *       - Task*
+ *       - Task
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -1162,7 +1406,7 @@
  *     summary: Retrieve home screen data
  *     description: Returns banners, carousels, and categories for the home screen.
  *     tags:
- *       - Home*
+ *       - Home (Dummy Cart)
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -1316,7 +1560,7 @@
  *     summary: Search for sellers using a pincode
  *     description: Sends a pincode to an external API to fetch seller information and returns the response.
  *     tags:
- *       - Kiko Search
+ *       - Kiko Search - Backend
  *     security:
  *       - bearerAuth: []
  *     requestBody:
