@@ -334,24 +334,32 @@ v1Router.put('/user', async (req: any, res: any) => {
       { key: "email", value: email },
     ];
 
-    // Use a loop for await Prisma calls
+    // Use upsert to update existing settings or insert new ones if they don't exist
     for (const item of data) {
-       await prisma.userSetting.updateMany({
+      await prisma.userSetting.upsert({
         where: {
+          userId_key: {
+            userId: req.user.id,
+            key: item.key,
+          },
+        },
+        update: {
+          value: item.value,
+        },
+        create: {
           userId: req.user.id,
           key: item.key,
-        },
-        data: {
           value: item.value,
         },
       });
     }
 
-    res.status(201).json({ message: 'Settings updated successfully' });
+    res.status(200).json({ message: 'Settings updated successfully' });
   } catch (error) {
     handleError(error, res);
   }
 });
+
 
 // Fetch user profile
 v1Router.get('/user', async (req: any, res) => {
