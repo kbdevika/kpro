@@ -14,36 +14,37 @@ class Middleware{
         try {
             const decodedToken = await admin.auth().verifyIdToken(token);
 
-            let user = await prisma.user.findUnique({
-                where: { id: decodedToken.uid }
-              });
-          
-            if (!user) {
-                user = await prisma.user.create({
-                    data: { 
-                    id: decodedToken.uid
-                }
-              });
-
-            if(decodedToken.phone_number){
-                await prisma.userSetting.create({
-                    data: {
-                      userId: decodedToken.uid,
-                      key: "phone",
-                      value: decodedToken.phone_number
+            if(decodedToken) {
+                let user = await prisma.user.findUnique({
+                    where: { id: decodedToken.uid }
+                  });
+              
+                if (!user) {
+                    user = await prisma.user.create({
+                        data: { 
+                        id: decodedToken.uid
                     }
                   });
-                }  
+    
+                if(decodedToken.phone_number){
+                    await prisma.userSetting.create({
+                        data: {
+                          userId: decodedToken.uid,
+                          key: "phone",
+                          value: decodedToken.phone_number
+                        }
+                      });
+                    }  
+                }
+    
+                req.user = {
+                    id: decodedToken.uid,
+                };
             }
-
-            // Add user info to req.user
-            req.user = {
-                id: decodedToken.uid,
-            };
 
             next();
         } catch (error: any) {
-            res.status(403).json({ error: 'Invalid or expired token' + error.message });
+            res.status(401).json({ error: 'Invalid or expired token. ' + error.message });
             return;
         }
 
