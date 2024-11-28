@@ -1406,7 +1406,7 @@
  *     summary: Retrieve home screen data
  *     description: Returns banners, carousels, and categories for the home screen.
  *     tags:
- *       - Home (Dummy Cart)
+ *       - Home (Dummy URLs)
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -1551,54 +1551,4 @@
  *                 error:
  *                   type: string
  *                   example: An unexpected error occurred
- */
-
-/**
- * @swagger
- * /search-kiko:
- *   post:
- *     summary: Search for sellers using a pincode
- *     description: Sends a pincode to an external API to fetch seller information and returns the response.
- *     tags:
- *       - Kiko Search - Backend
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               pincode:
- *                 type: number
- *                 description: The pincode to search for sellers.
- *                 example: 560001
- *     responses:
- *       200:
- *         description: Successfully retrieved seller information.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *       400:
- *         description: Bad Request. Pincode is missing from the request body.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Pincode is required"
- *       500:
- *         description: Internal Server Error.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "An unexpected error occurred"
  */
