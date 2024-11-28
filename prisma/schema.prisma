@@ -30,6 +30,7 @@ model UserSetting {
   user    User    @relation(fields: [userId], references: [id])
   @@index([key])
   @@index([userId])
+  @@unique([userId, key])
 }
 
 model Address {
