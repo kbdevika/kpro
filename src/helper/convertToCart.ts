@@ -75,9 +75,6 @@ type GroceryData = {
         }
     }
 
-    console.log(selectedProducts);
-    
-
     // Map selectedProducts into CartResponse
     const cartItems = selectedProducts.map((product, index) => {
         const originalPrice = parseFloat(product.productPrice);

@@ -287,13 +287,13 @@ v1Router.delete('/user/settings/:key', async (req: any, res: any) => {
 // Create User Profile
 v1Router.post('/user', async (req: any, res: any) => {
   try {
-    const { name, email, phone } = req.body;
+    const { name, email } = req.body;
 
     // Check if the user already has a profile
     const existingProfile = await prisma.userSetting.findMany({
       where: {
         userId: req.user.id,
-        key: { in: ['name', 'email', 'phone'] }, // Check for any of the profile keys
+        key: { in: ['name', 'email', 'phone'] },
       },
     });
 
@@ -305,7 +305,6 @@ v1Router.post('/user', async (req: any, res: any) => {
     const data = [
       { key: 'name', value: name },
       { key: 'email', value: email },
-      { key: 'phone', value: phone },
     ];
 
     for (const item of data) {
@@ -328,17 +327,16 @@ v1Router.post('/user', async (req: any, res: any) => {
 // Update User Profile
 v1Router.put('/user', async (req: any, res: any) => {
   try {
-    const { name, email, phone } = req.body;
+    const { name, email } = req.body;
 
     const data = [
       { key: "name", value: name },
       { key: "email", value: email },
-      { key: "phone", value: phone },
     ];
 
     // Use a loop for await Prisma calls
     for (const item of data) {
-      await prisma.userSetting.updateMany({
+       await prisma.userSetting.updateMany({
         where: {
           userId: req.user.id,
           key: item.key,
@@ -368,7 +366,14 @@ v1Router.get('/user', async (req: any, res) => {
       return profile;
     }, {});
 
-    res.json(userProfile);
+    const filteredProfile = {
+      id: req.user.id,
+      name: userProfile['name'] || '',
+      email: userProfile['email'] || '',
+      phone: userProfile['phone'] || '',
+    };
+
+    res.json(filteredProfile);
   } catch (error) {
     handleError(error, res);
   }
