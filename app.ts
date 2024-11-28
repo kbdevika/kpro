@@ -323,7 +323,6 @@ v1Router.post('/user', async (req: any, res: any) => {
   }
 });
 
-
 // Update User Profile
 v1Router.put('/user', async (req: any, res: any) => {
   try {
@@ -360,7 +359,6 @@ v1Router.put('/user', async (req: any, res: any) => {
   }
 });
 
-
 // Fetch user profile
 v1Router.get('/user', async (req: any, res) => {
   try {
@@ -381,7 +379,7 @@ v1Router.get('/user', async (req: any, res) => {
       phone: userProfile['phone'] || '',
     };
 
-    res.json(filteredProfile);
+    res.status(200).json(filteredProfile);
   } catch (error) {
     handleError(error, res);
   }
