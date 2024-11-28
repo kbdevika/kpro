@@ -1,6 +1,5 @@
 // src/server.ts
-import express, { Request, RequestHandler, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import express from 'express';
 import jwt from 'jsonwebtoken';
 import { WebSocket, WebSocketServer } from 'ws';
 import RazorPay from 'razorpay';
@@ -13,11 +12,11 @@ import crypto from 'crypto';
 import multer from 'multer';
 import middleware from './src/middleware';
 import convertToCart from './src/helper/convertToCart';
+import prisma from './src/prisma.config';
 
 dotenv.config();
 
 const app = express();
-const prisma = new PrismaClient();
 const wss = new WebSocketServer({ noServer: true });
 
 // Middleware
@@ -1128,7 +1127,7 @@ const handleWebSocket = (socket: WebSocket, req: any) => {
 app.use('/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get('/health-check', (req: any, res: any) => { res.status(200).json({ health: "OK" }) });
 app.use('/', ondcRouter);
-app.use('/v1', v1Router);
+app.use('/v1', middleware.decodeToken, v1Router);
 
 // Start server
 const server = app.listen(8000, () => {
