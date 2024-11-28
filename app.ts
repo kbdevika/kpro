@@ -862,6 +862,24 @@ v1Router.post(
   upload.single('audio'), // Expect an 'audio' file in the request
   async (req: any, res: any) => {
   try {
+      // Extract the User-Agent header
+      const userAgent = req.headers['user-agent'];
+
+      if (!userAgent && !userAgent.includes('lat:') && !userAgent.includes('lon:')) {
+        return res.status(400).json({ error: 'Some headers are missing' });
+      }
+      
+      const latLonRegex = /lat:\s*([\d.-]+);\s*lon:\s*([\d.-]+)/;
+      const match = userAgent.match(latLonRegex);
+
+      if (!match) {
+        return res.status(400).json({ error: 'Latitude and longitude not found in header' });
+      }
+
+      // Extract latitude and longitude
+      const latitude = parseFloat(match[1]);
+      const longitude = parseFloat(match[2]);
+
       // Use type assertion to access `file`
       const file = req.file;
       if (!file) {
@@ -893,8 +911,8 @@ v1Router.post(
       const data = await response.json();
 
       try {
-        // const cart = await convertToCart(data)
-        res.status(200).json(data)
+        const cart = await convertToCart(data, latitude, longitude)
+        res.status(200).json(cart)
       } catch (error: any) {
         res.json({ error: error.message})
       }
@@ -968,36 +986,6 @@ v1Router.post('/kikoOrderStatus', async (req: any, res: any) => {
     handleError(error, res);
   }
 })
-
-// Search by Pincode
-v1Router.post('/search-kiko', async (req: any, res: any) => {
-  const { pincode } = req.body;
-
-  // Ensure the request body contains `pincode`
-  if (!pincode) {
-    return res.status(400).json({ error: 'Pincode is required' });
-  }
-
-  try {
-    // Fetch request to the external API
-    const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/kiranaProSearch', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ pincode }), // Forward the request body
-    });
-
-    // Parse the response
-    const data = await response.json();
-
-    // Forward the external API response back to the client
-    return res.status(response.status).json(data);
-  } catch (error) {
-    handleError(error, res);
-  }
-})
-
 
 /**
  * Swagger Required
@@ -1140,7 +1128,7 @@ const handleWebSocket = (socket: WebSocket, req: any) => {
 app.use('/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get('/health-check', (req: any, res: any) => { res.status(200).json({ health: "OK" }) });
 app.use('/', ondcRouter);
-app.use('/v1', middleware.decodeToken, v1Router);
+app.use('/v1', v1Router);
 
 // Start server
 const server = app.listen(8000, () => {
