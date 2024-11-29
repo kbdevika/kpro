@@ -30,6 +30,7 @@ model UserSetting {
   user    User    @relation(fields: [userId], references: [id])
   @@index([key])
   @@index([userId])
+  @@unique([userId, key])
 }
 
 model Address {
@@ -51,24 +52,26 @@ model Address {
 }
 
 model Cart {
-  id      String      @id @default(uuid())
-  userId  String
-  items   CartItem[]
-  user    User        @relation(fields: [userId], references: [id])
-  Order   Order[]
+  id        String      @id @default(uuid())
+  userId    String
+  vendorId  String      @default("null")
+  items     CartItem[]
+  user      User        @relation(fields: [userId], references: [id])
+  Order     Order[]
   @@index([userId])
 }
 
 model CartItem {
-  id          Int      @id @default(autoincrement())
-  cartId      String  
-  name        String
-  description String
-  quantity    Int
-  units       String
-  price       Float
-  image       String
-  cart        Cart     @relation(fields: [cartId], references: [id])
+  id                  Int      @id @default(autoincrement())
+  cartId              String
+  externalProductId   String   @default("null")
+  name                String
+  description         String
+  quantity            Int
+  units               String
+  price               Float
+  image               String
+  cart                Cart     @relation(fields: [cartId], references: [id])
   @@index([cartId])
 }
 
@@ -105,6 +108,13 @@ model Notification {
   message     String
   mediaUrl    String?  // Optional field for media
   createdDate DateTime @default(now())
+}
+
+model Catalogue {
+  id       String   @id @default(uuid())
+  pincode  String   @unique
+  jsonData Json
+  createdAt DateTime @default(now())
 }
 
 

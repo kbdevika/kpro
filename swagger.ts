@@ -6,7 +6,7 @@ const BASE_URLS = {
   localhost: 'http://localhost:8000',
   development: 'https://dev-api.kpro42.com',
   production: 'https://api.kpro42.com',
-} as const; // Use 'as const' to create a readonly object with literal types
+} as const;
 
 // Define ENV as a key of BASE_URLS
 const ENV: keyof typeof BASE_URLS = (process.env.NODE_ENV as keyof typeof BASE_URLS) || 'development';
@@ -20,7 +20,7 @@ const options: Options = {
     info: {
       title: 'API Documentation',
       version: '1.0.0',
-      description: 'V1.0.0 release package swagger',
+      description: 'Release V1.0.0',
     },
     servers: [
       {
@@ -33,17 +33,17 @@ const options: Options = {
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
-          bearerFormat: 'JWT', // Optional: Inform Swagger that this token uses JWT format
+          bearerFormat: 'JWT',
         },
       },
     },
     security: [
       {
-        bearerAuth: [], // Applies this security scheme globally if needed
+        bearerAuth: [],
       },
     ],
   },
-  apis: ['./definition.swagger.ts', './dist/definition.swagger.js', './app.ts', './dist/app.js'],
+  apis: ['./src/**/*.ts', './dist/src/**/*.js', './app.ts', './dist/app.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
