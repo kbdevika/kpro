@@ -4,7 +4,40 @@ import prisma from '../../config/prisma.config';
 
 const notificationRouter = express.Router();
 
-// Fetch all notifications for a user
+/**
+ * @swagger
+ * /notifications:
+ *   get:
+ *     summary: Get all notifications
+ *     description: Retrieve a list of all notifications.
+ *     tags:
+ *       - Notification
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved notifications.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: Unique identifier for the notification.
+ *                   message:
+ *                     type: string
+ *                     description: The message content of the notification.
+ *                   media_url:
+ *                     type: string
+ *                     description: URL to the media associated with the notification (if any).
+ *                   created_date:
+ *                     type: string
+ *                     format: date-time
+ *                     description: The date and time when the notification was created.
+ *       500:
+ *         description: Server error or issue retrieving notifications.
+ */
 notificationRouter.get('/', async (req: any, res: any) => {
     try {
       const notifications = await prisma.notification.findMany({
@@ -23,7 +56,59 @@ notificationRouter.get('/', async (req: any, res: any) => {
     }
   });
   
-  // Create notifications for a User
+ /**
+ * @swagger
+ * /notifications:
+ *   post:
+ *     summary: Add a new notification
+ *     description: Creates a new notification in the system.
+ *     tags:
+ *       - Notification
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 description: The message content of the notification.
+ *               media_url:
+ *                 type: string
+ *                 description: Optional URL for media associated with the notification.
+ *     responses:
+ *       201:
+ *         description: Successfully added the notification.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A success message.
+ *                 notification:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: Unique identifier of the created notification.
+ *                     message:
+ *                       type: string
+ *                       description: The content of the notification.
+ *                     media_url:
+ *                       type: string
+ *                       description: URL to the media associated with the notification.
+ *                     created_date:
+ *                       type: string
+ *                       format: date-time
+ *                       description: The date and time when the notification was created.
+ *       400:
+ *         description: Invalid request body (e.g., missing message).
+ *       500:
+ *         description: Internal server error.
+ */
   notificationRouter.post('/', async (req: any, res: any) => {
     try {
       const { message, media_url } = req.body;
@@ -50,7 +135,54 @@ notificationRouter.get('/', async (req: any, res: any) => {
     }
   });
   
-  // Delete Notification of a User
+/**
+ * @swagger
+ * /notifications/{id}:
+ *   delete:
+ *     summary: Delete a notification by ID
+ *     description: Deletes a specific notification by its unique ID.
+ *     tags:
+ *       - Notification
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the notification to delete.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully deleted the notification.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A success message indicating that the notification has been deleted.
+ *                 notification:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: ID of the deleted notification.
+ *                     message:
+ *                       type: string
+ *                       description: The content of the deleted notification.
+ *                     media_url:
+ *                       type: string
+ *                       description: URL to the media associated with the deleted notification.
+ *                     created_date:
+ *                       type: string
+ *                       format: date-time
+ *                       description: The date and time when the notification was created.
+ *       404:
+ *         description: Notification not found for the specified ID.
+ *       500:
+ *         description: Internal server error.
+ */
+
   notificationRouter.delete('/:id', async (req: any, res: any) => {
     const notificationId = req.params.id;
   

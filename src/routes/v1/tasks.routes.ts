@@ -4,8 +4,33 @@ import handleError from "../../helper/handleError";
 
 const taskRouter = express.Router();
 
-// Task Routes
-taskRouter.post('/agent', async (req: any, res: any) => {
+/**
+ * @swagger
+ * /task:
+ *   post:
+ *     summary: Create a new task
+ *     description: Initiates a task in 'processing' status for the authenticated user.
+ *     tags:
+ *       - Task
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Task created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 task_id:
+ *                   type: string
+ *                   example: "task_123"
+ *       401:
+ *         description: Authentication error.
+ *       500:
+ *         description: Internal server error.
+ */
+taskRouter.post('/', async (req: any, res: any) => {
     try {
       const task = await prisma.task.create({
         data: {
@@ -20,7 +45,59 @@ taskRouter.post('/agent', async (req: any, res: any) => {
     }
   });
   
-  taskRouter.get('/task/:taskId', async (req: any, res: any) => {
+  /**
+ * @swagger
+ * /{taskId}:
+ *   get:
+ *     summary: Get task status and details
+ *     description: Retrieves the status and details of a task for the authenticated user.
+ *     tags:
+ *       - Task
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: taskId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the task to retrieve.
+ *     responses:
+ *       200:
+ *         description: Task status and details retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "success"
+ *                 output:
+ *                   type: object
+ *                   properties:
+ *                     summary:
+ *                       type: string
+ *                       example: "Task summary"
+ *                     lineItems:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             example: "lineItem_123"
+ *                           description:
+ *                             type: string
+ *                             example: "Sample line item"
+ *       401:
+ *         description: Authentication error.
+ *       404:
+ *         description: Task not found.
+ *       500:
+ *         description: Internal server error.
+ */
+  taskRouter.get('/:taskId', async (req: any, res: any) => {
     try {
       const task = await prisma.task.findFirst({
         where: {

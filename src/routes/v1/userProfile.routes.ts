@@ -4,7 +4,74 @@ import prisma from '../../config/prisma.config';
 
 const profileRouter = express.Router();
 
-// Create User Profile
+/**
+ * @swagger
+ * /user:
+ *   post:
+ *     summary: Create user settings as key-value pairs
+ *     description: Creates user settings such as name, email, and phone as individual key-value pairs in the database. If the user already has a profile, an error is returned.
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: [] # Use token-based authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: John Doe
+ *               email:
+ *                 type: string
+ *                 example: john.doe@example.com
+ *             required:
+ *               - name
+ *               - email
+ *     responses:
+ *       201:
+ *         description: User settings created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Settings created successfully
+ *       400:
+ *         description: Bad Request - User profile already exists or invalid input data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: User profile already exists
+ *       401:
+ *         description: Unauthorized - Token missing or invalid.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Internal Server Error - An error occurred while processing the request.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ */
 profileRouter.post('/', async (req: any, res: any) => {
     try {
       const { name, email } = req.body;
@@ -13,7 +80,7 @@ profileRouter.post('/', async (req: any, res: any) => {
       const existingProfile = await prisma.userSetting.findMany({
         where: {
           userId: req.user.id,
-          key: { in: ['name', 'email', 'phone'] },
+          key: { in: ['name', 'email'] },
         },
       });
   
@@ -43,7 +110,73 @@ profileRouter.post('/', async (req: any, res: any) => {
     }
   });
   
-  // Update User Profile
+/**
+ * @swagger
+ * /user:
+ *   put:
+ *     summary: Update user profile
+ *     description: Updates the user's profile settings such as name, email, and phone. If the keys already exist, their values are updated.
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: [] # Token-based authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The user's name.
+ *                 example: user
+ *               email:
+ *                 type: string
+ *                 description: The user's email address.
+ *                 example: user@website.com
+ *     responses:
+ *       201:
+ *         description: User profile updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Settings updated successfully
+ *       400:
+ *         description: Bad request - Invalid or missing request body.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid input
+ *       401:
+ *         description: Unauthorized - Invalid or missing authentication token.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ */
   profileRouter.put('/', async (req: any, res: any) => {
     try {
       const { name, email } = req.body;
@@ -79,7 +212,57 @@ profileRouter.post('/', async (req: any, res: any) => {
     }
   });
   
-  // Fetch user profile
+/**
+ * @swagger
+ * /user:
+ *   get:
+ *     summary: Fetch user profile
+ *     description: Retrieves user profile information such as name, email, and phone in a structured format.
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: [] # Use token-based authentication
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   example: user_123
+ *                 name:
+ *                   type: string
+ *                   example: user
+ *                 email:
+ *                   type: string
+ *                   example: user@website.com
+ *                 phone:
+ *                   type: string
+ *                   example: +919999999999
+ *       401:
+ *         description: Unauthorized - Token missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Internal Server Error - An error occurred while processing the request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ */
   profileRouter.get('/', async (req: any, res: any) => {
     try {
       const settings = await prisma.userSetting.findMany({

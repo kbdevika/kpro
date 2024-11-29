@@ -19,7 +19,115 @@ const upload = multer({
   });
   
 
-audioRouter.post('/', upload.single('audio'), // Expect an 'audio' file in the request
+/**
+ * @swagger
+ * /audio:
+ *   post:
+ *     summary: Upload an audio file and retrieve cart details
+ *     description: This endpoint allows users to upload an audio file (MP3 format only) and receive a response containing a sample cart structure.
+ *     tags:
+ *       - Audio
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: User-Agent
+ *         required: true
+ *         schema:
+ *           type: string
+ *           example: "CustomAgent/V1.0 (lat:12.00000; lon: 78.255555)"
+ *         description: "The User-Agent header must follow the format: CustomAgent/V1.0 (lat:<latitude>; lon:<longitude>)."
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               audio:
+ *                 type: string
+ *                 format: binary
+ *                 description: The MP3 file to upload.
+ *     responses:
+ *       200:
+ *         description: Audio file uploaded successfully and cart details returned.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "File uploaded successfully"
+ *                 cart:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "cart_123"
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             example: "item_123"
+ *                           name:
+ *                             type: string
+ *                             example: "Sample Item"
+ *                           price:
+ *                             type: number
+ *                             format: float
+ *                             example: 20
+ *                           quantity:
+ *                             type: integer
+ *                             example: 2
+ *                     subTotal:
+ *                       type: number
+ *                       format: float
+ *                       example: 40
+ *                     shipping:
+ *                       type: number
+ *                       format: float
+ *                       example: 10
+ *                     total:
+ *                       type: number
+ *                       format: float
+ *                       example: 50
+ *       400:
+ *         description: Bad Request - No file uploaded or invalid file type.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No file uploaded"
+ *       401:
+ *         description: Unauthorized - Invalid or missing token.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized"
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "An unexpected error occurred"
+ */
+audioRouter.post('/', 
+    upload.single('audio'), // Expect an 'audio' file in the request
     async (req: any, res: any) => {
         try {
             // Extract the User-Agent header

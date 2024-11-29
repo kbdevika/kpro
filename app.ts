@@ -8,11 +8,10 @@ import { WebSocket, WebSocketServer } from 'ws';
 import * as dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 
-import middleware from './src/middleware';
 import healthCheckRouter from './src/routes/health.routes';
 import ondcRouter from './src/routes/ondc.routes';
 import v1Routers from './src/routes/v1';
-import authRouter from './src/routes/auth.routes';
+import authRouter from './src/routes/v1/auth.routes';
 import swaggerSpec from './swagger';
 
 dotenv.config();
@@ -48,11 +47,10 @@ const handleWebSocket = (socket: WebSocket, req: any) => {
 };
 
 // Apply routes
-app.use('/', authRouter);
 app.use('/', healthCheckRouter);
 app.use('/', ondcRouter);
-app.use('/v1', middleware.authenticateJWTToken, v1Routers);
 app.use('/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/v1', v1Routers);
 
 // Start server
 const server = app.listen(8000, () => {

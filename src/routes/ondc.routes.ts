@@ -1,6 +1,9 @@
 import express from 'express';
 import _sodium from 'libsodium-wrappers';
 import crypto from 'crypto';
+import * as dotenv from 'dotenv';
+
+dotenv.config()
 
 const ondcRouter = express.Router();
 
@@ -74,7 +77,7 @@ async function signMessage(signingString: any, privateKey: any) {
  *     summary: ONDC Subscribe BACKEND API
  *     description: Decrypts the provided 'string' using AES-256-ECB and returns the answer.
  *     tags:
- *       - ONDC - Backend
+ *       - ONDC (Backend)
  *     requestBody:
  *       required: true
  *       content:
@@ -126,7 +129,7 @@ ondcRouter.post('/on_subscribe', function (req: any, res: any) {
  *     summary: ONDC HTML verification file BACKEND API
  *     description: DO NOT TAMPER! Returns a verification HTML file with a signed unique request ID, using the specified signing key.
  *     tags:
- *       - ONDC - Backend
+ *       - ONDC (Backend)
  *     responses:
  *       200:
  *         description: HTML verification file with signed request ID.
