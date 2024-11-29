@@ -11,6 +11,26 @@ type GroceryData = {
     processingTime: number;
   };
 
+  type CartItems = {
+    id: string;
+    name: string;
+    price: number;
+    quantity: number;
+    unit: string;
+    image: string;
+    storeId: string;
+}[]
+
+type OrderItems = {
+    id: string;
+    name: string;
+    price: number;
+    amount: number;
+    quantity: number;
+    unit: string;
+    image: string;
+}
+
   type CartResponse = {
     message: string;
     deliverytime: string;
@@ -18,24 +38,9 @@ type GroceryData = {
     saved: string;
     cart: {
       id: string;
-      items: {
-        id: string;
-        name: string;
-        price: number;
-        quantity: number;
-        unit: string;
-        image: string;
-      }[];
+      items: CartItems
       orderSummary: {
-        items: {
-          id: string;
-          name: string;
-          price: number;
-          amount: number;
-          quantity: number;
-          unit: string;
-          image: string;
-        }[];
+        items: OrderItems[]
         subTotal: number;
         shipping: number;
         discount: number;
@@ -57,7 +62,7 @@ type GroceryData = {
     data: GroceryData,
     latitude: number,
     longitude: number
-): Promise<CartResponse> {
+): Promise<CartResponse | null>{
     const pincode = await getPincodeFromCoordinates(latitude, longitude);
     const catalogue = await fetchCatalogue(pincode);
 
@@ -76,8 +81,16 @@ type GroceryData = {
         }
     }
 
+    let cartItems: CartItems = []
+    let orderItems: OrderItems[] = []
+    let subTotal = 0;
+    let totalSavedAmount = 0;
+    let shipping = 0;
+    let total = 0;
+
     // Map selectedProducts into CartResponse
-    const cartItems = selectedProducts.map((product, index) => {
+    if(!(selectedProducts.length === 0)){
+      cartItems = selectedProducts.map((product, index) => {
         const originalPrice = parseFloat(product.productPrice);
         const discountedPrice = parseFloat(product.discountedPrice);
 
@@ -90,51 +103,51 @@ type GroceryData = {
             image: product.productImage,
             storeId: product.storeId
         };
-    });
+      });
 
-    // Calculate order summary
-    let subTotal = 0;
-    let totalSavedAmount = 0;
+      orderItems = cartItems.map((item) => {
+          const amount = item.price
+          const originalAmount = parseFloat(selectedProducts.find((p) => p.productId === item.id)!.productPrice);
 
-    const orderItems = cartItems.map((item) => {
-        const amount = item.price
-        const originalAmount = parseFloat(selectedProducts.find((p) => p.productId === item.id)!.productPrice);
+          subTotal += amount;
+          totalSavedAmount += originalAmount - amount;
 
-        subTotal += amount;
-        totalSavedAmount += originalAmount - amount;
+          return {
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              amount,
+              quantity: 1,
+              unit: item.unit,
+              image: item.image,
+          };
+      });
 
-        return {
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            amount,
-            quantity: 1,
-            unit: item.unit,
-            image: item.image,
-        };
-    });
+      shipping = subTotal >= 199 ? 0 : 27;
+      total = subTotal + shipping;
 
-    const shipping = subTotal >= 199 ? 0 : 27;
-    const total = subTotal + shipping;
+      // Construct the CartResponse
+        const cartResponse: CartResponse = {
+          message: "Cart successfully created",
+          deliverytime: `25 minutes`,
+          vendorId: cartItems[0].storeId,
+          saved: `₹${totalSavedAmount.toFixed(2)}`,
+          cart: {
+              id: `cart_${Date.now()}`,
+              items: cartItems,
+              orderSummary: {
+                  items: orderItems,
+                  subTotal: subTotal,
+                  shipping,
+                  discount: totalSavedAmount,
+                  total,
+              },
+          },
+      };
 
-    // Construct the CartResponse
-    const cartResponse: CartResponse = {
-        message: "Cart successfully created",
-        deliverytime: `25 minutes`,
-        vendorId: cartItems[0].storeId,
-        saved: `₹${totalSavedAmount.toFixed(2)}`,
-        cart: {
-            id: `cart_${Date.now()}`,
-            items: cartItems,
-            orderSummary: {
-                items: orderItems,
-                subTotal: subTotal,
-                shipping,
-                discount: totalSavedAmount,
-                total,
-            },
-        },
-    };
-
-    return cartResponse;
+      return cartResponse;
+    } else {
+      return null
+    }
+    
 }
