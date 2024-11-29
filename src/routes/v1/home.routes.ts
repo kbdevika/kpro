@@ -8,53 +8,56 @@ const homeRouter = express.Router();
  * @swagger
  * /home:
  *   get:
- *     summary: Retrieve home screen data
- *     description: Returns banners, carousels, and categories for the home screen.
+ *     summary: Get the home page data
+ *     description: Returns a welcome message, banners, and carousels for the home page.
  *     tags:
  *       - Home
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Successfully retrieved home screen data.
+ *         description: Home page data retrieved successfully.
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 banner:
- *                   type: array
- *                   items:
- *                     type: string
- *                     example: https://placehold.co/240x320
- *                   description: A list of banner image URLs.
- *                 bannerHeader_x:
+ *                 welcomeText:
  *                   type: string
- *                   example: bannerHeader_1 - 'Hi, user'
- *                 carousel:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                         example: "1"
- *                       image_url:
- *                         type: string
- *                         example: https://placehold.co/240x320
- *                   description: A list of carousel items with IDs and image URLs.
- *       401:
- *         description: Unauthorized - Invalid or missing token.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
+ *                   example: "Hi, trendsetter"
+ *                 welcomeSubText:
  *                   type: string
- *                   example: Unauthorized
+ *                   example: "Here are some things that you can ask!"
+ *                 banners:
+ *                   type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                         format: uri
+ *                         example: "https://placehold.co/240x320"
+ *                     title:
+ *                       type: string
+ *                       example: "Sample"
+ *                 carousels:
+ *                   type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             example: "1"
+ *                           image_url:
+ *                             type: string
+ *                             format: uri
+ *                             example: "https://placehold.co/240x320"
+ *                     title:
+ *                       type: string
+ *                       example: "To Create your cart, try saying,"
  *       500:
- *         description: Internal Server Error
+ *         description: Internal Server Error.
  *         content:
  *           application/json:
  *             schema:
@@ -62,21 +65,24 @@ const homeRouter = express.Router();
  *               properties:
  *                 error:
  *                   type: string
- *                   example: An unexpected error occurred
+ *                   example: "An unexpected error occurred"
  */
 homeRouter.get('/', async (req: any, res: any) => {
     try {
 
-      const banners = [
+      const welcomeText = `Hi, ${req.user.name || 'trendsetter'}`
+      const welcomeSubText = 'Here are some things that you can ask!'
+
+      const banners = {
+        data :[
         "https://firebasestorage.googleapis.com/v0/b/kiranapro-ios.firebasestorage.app/o/banner-1.png?alt=media&token=3c030890-91e2-4d14-8f28-1a8dfd11ab80",
         "https://firebasestorage.googleapis.com/v0/b/kiranapro-ios.firebasestorage.app/o/banner-2.png?alt=media&token=74b70df1-2f33-4299-afd7-040465398a58"
-      ]
+      ],
+      title: 'Sample'
+    }
 
-      const bannerHeader_1 = `Hi, ${req.user.name || 'trendsetter'}`
-      const bannerHeader_2 = 'Here are some things that you can ask!'
-      const bannerHeader_3 = 'To Create your cart, try saying,'
-
-      const carousels = [
+      const carousels = {
+        data: [
         {
           id: '1',
           image_url: "https://firebasestorage.googleapis.com/v0/b/kiranapro-ios.firebasestorage.app/o/1.png?alt=media&token=f5a68d36-4a4c-4bd0-988c-8f85abdc3c09"
@@ -89,14 +95,15 @@ homeRouter.get('/', async (req: any, res: any) => {
           id: '3',
           image_url: "https://firebasestorage.googleapis.com/v0/b/kiranapro-ios.firebasestorage.app/o/3.png?alt=media&token=1a4699c5-ec0d-4faa-8a5c-4bf013008357"
         },
-      ]
+      ],
+    title: 'To Create your cart, try saying,'
+  }
   
       res.status(200).json({
+        welcomeText,
+        welcomeSubText,
         banners,
-        carousels,
-        bannerHeader_1,
-        bannerHeader_2,
-        bannerHeader_3,
+        carousels
       })
     } 
     catch (error) {

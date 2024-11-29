@@ -2,7 +2,6 @@ import express from 'express';
 import handleError from '../../helper/handleError';
 import convertToCart from '../../helper/convertToCart';
 import multer from 'multer';
-import prisma from '../../config/prisma.config';
 
 const audioRouter = express.Router();
 
@@ -18,7 +17,6 @@ const upload = multer({
     },
   });
   
-
 /**
  * @swagger
  * /audio:
@@ -36,7 +34,10 @@ const upload = multer({
  *         schema:
  *           type: string
  *           example: "CustomAgent/V1.0 (lat:12.00000; lon: 78.255555)"
- *         description: "The User-Agent header must follow the format: CustomAgent/V1.0 (lat:<latitude>; lon:<longitude>)."
+ *         description: >
+ *           The User-Agent header must follow the format:
+ *           CustomAgent/V1.0 (lat:<latitude>; lon:<longitude>).
+ *           Ensure the latitude and longitude are provided as floating-point numbers.
  *     requestBody:
  *       required: true
  *       content:
@@ -115,6 +116,16 @@ const upload = multer({
  *                 error:
  *                   type: string
  *                   example: "Unauthorized"
+ *       404:
+ *         description: Pincode not serviceable.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Pincode unserviceable"
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -126,7 +137,7 @@ const upload = multer({
  *                   type: string
  *                   example: "An unexpected error occurred"
  */
-audioRouter.post('/', 
+  audioRouter.post('/', 
     upload.single('audio'), // Expect an 'audio' file in the request
     async (req: any, res: any) => {
         try {
@@ -180,7 +191,13 @@ audioRouter.post('/',
     
             try {
                 const cart = await convertToCart(data, latitude, longitude)
-                res.status(200).json(cart)
+                if(cart == null){
+                    res.status(404).json({
+                        message: 'Pincode is unservicable'
+                    })
+                } else {
+                    res.status(200).json(cart)
+                }
             } catch (error: any) {
                 res.json({ error: error.message})
             }
