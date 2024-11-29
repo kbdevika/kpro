@@ -14,7 +14,7 @@ export default async function fetchCatalogue(pincode: string): Promise<Store[]> 
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ pincode }),
+      body: JSON.stringify({ pincode: parseInt(pincode) }),
     });
 
     if (!response.ok) {
