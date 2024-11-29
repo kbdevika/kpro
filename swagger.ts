@@ -43,7 +43,7 @@ const options: Options = {
       },
     ],
   },
-  apis: ['./src/**/*.ts', './src/**/*.js', './app.ts', './dist/app.js'],
+  apis: ['./src/**/*.ts', './dist/src/**/*.js', './app.ts', './dist/app.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
