@@ -56,6 +56,10 @@ import Store from "../types/ondcStore.type";
   ): Product[] {
     const products: Product[] = [];
   
+    if(!catalogue || catalogue.length === 0){
+      return []
+    }
+    
     catalogue.forEach((store) => {
       const distance = calculateDistance(
         latitude,
