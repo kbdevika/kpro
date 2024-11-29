@@ -91,7 +91,21 @@ kikoRouter.post('/', async (req: any, res: any) => {
       }
   
       const data = await response.json();
-      res.json(data)
+
+      const newCatalogue = await prisma.catalogue.upsert({
+        where: {
+          pincode: pincode,  // Assuming 'pincode' is unique for each catalogue
+        },
+        update: {
+          jsonData: data,  // If the catalogue exists, update its jsonData
+        },
+        create: {
+          pincode: pincode,  // If the catalogue doesn't exist, create a new one
+          jsonData: data,
+        },
+      });
+
+      res.status(response.status).json(newCatalogue)
     }catch (error: any){
       res.status(400).json({
         error: error.message
