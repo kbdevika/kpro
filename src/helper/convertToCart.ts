@@ -14,6 +14,7 @@ type GroceryData = {
   type CartResponse = {
     message: string;
     deliverytime: string;
+    vendorId: string;
     saved: string;
     cart: {
       id: string;
@@ -87,6 +88,7 @@ type GroceryData = {
             quantity: data.items[index].quantity,
             unit: data.items[index].unit,
             image: product.productImage,
+            storeId: product.storeId
         };
     });
 
@@ -118,7 +120,8 @@ type GroceryData = {
     // Construct the CartResponse
     const cartResponse: CartResponse = {
         message: "Cart successfully created",
-        deliverytime: `${data.processingTime} minutes`,
+        deliverytime: `25 minutes`,
+        vendorId: cartItems[0].storeId,
         saved: `₹${totalSavedAmount.toFixed(2)}`,
         cart: {
             id: `cart_${Date.now()}`,

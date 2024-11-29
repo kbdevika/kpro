@@ -1,20 +1,5 @@
-type Store = {
-    id: string;
-    storeAddress: {
-      latitude: number;
-      longitude: number;
-    };
-    deliveryRadius: number;
-    cataloguesArray: {
-      productId: string;
-      productName: string;
-      price: string;
-      discountedPrice: string;
-      productImages: string[];
-      userId: string;
-    }[];
-  };
-  
+import Store from "../types/ondcStore.type";
+
   type Product = {
     productId: string;
     productName: string;
