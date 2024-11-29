@@ -20,7 +20,7 @@ const options: Options = {
     info: {
       title: 'API Documentation',
       version: '1.0.0',
-      description: 'Release V1.0.0',
+      description: 'Release V1.1.0',
     },
     servers: [
       {

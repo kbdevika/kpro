@@ -71,7 +71,7 @@ type GroceryData = {
     // Iterate over the items and search for the best available product in the catalogue
     for (const item of data.items) {
         const bestProduct = searchCatalogue(item.name, latitude, longitude, catalogue);
-        if (bestProduct) {
+        if (bestProduct && bestProduct.storeId) {
             selectedProducts.push(bestProduct);
         }
     }
