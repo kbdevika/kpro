@@ -8,16 +8,6 @@ export default async function fetchCatalogue(pincode: string): Promise<Store[]> 
   }
 
   try {
-    // Check if the catalogue for the pincode exists in the database
-    const existingCatalogue = await prisma.catalogue.findUnique({
-      where: { pincode },
-    });
-
-    if (existingCatalogue) {
-      // If present, return the catalogue from the database
-      return existingCatalogue.jsonData as Store[];
-    }
-
     // Fetch from the external API if not present
     const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/kiranaProSearch', {
       method: 'POST',
@@ -35,13 +25,19 @@ export default async function fetchCatalogue(pincode: string): Promise<Store[]> 
     const storeData: Store[] = data;
 
     // Store the fetched catalogue in the database
-    const newCatalogue = await prisma.catalogue.create({
-      data: {
-        pincode,
+    const newCatalogue = await prisma.catalogue.upsert({
+      where: {
+        pincode: pincode,  // Assuming 'pincode' is unique for each catalogue
+      },
+      update: {
+        jsonData: storeData,  // If the catalogue exists, update its jsonData
+      },
+      create: {
+        pincode: pincode,  // If the catalogue doesn't exist, create a new one
         jsonData: storeData,
       },
     });
-    return storeData;
+    return data;
 
   } catch (error: any) {
     throw new Error(`Error fetching catalogue: ${error.message}`);
