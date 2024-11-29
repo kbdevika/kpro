@@ -78,7 +78,7 @@ kikoRouter.post('/', async (req: any, res: any) => {
   
     try {
       // Fetch from the external API if not present
-      const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/kiranaProSearch', {
+      const response = await fetch('https://ondc.kiko.live/ondc-seller/kiranaProSearch', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
