@@ -68,6 +68,36 @@ kikoRouter.post('/', async (req: any, res: any) => {
       handleError(error, res);
     }
   })
+
+  kikoRouter.post('/search', async (req: any, res: any) => {
+    const { pincode } = req.body;
+
+    if (!pincode) {
+      throw new Error('Pincode is not available');
+    }
+  
+    try {
+      // Fetch from the external API if not present
+      const response = await fetch('https://ondc-api.kiko.live/ondc-seller-v2/kiranaProSearch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ pincode: parseInt(pincode) }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to fetch catalogue from API: ${response.statusText}`);
+      }
+  
+      const data = await response.json();
+      res.json(data)
+    }catch (error: any){
+      res.status(400).json({
+        error: error.message
+      })
+    }
+  })
   
 
 export default kikoRouter;
