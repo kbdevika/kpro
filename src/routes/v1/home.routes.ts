@@ -69,6 +69,10 @@ homeRouter.get('/', async (req: any, res: any) => {
         "https://firebasestorage.googleapis.com/v0/b/kiranapro-ios.firebasestorage.app/o/banner-2.png?alt=media&token=74b70df1-2f33-4299-afd7-040465398a58"
       ]
 
+      const bannerHeader_1 = `Hi, ${req.user.name || 'trendsetter'}`
+      const bannerHeader_2 = 'Here are some things that you can ask!'
+      const bannerHeader_3 = 'To Create your cart, try saying,'
+
       const carousels = [
         {
           id: '1',
@@ -85,8 +89,11 @@ homeRouter.get('/', async (req: any, res: any) => {
       ]
   
       res.status(200).json({
-        banner: banners,
-        carousel: carousels
+        banners,
+        carousels,
+        bannerHeader_1,
+        bannerHeader_2,
+        bannerHeader_3,
       })
     } 
     catch (error) {
