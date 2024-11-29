@@ -93,13 +93,13 @@ kikoRouter.post('/', async (req: any, res: any) => {
 
       const newCatalogue = await prisma.catalogue.upsert({
         where: {
-          pincode: pincode, 
+          pincode: `${pincode}`, 
         },
         update: {
           jsonData: data,
         },
         create: {
-          pincode: pincode,
+          pincode: `${pincode}`,
           jsonData: data,
         },
       });
