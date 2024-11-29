@@ -28,6 +28,9 @@ const homeRouter = express.Router();
  *                     type: string
  *                     example: https://placehold.co/240x320
  *                   description: A list of banner image URLs.
+ *                 bannerHeader_x:
+ *                   type: string
+ *                   example: bannerHeader_1 - 'Hi, user'
  *                 carousel:
  *                   type: array
  *                   items:
