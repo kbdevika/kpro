@@ -12,10 +12,12 @@ import taskRouter from './tasks.routes';
 import homeRouter from './home.routes';
 import middleware from '../../middleware';
 import authRouter from './auth.routes';
+import testRouter from './test.routes';
 
 const v1Routers = express.Router();
 
 v1Routers.use('/auth', authRouter);
+v1Routers.use('/test/route', testRouter);
 v1Routers.use('/order', middleware.authenticateJWTToken, ordersRouter);
 v1Routers.use('/audio', middleware.authenticateJWTToken, audioRouter);
 v1Routers.use('/kikoOrderStatus', middleware.authenticateJWTToken, kikoRouter);
