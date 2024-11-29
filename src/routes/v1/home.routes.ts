@@ -31,7 +31,6 @@ const homeRouter = express.Router();
  *                 bannerHeader_x:
  *                   type: string
  *                   example: bannerHeader_1 - 'Hi, user'
- *                   description: Banner header for home ui
  *                 carousel:
  *                   type: array
  *                   items:
