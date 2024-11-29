@@ -89,9 +89,22 @@ kikoRouter.post('/', async (req: any, res: any) => {
       if (!response.ok) {
         throw new Error(`Failed to fetch catalogue from API: ${response.statusText}`);
       }
-  
       const data = await response.json();
-      res.json(data)
+
+      const newCatalogue = await prisma.catalogue.upsert({
+        where: {
+          pincode: pincode, 
+        },
+        update: {
+          jsonData: data,
+        },
+        create: {
+          pincode: pincode,
+          jsonData: data,
+        },
+      });
+
+      res.status(response.status).json(newCatalogue)
     }catch (error: any){
       res.status(400).json({
         error: error.message
