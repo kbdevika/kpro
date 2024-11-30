@@ -1,12 +1,12 @@
-type StatutoryReqsPackagedCommodities = {
-    manufacturer_or_packer_name: string;
-    manufacturer_or_packer_address: string;
-    common_or_generic_name_of_commodity: string;
-    net_quantity_or_measure_of_commodity_in_pkg: string;
-    month_year_of_manufacture_packing_import: string;
-    imported_product_country_of_origin: string;
-  };
-  
+type StatutoryReqsPackagedCommodities =   {
+  manufacturer_or_packer_name: string;
+  manufacturer_or_packer_address: string;
+  imported_product_country_of_origin: string;
+  common_or_generic_name_of_commodity: string;
+  month_year_of_manufacture_packing_import: string;
+  net_quantity_or_measure_of_commodity_in_pkg: string;
+};
+
   type StoreAddress = {
     pincode: number;
     address1: string;
@@ -38,39 +38,39 @@ type StatutoryReqsPackagedCommodities = {
   };
   
   type Catalogue = {
+    l3: string;
+    l4: string;
+    __v: number;
     _id: string;
-    isCancellable: boolean;
-    isReturnable: boolean;
-    itemLevelDeliveryCharges: string;
-    maxAvailableQuantity: string;
-    productImages: string[];
-    isDeleted: boolean;
-    packagedFood: boolean;
-    tax: number;
     gst: number;
-    packagingCost: number;
-    bulkUpload: boolean;
-    productId: string;
+    tax: number;
+    brand: string;
+    price: string;
     status: string;
     userId: string;
-    categoryId: string;
-    subCategoryId: string;
-    code: string;
-    productName: string;
-    availableQuantity: string;
-    weightUnit: string;
-    price: string;
-    discountedPrice: string;
-    description: string;
+    weight: number;
     skuCode: string;
-    countryOfOrigin: string;
-    weight: string;
-    brand: string;
-    statutory_reqs_packaged_commodities: StatutoryReqsPackagedCommodities;
-    __v: number;
     createdAt: string;
+    isDeleted: boolean;
+    productId: string;
     updatedAt: string;
+    bulkUpload: boolean;
+    categoryId: string;
+    weightUnit: string;
+    description: string;
+    productName: string;
+    isReturnable: boolean;
+    packagedFood: boolean;
+    isCancellable: boolean;
+    packagingCost: number;
+    productImages: string[];
+    subCategoryId: string;
+    countryOfOrigin: string;
+    discountedPrice: string;
+    availableQuantity: string;
+    statutory_reqs_packaged_commodities: StatutoryReqsPackagedCommodities
   };
+  
   
   type Store = {
     _id: string;
@@ -91,5 +91,14 @@ type StatutoryReqsPackagedCommodities = {
     id: string;
     cataloguesArray: Catalogue[];
   };
+
+  export { 
+    Store, 
+    StatutoryReqsPackagedCommodities,
+    Catalogue,
+    StoreTiming,
+    OndcOrderServiceability,
+    StoreAddress
+  }
 
   export default Store
