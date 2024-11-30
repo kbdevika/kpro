@@ -1,135 +1,118 @@
-import Store from "../types/ondcStore.type";
+import { Store, Catalogue } from "../types/ondcStore.type";
 
-  type Product = {
-    productId: string;
-    productName: string;
-    productImage: string;
-    productPrice: string;
-    discountedPrice: string;
-    storeId: string;
-  };
-  
-  // Helper function to calculate distance using the Haversine formula
-  const calculateDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): number => {
-    const toRadians = (degree: number) => (degree * Math.PI) / 180;
-    const dLat = toRadians(lat2 - lat1);
-    const dLon = toRadians(lon2 - lon1);
-  
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLon / 2) ** 2;
-  
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  
-    return 6371 * c; // Distance in kilometers
-  };
-  
-  // Simple fuzzy matching function to compare product names
-  const fuzzyMatch = (str1: string, str2: string): boolean => {
-    const threshold = 0.6; // The minimum similarity ratio to consider a match
-    const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, "");
-    
-    const similarity = (a: string, b: string) => {
-      const commonLength = Math.min(a.length, b.length);
-      let matches = 0;
-  
-      for (let i = 0; i < commonLength; i++) {
-        if (a[i] === b[i]) matches++;
-      }
-  
-      return matches / commonLength;
-    };
-  
-    return similarity(normalize(str1), normalize(str2)) >= threshold;
-  };
-  
-  // Get products within delivery radius and prioritize those within 3km
-  function getProductsWithinRadius(
-    latitude: number,
-    longitude: number,
-    catalogue: Store[]
-  ): Product[] {
-    const products: Product[] = [];
-  
-    if(!catalogue || catalogue.length === 0){
-      return []
-    }
-    
-    catalogue.forEach((store) => {
-      const distance = calculateDistance(
-        latitude,
-        longitude,
-        store.storeAddress.latitude,
-        store.storeAddress.longitude
-      );
-  
-      const isWithin3Km = distance <= 3;
-      const isWithinStoreRadius = distance <= store.deliveryRadius;
-  
-      // Only include products if within 3km or store delivery radius
-      if (isWithinStoreRadius) {
-        store.cataloguesArray.forEach((product) => {
-          // Prioritize products within 3km
-          products.push({
-            productId: product.productId,
-            productName: product.productName,
-            productImage: product.productImages[0] || "",
-            productPrice: product.price,
-            discountedPrice: product.discountedPrice,
-            storeId: store.id,
-          });
-        });
-      }
-  
-      // Also include products from stores beyond 3km but within their delivery radius
-      if (!isWithin3Km && isWithinStoreRadius) {
-        store.cataloguesArray.forEach((product) => {
-          products.push({
-            productId: product.productId,
-            productName: product.productName,
-            productImage: product.productImages[0] || "",
-            productPrice: product.price,
-            discountedPrice: product.discountedPrice,
-            storeId: store.id,
-          });
-        });
-      }
-    });
-  
-    return products;
+type MatchedStore = {
+  foundedStore: Store;
+  products: Catalogue[];
+} | 0 | -1;
+
+type Items = {
+  name: string;
+  quantity: number;
+  unit: string;
+};
+
+// Helper function to calculate distance using the Haversine formula
+const calculateDistance = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number => {
+  const toRadians = (degree: number) => (degree * Math.PI) / 180;
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLon / 2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return 6371 * c; // Distance in kilometers
+};
+
+// Helper function for exact match on itemName
+const exactMatch = (str1: string, str2: string): boolean => {
+  if (str1 == null || str2 == null) {
+    return false;
   }
-  
-  // Function to search for the best product from the filtered list
-  export default function searchCatalogue(
-    itemName: string,
-    latitude: number,
-    longitude: number,
-    catalogue: Store[]
-  ): Product | null {
-    // Get products within radius
-    const products = getProductsWithinRadius(latitude, longitude, catalogue);
-  
-    // Find the best match for the given item name using fuzzy matching
-    let bestProduct: Product | null = null;
-  
-    products.forEach((product) => {
-      // Perform fuzzy matching on the product name
-      if (fuzzyMatch(product.productName, itemName)) {
-        // If no best product found or this one has a lower discounted price, update
-        if (
-          !bestProduct ||
-          parseFloat(product.discountedPrice) < parseFloat(bestProduct.discountedPrice)
-        ) {
-          bestProduct = product;
+  str1 = str1.toString().toLowerCase().trim();
+  str2 = str2.toString().toLowerCase().trim();
+  return str1 === str2;
+};
+
+// Main search function
+export default function searchCatalogue(
+  items: Items[],
+  latitude: number,
+  longitude: number,
+  catalogue: Store[]
+): MatchedStore {
+  let bestStore: Store | null = null;
+  let storePresent: boolean = false;
+  let bestMatchedProducts: Catalogue[] = [];
+  let matchedProducts: Catalogue[] = [];
+  let maxMatches = 0;
+
+  // Iterate through the stores
+  for (const store of catalogue) {
+    storePresent = true;
+    const distance = calculateDistance(
+      latitude,
+      longitude,
+      store.storeAddress.latitude,
+      store.storeAddress.longitude
+    );
+
+    if (distance <= store.deliveryRadius) {
+      // Reset matchedProducts for each store
+      matchedProducts = [];
+
+      // Iterate through the products of the store
+      for (const product of store.cataloguesArray) {
+        const fieldsToMatch = [
+          product.productName,
+          product.l3,
+          product.l4,
+          product.subCategoryId,
+          product.categoryId,
+          product.brand,
+        ];
+
+        // Check each item in the provided list
+        for (const item of items) {
+          if (
+            fieldsToMatch.some((field) => exactMatch(field, item.name)) &&
+            !matchedProducts.some((p) => p.productId === product.productId) // Avoid duplicate matches
+          ) {
+            matchedProducts.push(product);
+          }
         }
       }
-    });
-  
-    return bestProduct;
+
+      // If this store has more matched products, update the bestStore and bestMatchedProducts
+      if (matchedProducts.length > maxMatches) {
+        bestStore = store;
+        bestMatchedProducts = [...matchedProducts]; // Copy matched products
+        maxMatches = matchedProducts.length;
+      } else if (matchedProducts.length === maxMatches) {
+        // If the match count is the same, merge products
+        bestMatchedProducts.push(...matchedProducts);
+      }
+    }
   }
-  
+
+  // Return results
+  if (!storePresent || bestStore == null) {
+    return -1; // No store found within the delivery radius
+  }
+
+  if (bestMatchedProducts.length === 0) {
+    return 0; // No matched products found
+  }
+
+  return {
+    foundedStore: bestStore,
+    products: bestMatchedProducts,
+  };
+}

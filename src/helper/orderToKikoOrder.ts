@@ -1,5 +1,4 @@
 import prisma from "../config/prisma.config";
-import fetchCatalogue from "./fetchCatalogue";
 
 type Order = {
     settlementData: {
@@ -17,7 +16,8 @@ type Order = {
     totalWeight: number;
     vendorId: string;
     addressAddedBy: string;
-    orderStatus: "created"
+    orderStatus: "payment-completed";
+    coinAmount: "0";
     shippingAmount: number;
     orderDescription: string;
     freeDelivery: boolean;
@@ -45,11 +45,34 @@ type Order = {
     };
     createdFrom: string;
   };
+
+  type DBOrder = {
+    id: string;
+    cartId: string;
+    status: string;
+    deliveryStatus: string;
+  }
+
+  type CartItems = {
+      id: number;
+      name: string;
+      cartId: string;
+      externalProductId: string;
+      description: string;
+      quantity: number;
+      units: string;
+      price: number;
+      image: string;
+  }
+
+  type Cart = {
+    id: string;
+    userId: string;
+    vendorId: string;
+    items: CartItems[]; 
+  };
   
-function mapIncomingToOutgoing(incomingOrder: any, address: any, filteredProfile: any): any {
-  // Extract the order details from incoming data
-  const order = incomingOrder.orders;
-  const cart = order.cart;
+function mapIncomingToOutgoing(order: DBOrder, cart: Cart, address: any, filteredProfile: any): Order {
   
   // Calculate the total amount and weight
   const totalAmount = cart.items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
@@ -57,7 +80,7 @@ function mapIncomingToOutgoing(incomingOrder: any, address: any, filteredProfile
 
   // Map the cart items to outgoing format
   const cartItems = cart.items.map((item: any) => ({
-    id: item.id,
+    id: item.externalProductId,
     quantity: {
       count: item.quantity
     },
@@ -86,7 +109,7 @@ function mapIncomingToOutgoing(incomingOrder: any, address: any, filteredProfile
       status: "pending",
     },
     buyerName: filteredProfile.name || "", 
-    buyerPhoneNumber: filteredProfile.phone,
+    buyerPhoneNumber: filteredProfile.phone || "",
     orderAmount: totalAmount,
     orderExpiresTime: 1440,
     orderMode: "Offline",
@@ -110,7 +133,17 @@ function mapIncomingToOutgoing(incomingOrder: any, address: any, filteredProfile
 }
 
 
-export default async function orderToKikoOrder(orderId: string, userId: string, addressId: number): Promise<Order> {
+export default async function orderToKikoOrder(cartId: string, userId: string, addressId: number): Promise<Order | []> {
+
+    const cart = await prisma.cart.findFirst({
+      where: {
+        id: cartId,
+        userId: userId
+      },
+      include: {
+        items: true
+      }
+    });
 
     const address = await prisma.address.findFirst({
         where: {
@@ -119,15 +152,17 @@ export default async function orderToKikoOrder(orderId: string, userId: string, 
         },
       });
 
-    const order = await prisma.order.findFirst({
-        where: {
-          id: orderId
-        },
-      });
-
       const settings = await prisma.userSetting.findMany({
         where: { userId: userId }
       });
+
+      if(!cart || typeof(cart) === 'undefined'){
+        return []
+      }
+
+      if(!address || typeof(address) === 'undefined'){
+        throw new Error('Address not found')
+      }
   
       // Transform settings array into a key-value object
       const userProfile = settings.reduce((profile: any, setting: any) => {
@@ -142,6 +177,13 @@ export default async function orderToKikoOrder(orderId: string, userId: string, 
         phone: userProfile['phone'] || '',
       };
 
-    const modifiedorder = mapIncomingToOutgoing(order, address, filteredProfile)
+      const order = await prisma.order.create({
+        data: {
+          cartId: cartId,
+          status: 'created',
+          addressId: addressId,
+        }
+      });
+    const modifiedorder = mapIncomingToOutgoing(order, cart, address, filteredProfile)
     return modifiedorder;
 }
