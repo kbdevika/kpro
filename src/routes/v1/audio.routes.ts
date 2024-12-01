@@ -23,6 +23,8 @@ const upload = multer({
  *   post:
  *     summary: Process an audio file and create a cart
  *     description: Receives an audio file, extracts the cart information based on audio data, user location, and catalogue search.
+ *     tags:
+ *       - Audio
  *     operationId: processAudioAndCreateCart
  *     consumes:
  *       - multipart/form-data

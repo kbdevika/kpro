@@ -11,7 +11,7 @@ const profileRouter = express.Router();
  *     summary: Create user settings as key-value pairs
  *     description: Creates user settings such as name, email, and phone as individual key-value pairs in the database. If the user already has a profile, an error is returned.
  *     tags:
- *       - User
+ *       - User Profile
  *     security:
  *       - bearerAuth: [] # Use token-based authentication
  *     requestBody:
@@ -114,68 +114,74 @@ profileRouter.post('/', async (req: any, res: any) => {
  * @swagger
  * /user:
  *   put:
- *     summary: Update user profile
- *     description: Updates the user's profile settings such as name, email, and phone. If the keys already exist, their values are updated.
+ *     summary: Update user profile settings
+ *     description: Updates the user's name and email settings. Inserts new settings if they do not exist or updates existing ones.
  *     tags:
- *       - User
- *     security:
- *       - bearerAuth: [] # Token-based authentication
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 description: The user's name.
- *                 example: user
- *               email:
- *                 type: string
- *                 description: The user's email address.
- *                 example: user@website.com
+ *       - User Profile
+ *     consumes:
+ *       - application/json
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         name: body
+ *         required: true
+ *         description: User profile details to update
+ *         schema:
+ *           type: object
+ *           properties:
+ *             name:
+ *               type: string
+ *               description: User's name
+ *               example: "John Doe"
+ *             email:
+ *               type: string
+ *               description: User's email address
+ *               example: "johndoe@example.com"
  *     responses:
- *       201:
- *         description: User profile updated successfully.
- *         content:
- *           application/json:
- *             schema:
+ *       200:
+ *         description: Successfully updated user profile
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *               example: "Settings updated successfully"
+ *             updatedProfile:
  *               type: object
  *               properties:
- *                 message:
+ *                 id:
  *                   type: string
- *                   example: Settings updated successfully
+ *                   description: User ID
+ *                   example: "123e4567-e89b-12d3-a456-426614174000"
+ *                 name:
+ *                   type: string
+ *                   description: Updated user name
+ *                   example: "John Doe"
+ *                 email:
+ *                   type: string
+ *                   description: Updated user email
+ *                   example: "johndoe@example.com"
+ *                 phone:
+ *                   type: string
+ *                   description: User's phone number
+ *                   example: "9876543210"
  *       400:
- *         description: Bad request - Invalid or missing request body.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Invalid input
- *       401:
- *         description: Unauthorized - Invalid or missing authentication token.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Unauthorized
+ *         description: Bad Request
+ *         schema:
+ *           type: object
+ *           properties:
+ *             error:
+ *               type: string
+ *               example: "Invalid request body"
  *       500:
- *         description: Internal server error.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Internal server error
+ *         description: Internal Server Error
+ *         schema:
+ *           type: object
+ *           properties:
+ *             error:
+ *               type: string
+ *               example: "An unexpected error occurred"
  */
   profileRouter.put('/', async (req: any, res: any) => {
     try {
@@ -236,7 +242,7 @@ profileRouter.post('/', async (req: any, res: any) => {
  *     summary: Fetch user profile
  *     description: Retrieves user profile information such as name, email, and phone in a structured format.
  *     tags:
- *       - User
+ *       - User Profile
  *     security:
  *       - bearerAuth: [] # Use token-based authentication
  *     responses:
