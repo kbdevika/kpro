@@ -7,10 +7,10 @@ const audioRouter = express.Router();
 
 // Middleware to handle audio file uploads
 const upload = multer({
-    storage: multer.memoryStorage(),
+    storage: multer.memoryStorage(), // Store files in memory for simplicity
     fileFilter: (req, file, cb) => {
         if (file.mimetype === 'audio/mpeg') {
-            cb(null, true);
+            cb(null, true); // Accept MP3 files
         } else {
             cb(new Error('Only MP3 files are allowed!'));
         }
