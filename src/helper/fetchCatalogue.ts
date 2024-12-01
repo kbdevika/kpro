@@ -1,6 +1,5 @@
 import prisma from "../config/prisma.config";
-import Store, { Catalogue } from "../types/ondcStore.type";
-import demo from '../../demo.json'
+import Store from "../types/ondcStore.type";
 
 export default async function fetchCatalogue(pincode: string): Promise<Store[]> {
   // Ensure the pincode is provided
@@ -16,13 +15,11 @@ export default async function fetchCatalogue(pincode: string): Promise<Store[]> 
       }
     });
 
-    const demoData = demo as { id: string; pincode: string; jsonData: Store[]; createdAt: string }
-
     if(newCatalogue){
       const storeData: Store[] = newCatalogue.jsonData as Store[] || [];      
       return storeData
     }
-    return demoData.jsonData
+    return []
 
   } catch (error: any) {
     throw new Error(`Error fetching catalogue: ${error.message}`);

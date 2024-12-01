@@ -1,4 +1,4 @@
-import Store, { Catalogue } from "../types/ondcStore.type";
+import { Catalogue } from "../types/ondcStore.type";
 import getPincodeFromCoordinates from "./convertLatLongToPincode";
 import fetchCatalogue from "./fetchCatalogue";
 import searchCatalogue from "./searchCatalogue";
