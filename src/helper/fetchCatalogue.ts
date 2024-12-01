@@ -16,7 +16,7 @@ export default async function fetchCatalogue(pincode: string): Promise<Store[]> 
     });
 
     if(newCatalogue){
-      const storeData: Store[] = newCatalogue.jsonData as Store[] || [];
+      const storeData: Store[] = newCatalogue.jsonData as Store[] || [];      
       return storeData
     }
     return []

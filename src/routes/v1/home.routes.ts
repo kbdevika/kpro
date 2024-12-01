@@ -32,18 +32,9 @@ const homeRouter = express.Router();
  *                     data:
  *                       type: array
  *                       items:
- *                         type: object
- *                         properties:
- *                           id:
- *                             type: string
- *                             example: "1"
- *                           image_url:
- *                             type: string
- *                             format: uri
- *                             example: "https://placehold.co/240x320"
- *                           deeplink:
- *                             type: string
- *                             example: ""
+ *                         type: string
+ *                         format: uri
+ *                         example: "https://placehold.co/240x320"
  *                     title:
  *                       type: string
  *                       example: "Sample"
@@ -62,9 +53,6 @@ const homeRouter = express.Router();
  *                             type: string
  *                             format: uri
  *                             example: "https://placehold.co/240x320"
- *                           deeplink:
- *                             type: string
- *                             example: ""
  *                     title:
  *                       type: string
  *                       example: "To Create your cart, try saying,"
@@ -82,24 +70,33 @@ const homeRouter = express.Router();
 homeRouter.get('/', async (req: any, res: any) => {
     try {
 
-      const welcomeText = `Hi, ${req.user.name || 'trendsetter'}`
+      const settings = await prisma.userSetting.findFirst({
+        where: { userId: req.user.id, key: 'name' }
+      });
+
+      const welcomeText = `Hi, ${settings?.value || 'Trendsetter'}`
       const welcomeSubText = 'Here are some things that you can ask!'
 
-      const banners = {
-        data :[
-          {
-            id: '1',
-            image_url: "https://firebasestorage.googleapis.com/v0/b/kiranapro-ios.firebasestorage.app/o/banner-1.png?alt=media&token=3c030890-91e2-4d14-8f28-1a8dfd11ab80",
-            deeplink: ''
-          },
-          {
-            id: '2',
-            image_url: "https://firebasestorage.googleapis.com/v0/b/kiranapro-ios.firebasestorage.app/o/banner-2.png?alt=media&token=74b70df1-2f33-4299-afd7-040465398a58",
-            deeplink: ''
-          },
-      ],
-      title: 'Sample'
-    }
+    const banners = {
+      data: [
+      {
+        id: '1',
+        image_url: "https://firebasestorage.googleapis.com/v0/b/kiranapro-ios.firebasestorage.app/o/banner-1.png?alt=media&token=3c030890-91e2-4d14-8f28-1a8dfd11ab80",
+        deeplink: ''
+      },
+      {
+        id: '2',
+        image_url: "https://firebasestorage.googleapis.com/v0/b/kiranapro-ios.firebasestorage.app/o/banner-2.png?alt=media&token=74b70df1-2f33-4299-afd7-040465398a58",
+        deeplink: ''
+      },
+      {
+        id: '3',
+        image_url: "https://firebasestorage.googleapis.com/v0/b/kiranapro-ios.firebasestorage.app/o/3.png?alt=media&token=1a4699c5-ec0d-4faa-8a5c-4bf013008357",
+        deeplink: ''
+      },
+    ],
+  title: 'Sample'
+}
 
       const carousels = {
         data: [
@@ -119,7 +116,7 @@ homeRouter.get('/', async (req: any, res: any) => {
           deeplink: ''
         },
       ],
-    title: 'To Create your cart, try saying,'
+    title: 'To create your cart, try saying,'
   }
   
       res.status(200).json({

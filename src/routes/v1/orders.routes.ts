@@ -99,6 +99,7 @@ ordersRouter.get('/', async (req: any, res: any) => {
               items: true,
             },
           },
+          address: true
         },
       });
   
@@ -185,27 +186,12 @@ ordersRouter.get('/', async (req: any, res: any) => {
 ordersRouter.post('/', async (req: any, res: any) => {
     const { cartId, addressId } = req.body;
 
-    const cart = await prisma.cart.findFirst({
-      where: {
-        id: cartId,
-        userId: req.user.id
-      }
-    });
-
-    if (!cart) {
-      return res.status(404).json({ error: 'Cart not found' });
+    if (!cartId || !addressId) {
+      return res.status(404).json({ error: 'CartId and AddressId is required' });
     }
 
-    const order = await prisma.order.create({
-      data: {
-        cartId: cart.id,
-        status: 'created'
-      }
-    });
-  
     try {
-
-      const modifiedOrder = await orderToKikoOrder(order.id, req.user.id, parseInt(addressId))
+      const modifiedOrder = await orderToKikoOrder(cartId.toString(), req.user.id, parseInt(addressId))
 
       // Fetch request to the external API
       const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
@@ -320,7 +306,8 @@ ordersRouter.post('/', async (req: any, res: any) => {
           id: req.params.id
         },
         include: {
-          cart: true
+          cart: true,
+          address: true
         }
       });
   

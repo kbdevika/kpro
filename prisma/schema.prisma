@@ -14,23 +14,25 @@ datasource db {
 }
 
 model User {
-  id       String        @id @default(uuid())
-  settings UserSetting[]
+  id        String        @id @default(uuid())
+  settings  UserSetting[]
   addresses Address[]
-  tasks    Task[]
-  carts    Cart[]
+  tasks     Task[]
+  carts     Cart[]
+
   @@index([id])
 }
 
 model UserSetting {
-  id      Int     @id @default(autoincrement())
-  userId  String
-  key     String
-  value   String
-  user    User    @relation(fields: [userId], references: [id])
+  id     Int    @id @default(autoincrement())
+  userId String
+  key    String
+  value  String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, key])
   @@index([key])
   @@index([userId])
-  @@unique([userId, key])
 }
 
 model Address {
@@ -48,73 +50,84 @@ model Address {
   landmark      String  @default("NaN")
   postalCode    String  @map("postal_code")
   user          User    @relation(fields: [userId], references: [id])
+  Order    Order[]
+  
   @@index([userId])
 }
 
 model Cart {
-  id        String      @id @default(uuid())
-  userId    String
-  vendorId  String      @default("null")
-  items     CartItem[]
-  user      User        @relation(fields: [userId], references: [id])
-  Order     Order[]
+  id       String     @id @default(uuid())
+  userId   String
+  vendorId String     @default("null")
+  items    CartItem[]
+  user     User       @relation(fields: [userId], references: [id])
+  Order    Order[]
+
   @@index([userId])
 }
 
 model CartItem {
-  id                  Int      @id @default(autoincrement())
-  cartId              String
-  externalProductId   String   @default("null")
-  name                String
-  description         String
-  quantity            Int
-  units               String
-  price               Float
-  image               String
-  cart                Cart     @relation(fields: [cartId], references: [id])
+  id                Int    @id @default(autoincrement())
+  cartId            String
+  externalProductId String @default("null")
+  name              String
+  description       String
+  quantity          Int
+  units             String
+  price             Float
+  image             String
+  cart              Cart   @relation(fields: [cartId], references: [id])
+
   @@index([cartId])
 }
 
 model Order {
-  id              String  @id @default(uuid())
-  cartId          String
-  status          String
-  deliveryStatus  String  @default("Not-Initiated")
-  cart            Cart    @relation(fields: [cartId], references: [id])
+  id             String   @id @default(uuid())
+  createdAt      DateTime @default(now())
+  totalAmount    Float    @default(0.00)
+  storeName      String   @default("null")
+  vendorId       String   @default("null")
+  addressId      Int?     
+  address        Address?  @relation(fields: [addressId], references: [id])
+  cartId         String
+  status         String
+  deliveryStatus String   @default("Not-Initiated")
+  cart           Cart     @relation(fields: [cartId], references: [id])
+
   @@index([cartId])
 }
 
 model Task {
-  id         String      @id @default(uuid())
-  status     String
-  summary    String
-  userId     String
-  user       User        @relation(fields: [userId], references: [id])
-  lineItems  LineItem[]
+  id        String     @id @default(uuid())
+  status    String
+  summary   String
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+  lineItems LineItem[]
+
   @@index([userId])
 }
 
 model LineItem {
-  id       Int     @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
   taskId   String
   name     String
   quantity String
-  task     Task    @relation(fields: [taskId], references: [id])
+  task     Task   @relation(fields: [taskId], references: [id])
+
   @@index([taskId])
 }
 
 model Notification {
   id          String   @id @default(uuid())
   message     String
-  mediaUrl    String?  // Optional field for media
+  mediaUrl    String? // Optional field for media
   createdDate DateTime @default(now())
 }
 
 model Catalogue {
-  id       String   @id @default(uuid())
-  pincode  String   @unique
-  jsonData Json
+  id        String   @id @default(uuid())
+  pincode   String   @unique
+  jsonData  Json
   createdAt DateTime @default(now())
 }
-
-

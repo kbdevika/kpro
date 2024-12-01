@@ -11,7 +11,6 @@ import swaggerUi from 'swagger-ui-express';
 import healthCheckRouter from './src/routes/health.routes';
 import ondcRouter from './src/routes/ondc.routes';
 import v1Routers from './src/routes/v1';
-import authRouter from './src/routes/v1/auth.routes';
 import swaggerSpec from './swagger';
 
 dotenv.config();
