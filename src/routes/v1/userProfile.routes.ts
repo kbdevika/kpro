@@ -141,31 +141,33 @@ profileRouter.post('/', async (req: any, res: any) => {
  *     responses:
  *       200:
  *         description: Successfully updated user profile
- *         schema:
- *           type: object
- *           properties:
- *             message:
- *               type: string
- *               example: "Settings updated successfully"
- *             updatedProfile:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   description: User ID
- *                   example: "123e4567-e89b-12d3-a456-426614174000"
- *                 name:
- *                   type: string
- *                   description: Updated user name
- *                   example: "John Doe"
- *                 email:
- *                   type: string
- *                   description: Updated user email
- *                   example: "johndoe@example.com"
- *                 phone:
- *                   type: string
- *                   description: User's phone number
- *                   example: "9876543210"
+ *         content:
+ *           application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  message:
+ *                    type: string
+ *                    example: "Settings updated successfully"
+ *                  updatedProfile:
+ *                    type: object
+ *                    properties:
+ *                      id:
+ *                        type: string
+ *                        description: User ID
+ *                        example: "123e4567-e89b-12d3-a456-426614174000"
+ *                      name:
+ *                        type: string
+ *                        description: Updated user name
+ *                        example: "John Doe"
+ *                      email:
+ *                        type: string
+ *                        description: Updated user email
+ *                        example: "johndoe@example.com"
+ *                      phone:
+ *                        type: string
+ *                        description: User's phone number
+ *                        example: "9876543210"
  *       400:
  *         description: Bad Request
  *         schema:
