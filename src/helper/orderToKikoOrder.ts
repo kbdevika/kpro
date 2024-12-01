@@ -133,7 +133,7 @@ function mapIncomingToOutgoing(order: DBOrder, cart: Cart, address: any, filtere
 }
 
 
-export default async function orderToKikoOrder(cartId: string, userId: string, addressId: number): Promise<Order | []> {
+export default async function orderToKikoOrder(cartId: string, userId: string, addressId: number): Promise<Order> {
 
     const cart = await prisma.cart.findFirst({
       where: {
@@ -157,7 +157,7 @@ export default async function orderToKikoOrder(cartId: string, userId: string, a
       });
 
       if(!cart || typeof(cart) === 'undefined'){
-        return []
+        throw new Error('Cart not found')
       }
 
       if(!address || typeof(address) === 'undefined'){

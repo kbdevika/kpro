@@ -4,6 +4,18 @@ import handleError from '../../helper/handleError';
 
 const cartRouter = express.Router();
 
+type CartItems = {
+  id: number;
+  name: string;
+  cartId: string;
+  externalProductId: string;
+  description: string;
+  quantity: number;
+  units: string;
+  price: number;
+  image: string;
+}
+
 /**
  * @swagger
  * /cart:
@@ -151,8 +163,8 @@ cartRouter.post('/', async (req: any, res: any) => {
     });
 
     // Step 2: Add items to the newly created cart
-    const createdItems = await Promise.all(
-      items.map(async (item: any) => {
+    await Promise.all(
+      items.map(async (item: CartItems) => {
         return await prisma.cartItem.create({
           data: {
             cartId: newCart.id,

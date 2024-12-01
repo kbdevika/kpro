@@ -205,8 +205,25 @@ profileRouter.post('/', async (req: any, res: any) => {
           },
         });
       }
+
+      const settings = await prisma.userSetting.findMany({
+        where: { userId: req.user.id }
+      });
   
-      res.status(200).json({ message: 'Settings updated successfully' });
+      // Transform settings array into a key-value object
+      const userProfile = settings.reduce((profile: any, setting: any) => {
+        profile[setting.key] = setting.value;
+        return profile;
+      }, {});
+  
+      const filteredProfile = {
+        id: req.user.id,
+        name: userProfile['name'] || '',
+        email: userProfile['email'] || '',
+        phone: userProfile['phone'] || '',
+      };
+  
+      res.status(200).json({ message: 'Settings updated successfully', updatedProfile: filteredProfile });
     } catch (error) {
       handleError(error, res);
     }
