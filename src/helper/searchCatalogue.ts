@@ -83,9 +83,9 @@ export default function searchCatalogue(
         for (const item of items) {
           if (
             fieldsToMatch.some((field) => exactMatch(field, item.name)) &&
-            !matchedProducts.some((p) => p.productId === product.productId) // Avoid duplicate matches
+            !matchedProducts.some((p) => p.productId === product.productId)
           ) {
-            matchedProducts.push(product);
+            matchedProducts.push({...product, requiredQuantity: item.quantity});
           }
         }
       }

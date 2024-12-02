@@ -12,34 +12,38 @@ type AICartData = {
   processingTime: number;
 };
 
-type OrderItems = {
-  id: string;
-  name: string;
-  price: number;
-  amount: number;
-  quantity: number;
-  unit: string;
-  image: string[];
-};
+type CartReponseItem = {
+  itemName: string;
+  itemImageUrl: string[];
+  itemQuantity: number;
+  itemOriginalPrice: number;
+  itemDiscountedPrice: number;
+  itemStockStatus: string;
+  itemWeightUnit: string;
+}
 
 type CartResponse = {
-  message: string;
-  deliverytime: string;
-  saved: string;
-  storeName: string;
-  storePhone: string;
-  storeContactPerson: string;
   cart: {
-    id: string;
-    items: Catalogue[];
-    orderSummary: {
-      items: OrderItems[];
-      subTotal: number;
-      shipping: number;
-      discount: number;
-      total: number;
-    };
+    items: CartReponseItem[];
   };
+  orderSummary: {
+    subTotal: number;
+    total: number;
+    deliverytime: string;
+    freeDeliveryThreshold: number;
+    deliveryCharges: number;
+    saved: string;
+  };
+  storeInfo: {
+    storeName: string;
+    storePhone: string;
+    storeContactPerson: string;
+    storeAddress: string;
+  };
+  additionalInfo: {
+    savingsMessage: string;
+    cartNote: string;
+  }
 };
 
 export default async function convertToCart(
@@ -66,25 +70,38 @@ export default async function convertToCart(
   let shipping = 0;
   let total = 0;
 
-  // Generate orderItems array using map
-  const orderItems: OrderItems[] = bestProduct.products.map((item) => {
-    const amount = parseFloat(item.price);
-    const discountedAmount = parseFloat(
-      bestProduct.products.find((p) => p.productId === item.productId)?.discountedPrice || '0'
-    );
+  let cartItems: CartReponseItem[] = bestProduct.products.map((item: Catalogue) => {
+    const quantity = parseInt(item.availableQuantity, 10) || 0;
+    const requiredQuantity = 
+    item.requiredQuantity && item.requiredQuantity <= 10 
+      ? item.requiredQuantity 
+      : 1; // Default to 1 if undefined or greater than 10
 
-    subTotal += amount;
-    totalSavedAmount += discountedAmount - amount;
+    const originalPrice = parseFloat(item.price) || 0;
+    const discountedPrice = parseFloat(item.discountedPrice) || 0;
+    const itemTotalPrice = requiredQuantity * discountedPrice;
+  
+    // Calculate the total saved amount for this item
+    const itemSavedAmount = (originalPrice - discountedPrice) * requiredQuantity;
+    totalSavedAmount += itemSavedAmount; // Increment total saved amount
+  
+    // Increment subTotal with the item's total price
+    subTotal += itemTotalPrice;
 
     return {
-      id: item.productId,
-      name: item.productName,
-      price: amount,
-      amount,
-      quantity: 1,
-      unit: item.weightUnit,
-      image: item.productImages,
-    };
+      itemName: item.productName,
+      itemImageUrl: item.productImages,
+      itemQuantity: requiredQuantity,
+      itemOriginalPrice: parseFloat(item.price),
+      itemDiscountedPrice: parseFloat(item.discountedPrice),
+      itemStockStatus:
+        quantity === 0
+          ? "Out of Stock"
+          : quantity < 30
+          ? "Very Limited Stock"
+          : "In Stock",
+      itemWeightUnit: item.weightUnit,
+    }
   });
 
   shipping = subTotal >= 199 ? 0 : 27;
@@ -92,23 +109,27 @@ export default async function convertToCart(
 
   // Construct the CartResponse
   const cartResponse: CartResponse = {
-    message: "Cart successfully created",
-    deliverytime: `25 minutes`,
-    saved: `₹${totalSavedAmount.toFixed(2)}`,
-    storeName: bestProduct.foundedStore.storeName,
-    storePhone: bestProduct.foundedStore.mobile,
-    storeContactPerson: bestProduct.foundedStore.name,
     cart: {
-      id: `cart_${Date.now()}`,
-      items: bestProduct.products,
-      orderSummary: {
-        items: orderItems,
-        subTotal: subTotal,
-        shipping,
-        discount: totalSavedAmount,
-        total,
-      },
+      items: cartItems,
     },
+    orderSummary: {
+      subTotal: subTotal,
+      total: total,
+      deliverytime: `25 minutes`,
+      freeDeliveryThreshold: 199,
+      deliveryCharges: shipping,
+      saved: totalSavedAmount == 0 ? '' : `You saved ₹${totalSavedAmount.toFixed(2)}!`,
+    },
+    storeInfo: {
+      storeName: bestProduct.foundedStore.storeName,
+      storePhone: bestProduct.foundedStore.phone,
+      storeContactPerson: bestProduct.foundedStore.name,
+      storeAddress: `${bestProduct.foundedStore.storeAddress.address1}, ${bestProduct.foundedStore.storeAddress.address2}, ${bestProduct.foundedStore.storeAddress.city}, ${bestProduct.foundedStore.storeAddress.state}, ${bestProduct.foundedStore.storeAddress.pincode}`,
+    },
+    additionalInfo: {
+      savingsMessage: ``,
+      cartNote: ``
+    }
   };
 
   return cartResponse;
