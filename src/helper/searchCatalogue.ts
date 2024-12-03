@@ -85,7 +85,7 @@ export default function searchCatalogue(
             fieldsToMatch.some((field) => exactMatch(field, item.name)) &&
             !matchedProducts.some((p) => p.productId === product.productId)
           ) {
-            matchedProducts.push({...product, requiredQuantity: item.quantity, requiredUnit: item.unit});
+            matchedProducts.push({...product, requiredQuantity: item.quantity});
           }
         }
       }

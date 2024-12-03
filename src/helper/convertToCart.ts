@@ -19,7 +19,7 @@ type CartReponseItem = {
   itemOriginalPrice: number;
   itemDiscountedPrice: number;
   itemStockStatus: string;
-  itemRequiredUnit: string;
+  itemWeight: number;
   itemWeightUnit: string;
 }
 
@@ -102,7 +102,7 @@ export default async function convertToCart(
           : quantity < 30
           ? "Very Limited Stock"
           : "In Stock",
-      itemRequiredUnit: item.requiredUnit || '1',
+      itemWeight: item.weight,
       itemWeightUnit: item.weightUnit,
     }
   });

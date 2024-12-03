@@ -70,7 +70,6 @@ type StatutoryReqsPackagedCommodities =   {
     availableQuantity: string;
     statutory_reqs_packaged_commodities: StatutoryReqsPackagedCommodities
     requiredQuantity?: number;
-    requiredUnit?: string;
   };
   
   
