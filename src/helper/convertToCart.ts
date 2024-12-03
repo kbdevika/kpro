@@ -19,6 +19,7 @@ type CartReponseItem = {
   itemOriginalPrice: number;
   itemDiscountedPrice: number;
   itemStockStatus: string;
+  itemRequiredUnit: string;
   itemWeightUnit: string;
 }
 
@@ -32,6 +33,7 @@ type CartResponse = {
     deliverytime: string;
     freeDeliveryThreshold: number;
     deliveryCharges: number;
+    discount: number
     saved: string;
   };
   storeInfo: {
@@ -100,6 +102,7 @@ export default async function convertToCart(
           : quantity < 30
           ? "Very Limited Stock"
           : "In Stock",
+      itemRequiredUnit: item.requiredUnit || '1',
       itemWeightUnit: item.weightUnit,
     }
   });
@@ -119,6 +122,7 @@ export default async function convertToCart(
       freeDeliveryThreshold: 199,
       deliveryCharges: shipping,
       saved: totalSavedAmount == 0 ? '' : `You saved ₹${totalSavedAmount.toFixed(2)}!`,
+      discount: totalSavedAmount,
     },
     storeInfo: {
       storeName: bestProduct.foundedStore.storeName,

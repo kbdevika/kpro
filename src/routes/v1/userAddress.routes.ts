@@ -186,7 +186,83 @@ userAddressRouter.get('/', async (req: any, res: any) => {
     }
   });
   
+ /**
+ * @swagger
+ * /user/address/{id}:
+ *   delete:
+ *     summary: Delete a unique address by ID
+ *     description: This endpoint deletes a specific address using its unique ID.
+ *     tags:
+ *       - User Address
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique ID of the address to retrieve.
+ *     responses:
+ *       200:
+ *         description: Address deleted successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   example: address_12345
+ *                 userId:
+ *                   type: string
+ *                   example: user_67890
+ *                 street:
+ *                   type: string
+ *                   example: "123 Main St"
+ *                 city:
+ *                   type: string
+ *                   example: "Sample City"
+ *                 state:
+ *                   type: string
+ *                   example: "CA"
+ *                 zipCode:
+ *                   type: string
+ *                   example: "12345"
+ *       404:
+ *         description: Address not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Address not found"
+ *       500:
+ *         description: Internal Server Error - An unexpected error occurred.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "An unexpected error occurred"
+ */
+ userAddressRouter.get('/:id', async (req: any, res: any) => {
+  try {
+    const address = await prisma.address.delete({
+      where: { id: req.params.id }
+    });
 
+    if (!address) {
+      return res.status(404).json({ error: 'Address not found' });
+    }
+
+    res.json({message: 'Address deleted successfully', address: address});
+  } catch (error) {
+    handleError(error, res);
+  }
+});
 
 /**
  * @swagger
