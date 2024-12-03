@@ -248,7 +248,7 @@ userAddressRouter.get('/', async (req: any, res: any) => {
  *                   type: string
  *                   example: "An unexpected error occurred"
  */
- userAddressRouter.get('/:id', async (req: any, res: any) => {
+ userAddressRouter.delete('/:id', async (req: any, res: any) => {
   try {
     const address = await prisma.address.delete({
       where: { id: req.params.id }
