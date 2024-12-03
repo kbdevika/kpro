@@ -251,7 +251,10 @@ userAddressRouter.get('/', async (req: any, res: any) => {
  userAddressRouter.delete('/:id', async (req: any, res: any) => {
   try {
     const address = await prisma.address.delete({
-      where: { id: req.params.id }
+      where: { 
+        id: parseInt(req.params.id),
+        userId: req.user.id
+       }
     });
 
     if (!address) {
