@@ -150,50 +150,54 @@ type CartItems = {
  *                   type: string
  *                   example: "An unexpected error occurred"
  */
-cartRouter.post('/', async (req: any, res: any) => {
-  const { items, vendorId } = req.body;
+cartRouter.put('/', async (req: any, res: any) => {
+  const { cartId, updatedItems } = req.body; // `updatedItems` is an array of items with new quantities
 
   try {
-    // Step 1: Create a new cart for the user
-    const newCart = await prisma.cart.create({
-      data: {
-        userId: req.user.id,
-        vendorId: vendorId,
-      },
+    // Ensure the cart belongs to the user
+    const existingCart = await prisma.cart.findUnique({
+      where: { id: cartId },
+      include: { items: true }, // Fetch current cart items
     });
 
-    // Step 2: Add items to the newly created cart
+    if (!existingCart || existingCart.userId !== req.user.id) {
+      return res.status(404).json({ message: 'Cart not found' });
+    }
+
+    // Iterate over the items to update them
     await Promise.all(
-      items.map(async (item: CartItems) => {
-        return await prisma.cartItem.create({
-          data: {
-            cartId: newCart.id,
-            externalProductId: item.externalProductId,
-            name: item.name,
-            description: item.description,
-            quantity: item.quantity,
-            units: item.units,
-            price: item.price,
-            image: item.image,
-          },
-        });
+      updatedItems.map(async (item: { itemId: string; quantity: number }) => {
+        const { itemId, quantity } = item;
+
+        if (quantity <= 0) {
+          // Remove the item from the cart if quantity is zero or less
+          await prisma.cartItem.deleteMany({
+            where: { cartId, externalProductId: itemId },
+          });
+        } else {
+          // Update the quantity of the item if it exists
+          await prisma.cartItem.updateMany({
+            where: { cartId, externalProductId: itemId },
+            data: { quantity },
+          });
+        }
       })
     );
 
-    const createdCart = await prisma.cart.findUnique({
-      where: { id: newCart.id },
+    // Fetch the updated cart
+    const updatedCart = await prisma.cart.findUnique({
+      where: { id: cartId },
       include: { items: true },
     });
 
-    // Step 4: Return the response
-    return res.status(201).json({
-      message: 'Cart successfully created',
-      cart: createdCart,
-    })
-    } catch (error) {
-      handleError(error, res);
-    }
-  });
+    return res.status(200).json({
+      message: 'Cart successfully updated',
+      cart: updatedCart,
+    });
+  } catch (error) {
+    handleError(error, res);
+  }
+});
   
  /**
  * @swagger

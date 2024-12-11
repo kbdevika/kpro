@@ -1,3 +1,4 @@
+import prisma from "../config/prisma.config";
 import { Catalogue } from "../types/ondcStore.type";
 import getPincodeFromCoordinates from "./convertLatLongToPincode";
 import fetchCatalogue from "./fetchCatalogue";
@@ -12,8 +13,22 @@ type AICartData = {
   processingTime: number;
 };
 
+type CartItems = {
+  id: number;
+  name: string;
+  cartId: string;
+  externalProductId: string;
+  description: string;
+  quantity: number;
+  units: string;
+  price: number;
+  image: string;
+}
+
 type CartReponseItem = {
+  itemId: string;
   itemName: string;
+  itemDescription: string;
   itemImageUrl: string[];
   itemQuantity: number;
   itemOriginalPrice: number;
@@ -25,6 +40,7 @@ type CartReponseItem = {
 
 type CartResponse = {
   cart: {
+    cartId: string;
     items: CartReponseItem[];
   };
   orderSummary: {
@@ -49,13 +65,19 @@ type CartResponse = {
 };
 
 export default async function convertToCart(
+  userId: string,
   data: AICartData,
   latitude: number,
   longitude: number
-): Promise<CartResponse | 0 | -1> {
+): Promise<CartResponse | 1 | 0 | -1> {
   const pincode = await getPincodeFromCoordinates(latitude, longitude);
   const catalogue = await fetchCatalogue(pincode);
   const bestProduct = searchCatalogue(data.items, latitude, longitude, catalogue);
+
+  if(!userId || userId == null || userId == 'undefined'){
+    // UserId not available
+    return 1
+  }
 
   if (bestProduct === -1) {
     // Pincode unserviceable
@@ -71,6 +93,13 @@ export default async function convertToCart(
   let totalSavedAmount = 0;
   let shipping = 0;
   let total = 0;
+
+  const newCart = await prisma.cart.create({
+    data: {
+      userId: userId,
+      vendorId: bestProduct.foundedStore.id,
+    },
+  });
 
   let cartItems: CartReponseItem[] = bestProduct.products.map((item: Catalogue) => {
     const quantity = parseInt(item.availableQuantity, 10) || 0;
@@ -91,7 +120,9 @@ export default async function convertToCart(
     subTotal += itemTotalPrice;
 
     return {
+      itemId: item.productId,
       itemName: item.productName,
+      itemDescription: item.description,
       itemImageUrl: item.productImages,
       itemQuantity: requiredQuantity,
       itemOriginalPrice: parseFloat(item.price),
@@ -107,12 +138,30 @@ export default async function convertToCart(
     }
   });
 
+  await Promise.all(
+    cartItems.map(async (item: CartReponseItem) => {
+      return await prisma.cartItem.create({
+        data: {
+          cartId: newCart.id,
+          externalProductId: item.itemId,
+          name: item.itemName,
+          description: item.itemDescription,
+          quantity: item.itemQuantity,
+          units: `${item.itemWeight} ${item.itemWeightUnit}`,
+          price: item.itemDiscountedPrice,
+          image: item.itemImageUrl[0],
+        },
+      });
+    })
+  );
+
   shipping = subTotal >= 199 ? 0 : 27;
   total = subTotal + shipping;
 
   // Construct the CartResponse
   const cartResponse: CartResponse = {
     cart: {
+      cartId: newCart.id,
       items: cartItems,
     },
     orderSummary: {

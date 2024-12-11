@@ -282,7 +282,7 @@ const upload = multer({
             const data = await response.json();
     
             try {
-                const cart = await convertToCart(data, latitude, longitude)
+                const cart = await convertToCart(req.user.id, data, latitude, longitude)
                 if(cart === -1){
                     res.status(200).json({
                         message: 'Pincode is unserviceable'
@@ -290,6 +290,10 @@ const upload = multer({
                 } else if (cart === 0) {
                     res.status(200).json({
                         message: 'Store available but no product match'
+                    })
+                } else if (cart === 1) {
+                    res.status(200).json({
+                        message: 'UserId not available'
                     })
                 } else {
                     res.status(200).json(cart)
