@@ -8,7 +8,7 @@ dotenv.config();
 
 const ordersRouter = express.Router();
 
-const kikoUrl = "https://ondc-api.kiko.live/ondc-seller-v2"
+const kikoUrl = "https://ondc.kiko.live/ondc-seller"
 
 /**
  * @swagger
