@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import prisma from '../../config/prisma.config';
 import handleError from '../../helper/handleError';
 
@@ -150,6 +150,56 @@ type CartItems = {
  *                   type: string
  *                   example: "An unexpected error occurred"
  */
+
+cartRouter.post('/', async (req: any, res: any) => {
+  const { vendorId, items } = req.body;
+
+  if (!vendorId || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: 'Invalid input data' });
+  }
+
+  try {
+    // Create a new cart
+    const cart = await prisma.cart.create({
+      data: {
+        userId: req.user.id,
+        vendorId,
+      },
+    });
+
+    // Add items to the cart
+    const cartItems = items.map((item: any) => ({
+      cartId: cart.id,
+      externalProductId: item.externalProductId,
+      name: item.name,
+      description: item.description,
+      quantity: item.quantity,
+      units: item.units,
+      price: item.price,
+      image: item.image,
+    }));
+
+    await prisma.cartItem.createMany({
+      data: cartItems,
+    });
+
+    // Fetch the created cart with items
+    const createdCart = await prisma.cart.findUnique({
+      where: { id: cart.id },
+      include: {
+        items: true,
+      },
+    });
+
+    res.status(201).json({
+      message: 'Cart successfully created',
+      cart: createdCart,
+    });
+  } catch (error) {
+    handleError(error, res);
+  }
+});
+  
 cartRouter.put('/', async (req: any, res: any) => {
   const { cartId, updatedItems } = req.body; // `updatedItems` is an array of items with new quantities
 
@@ -281,7 +331,7 @@ cartRouter.put('/', async (req: any, res: any) => {
   
       const subTotal = cart.items.reduce((sum: any, item: any) => 
         sum + (item.price * item.quantity), 0);
-      const shipping = 10.0;
+      const shipping = 35.0;
       const total = subTotal + shipping;
   
       res.json({

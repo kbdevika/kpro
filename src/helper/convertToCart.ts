@@ -1,28 +1,64 @@
 import prisma from "../config/prisma.config";
-import { Catalogue } from "../types/ondcStore.type";
-import getPincodeFromCoordinates from "./convertLatLongToPincode";
-import fetchCatalogue from "./fetchCatalogue";
-import searchCatalogue from "./searchCatalogue";
+import { Catalogue, StoreAddress } from "../types/ondcStore.type";
 
-type AICartData = {
-  items: {
-    name: string;
-    quantity: number;
-    unit: string;
-  }[];
+export interface AIDataSchema {
+  storeId: string;
+  storeName: string;
+  storeAddress: StoreAddress;
+  items: Item[];
+  completeness: number;
   processingTime: number;
-};
+  originalItems: OriginalItem[];
+}
 
-type CartItems = {
-  id: number;
+export interface Item {
   name: string;
-  cartId: string;
-  externalProductId: string;
-  description: string;
   quantity: number;
-  units: string;
-  price: number;
-  image: string;
+  unit: string;
+  metadata: Metadata | null;
+}
+
+export interface Metadata {
+  matching: Matching | null;
+  recommendations: Recommendations | null;
+}
+
+export interface Recommendations {
+  productId: string;
+  confidence: string;
+  matchReason: string;
+  product: _Product | null;
+}
+
+export interface Matching {
+  productId: string;
+  confidence: string;
+  matchReason: string;
+  product: Product | null;
+}
+
+export interface _Product {
+  id: string;
+  kikoId: string;
+  metadata: Catalogue[] | null;
+  lastUpdated: string;
+  storeId: string;
+  createdAt: string;
+}
+
+export interface Product {
+  id: string;
+  kikoId: string;
+  metadata: Catalogue | null;
+  lastUpdated: string;
+  storeId: string;
+  createdAt: string;
+}
+
+export interface OriginalItem {
+  name: string;
+  quantity: number;
+  unit: string;
 }
 
 type CartReponseItem = {
@@ -36,7 +72,7 @@ type CartReponseItem = {
   itemStockStatus: string;
   itemWeight: number;
   itemWeightUnit: string;
-}
+} | null
 
 type CartResponse = {
   cart: {
@@ -66,27 +102,17 @@ type CartResponse = {
 
 export default async function convertToCart(
   userId: string,
-  data: AICartData,
-  latitude: number,
-  longitude: number
-): Promise<CartResponse | 1 | 0 | -1> {
-  const pincode = await getPincodeFromCoordinates(latitude, longitude);
-  const catalogue = await fetchCatalogue(pincode);
-  const bestProduct = searchCatalogue(data.items, latitude, longitude, catalogue);
+  data: AIDataSchema
+): Promise<CartResponse | -1> {
 
-  if(!userId || userId == null || userId == 'undefined'){
-    // UserId not available
-    return 1
-  }
-
-  if (bestProduct === -1) {
-    // Pincode unserviceable
-    return -1
-  }
-
-  if (bestProduct === 0) {
-    // Store available but no products matched query
-    return 0
+  if (
+    !Array.isArray(data.items) ||
+    data.items.length === 0 ||
+    !data.items[0]?.metadata?.matching?.product?.metadata ||
+    !data.items[0]?.metadata?.matching?.product?.metadata?.userId
+  ) {
+    // If any of the required properties or vendorId is missing, return -1
+    return -1;
   }
 
   let subTotal = 0;
@@ -97,65 +123,74 @@ export default async function convertToCart(
   const newCart = await prisma.cart.create({
     data: {
       userId: userId,
-      vendorId: bestProduct.foundedStore.id,
+      vendorId: data.items[0].metadata.matching.product.metadata.userId,
     },
   });
 
-  let cartItems: CartReponseItem[] = bestProduct.products.map((item: Catalogue) => {
-    const quantity = parseInt(item.availableQuantity, 10) || 0;
-    const requiredQuantity = 
-    item.requiredQuantity && item.requiredQuantity <= 10 
-      ? item.requiredQuantity 
-      : 1; // Default to 1 if undefined or greater than 10
+  let cartItems: CartReponseItem[] = data.items.map((item: Item) => {
 
-    const originalPrice = parseFloat(item.price) || 0;
-    const discountedPrice = parseFloat(item.discountedPrice) || 0;
-    const itemTotalPrice = requiredQuantity * discountedPrice;
-  
-    // Calculate the total saved amount for this item
-    const itemSavedAmount = (originalPrice - discountedPrice) * requiredQuantity;
-    totalSavedAmount += itemSavedAmount; // Increment total saved amount
-  
-    // Increment subTotal with the item's total price
-    subTotal += itemTotalPrice;
+      const productMetadata = item?.metadata?.matching?.product?.metadata;
 
-    return {
-      itemId: item.productId,
-      itemName: item.productName,
-      itemDescription: item.description,
-      itemImageUrl: item.productImages,
-      itemQuantity: requiredQuantity,
-      itemOriginalPrice: parseFloat(item.price),
-      itemDiscountedPrice: parseFloat(item.discountedPrice),
-      itemStockStatus:
-        quantity === 0
-          ? "Out of Stock"
-          : quantity < 30
-          ? "Very Limited Stock"
-          : "In Stock",
-      itemWeight: item.weight,
-      itemWeightUnit: item.weightUnit,
-    }
+      if (!productMetadata) {
+        return null;
+      }
+
+      const quantity = parseInt(productMetadata.availableQuantity, 10) || 0;
+      const requiredQuantity = 
+      item.quantity && item.quantity <= 10 
+        ? item.quantity 
+        : 1; // Default to 1 if undefined or greater than 10
+
+      const originalPrice = parseFloat(productMetadata.price) || 0;
+      const discountedPrice = parseFloat(productMetadata.discountedPrice) || 0;
+      const itemTotalPrice = requiredQuantity * discountedPrice;
+    
+      // Calculate the total saved amount for this item
+      const itemSavedAmount = (originalPrice - discountedPrice) * requiredQuantity;
+      totalSavedAmount += itemSavedAmount; // Increment total saved amount
+    
+      // Increment subTotal with the item's total price
+      subTotal += itemTotalPrice;
+
+      return {
+        itemId: productMetadata.productId,
+        itemName: productMetadata.productName,
+        itemDescription: productMetadata.description,
+        itemImageUrl: productMetadata.productImages,
+        itemQuantity: requiredQuantity,
+        itemOriginalPrice: parseFloat(productMetadata.price),
+        itemDiscountedPrice: parseFloat(productMetadata.discountedPrice),
+        itemStockStatus:
+          quantity === 0
+            ? "Out of Stock"
+            : quantity < 30
+            ? "Very Limited Stock"
+            : "In Stock",
+        itemWeight: productMetadata.weight,
+        itemWeightUnit: productMetadata.weightUnit,
+      }
   });
 
   await Promise.all(
     cartItems.map(async (item: CartReponseItem) => {
-      return await prisma.cartItem.create({
-        data: {
-          cartId: newCart.id,
-          externalProductId: item.itemId,
-          name: item.itemName,
-          description: item.itemDescription,
-          quantity: item.itemQuantity,
-          units: `${item.itemWeight} ${item.itemWeightUnit}`,
-          price: item.itemDiscountedPrice,
-          image: item.itemImageUrl[0],
-        },
-      });
+      if(item){
+        return await prisma.cartItem.create({
+          data: {
+            cartId: newCart.id,
+            externalProductId: item.itemId,
+            name: item.itemName,
+            description: item.itemDescription,
+            quantity: item.itemQuantity,
+            units: `${item.itemWeight} ${item.itemWeightUnit}`,
+            price: item.itemDiscountedPrice,
+            image: item.itemImageUrl[0],
+          },
+        });
+      }
     })
   );
 
-  shipping = subTotal >= 199 ? 0 : 27;
+  shipping = 35;
   total = subTotal + shipping;
 
   // Construct the CartResponse
@@ -174,10 +209,10 @@ export default async function convertToCart(
       discount: totalSavedAmount,
     },
     storeInfo: {
-      storeName: bestProduct.foundedStore.storeName,
-      storePhone: bestProduct.foundedStore.phone,
-      storeContactPerson: bestProduct.foundedStore.name,
-      storeAddress: `${bestProduct.foundedStore.storeAddress.address1}, ${bestProduct.foundedStore.storeAddress.address2}, ${bestProduct.foundedStore.storeAddress.city}, ${bestProduct.foundedStore.storeAddress.state}, ${bestProduct.foundedStore.storeAddress.pincode}`,
+      storeName: data.storeName,
+      storePhone: data.storeAddress.contactPersonMobile || '',
+      storeContactPerson: data.storeAddress.contactPersonName || '',
+      storeAddress: `${data.storeAddress.address1}, ${data.storeAddress.address2}, ${data.storeAddress.city}, ${data.storeAddress.state}, ${data.storeAddress.pincode}` || '',
     },
     additionalInfo: {
       savingsMessage: ``,
