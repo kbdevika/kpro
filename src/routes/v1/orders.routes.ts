@@ -206,7 +206,7 @@ ordersRouter.post('/', async (req: any, res: any) => {
       const data = await response.json();
   
       // Forward the external API response back to the client
-      return res.status(200).json(data);
+      return res.status(200).json({data, modifiedOrder});
     } catch (error) {
       handleError(error, res);
     }
