@@ -18,7 +18,7 @@ const v1Routers = express.Router();
 v1Routers.use('/auth', authRouter);
 v1Routers.use('/order', middleware.authenticateJWTToken, ordersRouter);
 v1Routers.use('/audio', middleware.authenticateJWTToken, audioRouter);
-v1Routers.use('/kikoOrderStatus', middleware.decodeFirebaseToken, kikoRouter);
+v1Routers.use('/kikoOrderStatus', kikoRouter);
 v1Routers.use('/notifications', middleware.decodeFirebaseToken, notificationRouter);
 v1Routers.use('/cart', middleware.authenticateJWTToken, cartRouter);
 v1Routers.use('/payment', middleware.decodeFirebaseToken, paymentRouter);
