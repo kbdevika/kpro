@@ -82,9 +82,9 @@ function mapIncomingToOutgoing(order: DBOrder, cart: Cart, address: any, filtere
     let weight = item.weight ?? 1;
     const unit = item.weightUnit?.toLowerCase();
 
-    if (unit === 'grams' || unit === 'g') {
+    if (unit === 'grams' || unit === 'gm' || unit === 'gms' || unit === 'gram') {
       weight /= 1000;
-    } else if (unit !== 'kg' && unit !== 'kilograms') {
+    } else if (unit !== 'kilo' && unit !== 'kilograms' || unit === 'kilogram' || unit === 'kg' || unit === 'kgs') {
       weight = 1;
     }
     return sum + (item.quantity * weight);
