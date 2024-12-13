@@ -71,12 +71,24 @@ type Order = {
     vendorId: string;
     items: CartItems[]; 
   };
+
+  const shippingAmount = 35
   
 function mapIncomingToOutgoing(order: DBOrder, cart: Cart, address: any, filteredProfile: any): Order {
   
   // Calculate the total amount and weight
-  const totalAmount = cart.items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
-  const totalWeight = cart.items.reduce((sum: number, item: any) => sum + (item.quantity * item.weight), 0);
+  const totalAmount = cart.items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0) + shippingAmount;
+  const totalWeight = cart.items.reduce((sum: number, item: any) => {
+    let weight = item.weight ?? 1;
+    const unit = item.weightUnit?.toLowerCase();
+
+    if (unit === 'grams' || unit === 'g') {
+      weight /= 1000;
+    } else if (unit !== 'kg' && unit !== 'kilograms') {
+      weight = 1;
+    }
+    return sum + (item.quantity * weight);
+  }, 0);
 
   // Map the cart items to outgoing format
   const cartItems = cart.items.map((item: any) => ({
@@ -113,17 +125,17 @@ function mapIncomingToOutgoing(order: DBOrder, cart: Cart, address: any, filtere
     orderAmount: totalAmount,
     orderExpiresTime: 1440,
     orderMode: "Offline",
-    orderPaymentMode: "SelfPayment",
+    orderPaymentMode: "KikoPayment",
     orderDeliveryMode: null,
     totalWeight: totalWeight,
     vendorId: cart.vendorId,
     addressAddedBy: "KiranaPro",
     orderStatus: "payment-completed",
-    shippingAmount: 35,
+    shippingAmount: shippingAmount,
     orderDescription: "",
     coinAmount: "0",
     freeDelivery: false,
-    actualShippingAmount: 0,
+    actualShippingAmount: shippingAmount,
     shippingAmountDiscount: 0,
     cartItem: cartItems,
     userAddress: userAddress,
