@@ -76,7 +76,7 @@ function mapIncomingToOutgoing(order: DBOrder, cart: Cart, address: any, filtere
   
   // Calculate the total amount and weight
   const totalAmount = cart.items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
-  const totalWeight = cart.items.reduce((sum: number, item: any) => sum + (item.quantity * 0.5), 0);
+  const totalWeight = cart.items.reduce((sum: number, item: any) => sum + (item.quantity * item.weight), 0);
 
   // Map the cart items to outgoing format
   const cartItems = cart.items.map((item: any) => ({
@@ -119,7 +119,7 @@ function mapIncomingToOutgoing(order: DBOrder, cart: Cart, address: any, filtere
     vendorId: cart.vendorId,
     addressAddedBy: "KiranaPro",
     orderStatus: "payment-completed",
-    shippingAmount: 0,
+    shippingAmount: 35,
     orderDescription: "",
     coinAmount: "0",
     freeDelivery: false,
