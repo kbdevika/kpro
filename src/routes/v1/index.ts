@@ -12,20 +12,22 @@ import taskRouter from './tasks.routes';
 import homeRouter from './home.routes';
 import middleware from '../../middleware';
 import authRouter from './auth.routes';
+import aiRouter from '../microservices/ai';
 
 const v1Routers = express.Router();
 
 v1Routers.use('/auth', authRouter);
+v1Routers.use('/ai', middleware.authenticateJWTToken, aiRouter);
+v1Routers.use('/kikoOrderStatus', kikoRouter);
 v1Routers.use('/order', middleware.authenticateJWTToken, ordersRouter);
 v1Routers.use('/audio', middleware.authenticateJWTToken, audioRouter);
-v1Routers.use('/kikoOrderStatus', kikoRouter);
-v1Routers.use('/notifications', middleware.decodeFirebaseToken, notificationRouter);
+v1Routers.use('/notifications', middleware.authenticateJWTToken, notificationRouter);
 v1Routers.use('/cart', middleware.authenticateJWTToken, cartRouter);
-v1Routers.use('/payment', middleware.decodeFirebaseToken, paymentRouter);
+v1Routers.use('/payment', middleware.authenticateJWTToken, paymentRouter);
 v1Routers.use('/user', middleware.authenticateJWTToken, userProfileRouter);
 v1Routers.use('/user/settings', middleware.authenticateJWTToken, userSettingsRouter);
 v1Routers.use('/user/address', middleware.authenticateJWTToken, userAddressRouter);
-v1Routers.use('/task', middleware.decodeFirebaseToken, taskRouter);
-v1Routers.use('/home', middleware.decodeFirebaseToken, homeRouter);
+v1Routers.use('/task', middleware.authenticateJWTToken, taskRouter);
+v1Routers.use('/home', middleware.authenticateJWTToken, homeRouter);
 
 export default v1Routers;

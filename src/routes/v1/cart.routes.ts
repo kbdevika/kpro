@@ -1,20 +1,10 @@
 import express, { Request, Response } from 'express';
 import prisma from '../../config/prisma.config';
 import handleError from '../../helper/handleError';
+import createCart, { fetchCart, updatedCart } from '../../services/cart';
+import fetchJwtToken from '../../helper/fetchAiJwtToken';
 
 const cartRouter = express.Router();
-
-type CartItems = {
-  id: number;
-  name: string;
-  cartId: string;
-  externalProductId: string;
-  description: string;
-  quantity: number;
-  units: string;
-  price: number;
-  image: string;
-}
 
 /**
  * @swagger
@@ -150,100 +140,39 @@ type CartItems = {
  *                   type: string
  *                   example: "An unexpected error occurred"
  */
-
 cartRouter.post('/', async (req: any, res: any) => {
   const { vendorId, items } = req.body;
 
+  if(!req.user || !req.user.id){
+    return res.status(401).json({ error: 'Unauthorized access! User is missing!' });
+  }
+
   if (!vendorId || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: 'Invalid input data' });
+    return res.status(400).json({ error: 'Items or vendorId missing' });
   }
 
   try {
-    // Create a new cart
-    const cart = await prisma.cart.create({
-      data: {
-        userId: req.user.id,
-        vendorId,
-      },
-    });
-
-    // Add items to the cart
-    const cartItems = items.map((item: any) => ({
-      cartId: cart.id,
-      externalProductId: item.externalProductId,
-      name: item.name,
-      description: item.description,
-      quantity: item.quantity,
-      units: item.units,
-      price: item.price,
-      image: item.image,
-    }));
-
-    await prisma.cartItem.createMany({
-      data: cartItems,
-    });
-
-    // Fetch the created cart with items
-    const createdCart = await prisma.cart.findUnique({
-      where: { id: cart.id },
-      include: {
-        items: true,
-      },
-    });
-
+    const createdCart = await createCart(req.user.id, vendorId, items)
     res.status(201).json({
       message: 'Cart successfully created',
       cart: createdCart,
     });
+
   } catch (error) {
     handleError(error, res);
   }
 });
   
 cartRouter.put('/', async (req: any, res: any) => {
-  const { cartId, updatedItems } = req.body; // `updatedItems` is an array of items with new quantities
+  const { cartId, updatedItems } = req.body;
 
   try {
-    // Ensure the cart belongs to the user
-    const existingCart = await prisma.cart.findUnique({
-      where: { id: cartId },
-      include: { items: true }, // Fetch current cart items
-    });
-
-    if (!existingCart || existingCart.userId !== req.user.id) {
-      return res.status(404).json({ message: 'Cart not found' });
-    }
-
-    // Iterate over the items to update them
-    await Promise.all(
-      updatedItems.map(async (item: { itemId: string; quantity: number }) => {
-        const { itemId, quantity } = item;
-
-        if (quantity <= 0) {
-          // Remove the item from the cart if quantity is zero or less
-          await prisma.cartItem.deleteMany({
-            where: { cartId, externalProductId: itemId },
-          });
-        } else {
-          // Update the quantity of the item if it exists
-          await prisma.cartItem.updateMany({
-            where: { cartId, externalProductId: itemId },
-            data: { quantity },
-          });
-        }
-      })
-    );
-
-    // Fetch the updated cart
-    const updatedCart = await prisma.cart.findUnique({
-      where: { id: cartId },
-      include: { items: true },
-    });
-
+    const updateCart = await updatedCart(req.user.id, cartId, updatedItems)
     return res.status(200).json({
       message: 'Cart successfully updated',
-      cart: updatedCart,
+      cart: updateCart,
     });
+
   } catch (error) {
     handleError(error, res);
   }
@@ -315,28 +244,19 @@ cartRouter.put('/', async (req: any, res: any) => {
  */
   cartRouter.get('/:id', async (req: any, res: any) => {
     try {
-      const cart = await prisma.cart.findFirst({
-        where: {
-          id: req.params.id,
-          userId: req.user.id
-        },
-        include: {
-          items: true
-        }
-      });
+      const fetchCreatedCart = await fetchCart(req.params.id, req.user.id)
   
-      if (!cart) {
+      if (!fetchCreatedCart) {
         return res.status(404).json({ error: 'Cart not found' });
       }
   
-      const subTotal = cart.items.reduce((sum: any, item: any) => 
-        sum + (item.price * item.quantity), 0);
-      const shipping = 35.0;
+      const subTotal = fetchCreatedCart.items.reduce((sum: number, item: any) => item.recommended === true ? sum : sum + (item.price * item.quantity), 0);
+      const shipping = 35;
       const total = subTotal + shipping;
   
       res.json({
-        id: cart.id,
-        items: cart.items,
+        id: fetchCreatedCart.id,
+        items: fetchCreatedCart.items,
         subTotal,
         shipping,
         total
@@ -440,9 +360,8 @@ cartRouter.put('/', async (req: any, res: any) => {
       if (!cart) {
         return res.status(404).json({ error: 'Cart not found' });
       }
-
-  
       res.json(cart);
+
     } catch (error) {
       handleError(error, res);
     }

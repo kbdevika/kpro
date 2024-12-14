@@ -194,16 +194,16 @@ ordersRouter.post('/', async (req: any, res: any) => {
       const modifiedOrder = await orderToKikoOrder(cartId.toString(), req.user.id, parseInt(addressId))
 
       // Fetch request to the external API
-      const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(modifiedOrder),
-      });
+      // const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(modifiedOrder),
+      // });
   
-      // Parse the response
-      const data = await response.json();
+      // // Parse the response
+      const data = 'Order to Kiko is disabled' // await response.json();
   
       // Forward the external API response back to the client
       return res.status(200).json({data, modifiedOrder});
@@ -399,7 +399,7 @@ ordersRouter.post('/', async (req: any, res: any) => {
  */
   ordersRouter.get('/:id/track', async (req: any, res: any) => {
     try {
-      const orders = await prisma.order.findFirst({
+      const orders = await prisma.order.findUnique({
         where: {
           id: req.params.id
         },

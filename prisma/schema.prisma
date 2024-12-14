@@ -50,8 +50,8 @@ model Address {
   landmark      String  @default("NaN")
   postalCode    String  @map("postal_code")
   user          User    @relation(fields: [userId], references: [id])
-  Order    Order[]
-  
+  Order         Order[]
+
   @@index([userId])
 }
 
@@ -67,16 +67,17 @@ model Cart {
 }
 
 model CartItem {
-  id                Int    @id @default(autoincrement())
+  id                Int      @id @default(autoincrement())
   cartId            String
-  externalProductId String @default("null")
+  externalProductId String   @default("null")
   name              String
   description       String
   quantity          Int
   units             String
   price             Float
   image             String
-  cart              Cart   @relation(fields: [cartId], references: [id])
+  recommended       Boolean?
+  Cart              Cart     @relation(fields: [cartId], references: [id])
 
   @@index([cartId])
 }
@@ -87,8 +88,8 @@ model Order {
   totalAmount    Float    @default(0.00)
   storeName      String   @default("null")
   vendorId       String   @default("null")
-  addressId      Int?     
-  address        Address?  @relation(fields: [addressId], references: [id])
+  addressId      Int?
+  address        Address? @relation(fields: [addressId], references: [id])
   cartId         String
   status         String
   deliveryStatus String   @default("Not-Initiated")

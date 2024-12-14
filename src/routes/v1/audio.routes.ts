@@ -1,8 +1,10 @@
-import express from 'express';
+import express, { Request } from 'express';
 import handleError from '../../helper/handleError';
 import convertToCart from '../../helper/convertToCart';
 import multer from 'multer';
 import getPincodeFromCoordinates from '../../helper/convertLatLongToPincode';
+import fetchJwtToken from '../../helper/fetchAiJwtToken';
+import validateHeaders from '../../helper/validateHeader';
 
 const audioRouter = express.Router();
 
@@ -232,83 +234,70 @@ const upload = multer({
  */
   audioRouter.post('/', 
     upload.single('audio'), // Expect an 'audio' file in the request
-    async (req: any, res: any) => {
-        try {
-            // Extract the User-Agent header
-            const userAgent = req.headers['user-agent'];
-    
-            if (!userAgent && !userAgent.includes('lat:') && !userAgent.includes('lon:')) {
-                return res.status(400).json({ error: 'Some headers are missing' });
-            }
+      async (req: any, res: any) => {
+      try {
+          // Validate user ID
+          const userId = req.user?.id;
+          if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized access or user not found!' });
+          }
+                  
+          // Extract the User-Agent header
+          const userAgent = req.headers['user-agent'];
 
-            const userId = req.user.id
-            if(!userId || userId == null || userId == 'undefined'){
-                // UserId not available
-                return res.status(401).json({
-                    message: 'UserId not available, unauthorized usage!'
-                })
-            }
-            
-            const latLonRegex = /lat:\s*([\d.-]+);\s*lon:\s*([\d.-]+)/;
-            const match = userAgent.match(latLonRegex);
+          // Validate User-Agent header
+          const coordinates = validateHeaders(userAgent);
+          if (!coordinates) {
+            return res.status(400).json({ error: 'Missing or invalid User-Agent header.' });
+          }
     
-            if (!match) {
-                return res.status(400).json({ error: 'Latitude and longitude not found in header' });
-            }
-    
-            // Extract latitude and longitude
-            const latitude = parseFloat(match[1]);
-            const longitude = parseFloat(match[2]);
-    
-            // Use type assertion to access `file`
-            const file = req.file;
-            if (!file) {
-                return res.status(400).json({ error: 'No file uploaded' });
-            }
-    
-            // Create FormData to send the file
-            const formData = new FormData();
-    
-            try {
-                const pincode = await getPincodeFromCoordinates(latitude, longitude)
-                // Convert the buffer into a Blob
-                const audioBlob = new Blob([file.buffer], { type: file.mimetype });
-                formData.append('audio', audioBlob, file.originalname);
-                formData.append('pincode', pincode);
-            
-            } catch (error: any) {
-                res.json({ error: error.message})
-            }
-    
-            // Perform the fetch call with multipart/form-data
-            const response = await fetch('https://dev-ai-api.kpro42.com/api/audio/cart/enrich', {
-                method: 'POST',
-                body: formData, // Use FormData as the body
-            });
+          const { latitude, longitude } = coordinates;
 
-            // Parse the response
-            if (response.status === 404) {
-                return res.status(200).json({ message: 'Pincode unservicable' });
-            }
-    
-            // Parse the response
-            if (!response.ok && !(response.status === 404)) {
-                return res.status(response.status).json({ error: `Failed to process audio. ${response}` });
-            }
-            const data = await response.json();
-    
-            try {
-                const cart = await convertToCart(userId, data)
-                if(cart === -1){
-                    return res.status(200).json({
-                        message: 'No products found'
-                    })
-                }
-                res.json(cart)
+          // Validate uploaded file
+          const file = req.file;
+          if (!file) {
+            return res.status(400).json({ error: 'No file uploaded.' });
+          }
 
-            } catch (error: any) {
-                res.json({ error: error.message})
-            }
+          // Convert the buffer into a Blob
+          const audioBlob = new Blob([file.buffer], { type: file.mimetype });
+    
+          // Get pincode from coordinates
+          const pincode = await getPincodeFromCoordinates(latitude, longitude);
+    
+          // Create FormData for the second API call
+          const formData = new FormData();
+          formData.append('audio', audioBlob, file.originalname);
+          formData.append('pincode', pincode);
+    
+          // const webhookBaseUrl =
+          //   process.env.NODE_ENV === 'production'
+          //     ? 'https://api.kpro42.com'
+          //     : 'https://dev-api.kpro42.com';
+          // const webhookUrl = `${webhookBaseUrl}/v1/webhook/${encodeURIComponent(userId)}`;
+          // formData.append('webhookUrl', webhookUrl);
+    
+          // Fetch JWT token
+          const jwtToken = await fetchJwtToken();
+    
+          // Perform the fetch call with multipart/form-data
+          const response = await fetch('https://dev-ai-api.kpro42.com/api/audio/cart/enrich', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${jwtToken}`,
+            },
+            body: formData,
+          });
+    
+          if (!response.ok) {
+            return res
+              .status(response.status)
+              .json({ error: `Failed to process audio. ${await response.text()}` });
+          }
+    
+          // Send success response
+          const data = await response.json();
+          return res.status(200).json({ taskId: data.taskId });
         } catch (error) {
             handleError(error, res);
         }

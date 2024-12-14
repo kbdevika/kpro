@@ -1,6 +1,6 @@
 
 // Function to fetch pincode directly in backend (using lat and long)
-export default async function getPincodeFromCoordinates(latitude: number, longitude: number) {
+export default async function getPincodeFromCoordinates(latitude: number, longitude: number): Promise<string> {
     const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY || 'GOOGLE_MAPS_API_KEY';
 
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_API_KEY}`;
@@ -20,12 +20,12 @@ export default async function getPincodeFromCoordinates(latitude: number, longit
         )?.long_name;
 
         if (pincode) {
-            return pincode;
+            return pincode.toString();
         } else {
-            throw new Error('Pincode not found');
+            return '000000'
         }
 
     } catch (error) {
-        throw new Error('Failed to fetch pincode');
+        throw new Error(`Failed to fetch pincode. ${error}`);
     }
 }

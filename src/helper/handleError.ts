@@ -27,7 +27,7 @@ const logger = winston.createLogger({
     logger.error('Error occurred:', { error: error.message, stack: error.stack });
     res.status(500).json({
       error: 'Internal server error',
-      ...((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'localhost') && { details: error.message })
+      ...({ details: error.message })
     });
   };
 
