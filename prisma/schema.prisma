@@ -60,6 +60,7 @@ model Cart {
   userId   String
   vendorId String     @default("null")
   items    CartItem[]
+  storeName String?
   user     User       @relation(fields: [userId], references: [id])
   Order    Order[]
 

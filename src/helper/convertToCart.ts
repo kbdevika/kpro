@@ -16,6 +16,7 @@ export default async function convertToCart(
     data: {
       userId: userId,
       vendorId: data.result.storeData._id,
+      storeName: data.result.storeData.storeName
     },
   });
 
