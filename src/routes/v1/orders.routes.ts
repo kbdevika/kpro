@@ -409,7 +409,7 @@ ordersRouter.post('/', async (req: any, res: any) => {
       });
   
       if (orders && orders.cart.userId === req.userId) {
-        return res.status(403).json({ error: 'Unauthorized user' });
+        return res.status(401).json({ error: 'Unauthorized user' });
       }
   
       if (!orders) {

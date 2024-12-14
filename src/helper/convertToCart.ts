@@ -5,20 +5,7 @@ import { CartReponseItem, CartResponse } from "../types/cart.type";
 export default async function convertToCart(
   userId: string,
   data: TaskResult
-): Promise<CartResponse | -1> {
-
-  if (
-    !Array.isArray(data.result.items) ||
-    data.result.items.length === 0 ||
-    !data.result.items[0]?.metadata ||
-    !data.result.items[0]?.metadata?.matching?.product?.metadata ||
-    !data.result.items[0]?.metadata?.matching?.product?.metadata?.userId ||
-    !data.result.items[0]?.metadata?.recommendations[0]?.product?.metadata ||
-    !data.result.items[0]?.metadata?.recommendations[0]?.product?.metadata?.userId
-  ) {
-    // If any of the required properties or vendorId is missing, return -1
-    return -1;
-  }
+): Promise<CartResponse> {
 
   let subTotal = 0;
   let totalSavedAmount = 0;

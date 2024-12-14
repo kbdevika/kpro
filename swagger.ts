@@ -19,13 +19,13 @@ const options: Options = {
     openapi: '3.0.0',
     info: {
       title: 'API Documentation',
-      version: '1.0.0',
-      description: 'Release V1.1.0',
+      version: '1.2.6',
+      description: 'Release V1.2.6',
     },
     servers: [
       {
         url: `${BASE_URL}/v1`,
-        description: `${ENV.toUpperCase()} Server`,
+        description: `${ENV.toLowerCase()} Server`,
       },
     ],
     components: {

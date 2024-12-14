@@ -1,6 +1,5 @@
-import express, { Request } from 'express';
+import express from 'express';
 import handleError from '../../helper/handleError';
-import convertToCart from '../../helper/convertToCart';
 import multer from 'multer';
 import getPincodeFromCoordinates from '../../helper/convertLatLongToPincode';
 import fetchJwtToken from '../../helper/fetchAiJwtToken';
@@ -15,7 +14,7 @@ const upload = multer({
         if (file.mimetype === 'audio/mpeg') {
             cb(null, true);
         } else {
-            cb(new Error('Only MP3 files are allowed!'));
+            cb(null, false);
         }
     },
   });
@@ -236,6 +235,13 @@ const upload = multer({
     upload.single('audio'), // Expect an 'audio' file in the request
       async (req: any, res: any) => {
       try {
+          if (!req.file) {
+            // If no file is uploaded or the file type is invalid, send a response with an error message
+            return res.status(400).json({
+              message: 'Only MP3 files are allowed!',
+            });
+          }
+          
           // Validate user ID
           const userId = req.user?.id;
           if (!userId) {

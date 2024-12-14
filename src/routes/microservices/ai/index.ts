@@ -7,6 +7,41 @@ import handleError from '../../../helper/handleError';
 
 const aiRouter = express.Router();
 
+/**
+ * @swagger
+ * /ai/{id}:
+ *   get:
+ *     summary: Fetches enriched cart details by task ID
+ *     description: This endpoint retrieves the enriched cart details using the provided task ID.
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The task ID used to fetch the cart details.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved the cart details.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 cart:
+ *                   type: object
+ *                   description: The enriched cart details.
+ *       400:
+ *         description: Task ID is missing or invalid.
+ *       500:
+ *         description: Error occurred while processing the request.
+ *       503:
+ *         description: AI response fetching failed or in-progress.
+ *     tags:
+ *       - AI
+ */
 aiRouter.get('/:id', async (req: any, res: any) => {
     const taskId = req.params.id;
 
@@ -28,8 +63,11 @@ aiRouter.get('/:id', async (req: any, res: any) => {
         }
 
         const data = await response.json()
-        if(!data.result || data.result === null) {
-            return res.json({ cart: 'Not ready' })
+
+        if(data.state === 'failed') {
+            return res.json({ cart: 'failed'})
+        } else if(data.result === null && data.state === 'active') {
+            return res.json({ cart: 'in-progress'})
         }
         
         const cart = await convertToCart(req.user.id, data)
@@ -40,6 +78,38 @@ aiRouter.get('/:id', async (req: any, res: any) => {
     }
 })
 
+/**
+ * @swagger
+ * /ai:
+ *   get:
+ *     summary: Verifies if stores exist for a given pincode from coordinates
+ *     description: This endpoint retrieves store information for a given pincode based on the user’s coordinates.
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - name: User-Agent
+ *         in: header
+ *         description: User-Agent header must contain latitude and longitude in the format `lat:<latitude>; lon:<longitude>`
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved pincode verification.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 pincode:
+ *                   type: boolean
+ *                   description: Indicates whether the pincode has associated stores.
+ *       400:
+ *         description: Invalid User-Agent header or pincode missing.
+ *       500:
+ *         description: Error occurred while processing the request.
+ *     tags:
+ *       - AI
+ */
 aiRouter.get('/', async (req: any, res: any) => {
     try {
         // Extract the User-Agent header

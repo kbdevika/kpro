@@ -77,12 +77,14 @@ type Order = {
 function mapIncomingToOutgoing(order: DBOrder, cart: Cart, address: any, filteredProfile: any): Order {
   
   // Calculate the total amount and weight
-  const totalAmount = cart.items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0) + shippingAmount;
+  const totalAmount = cart.items.reduce((sum: number, item: any) => item.recommended === true ? sum : sum + (item.price * item.quantity), 0) + shippingAmount;
   const totalWeight = cart.items.reduce((sum: number, item: any) => {
     let weight = item.weight ?? 1;
     const unit = item.weightUnit?.toLowerCase();
 
-    if (unit === 'grams' || unit === 'gm' || unit === 'gms' || unit === 'gram') {
+    if (item.recommended === true) {
+      weight = 0;
+    } else if (unit === 'grams' || unit === 'gm' || unit === 'gms' || unit === 'gram') {
       weight /= 1000;
     } else if (unit !== 'kilo' && unit !== 'kilograms' || unit === 'kilogram' || unit === 'kg' || unit === 'kgs') {
       weight = 1;
@@ -131,7 +133,7 @@ function mapIncomingToOutgoing(order: DBOrder, cart: Cart, address: any, filtere
     vendorId: cart.vendorId,
     addressAddedBy: "KiranaPro",
     orderStatus: "payment-completed",
-    shippingAmount: shippingAmount,
+    shippingAmount: 0,
     orderDescription: "",
     coinAmount: "0",
     freeDelivery: false,

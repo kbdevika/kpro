@@ -162,7 +162,141 @@ cartRouter.post('/', async (req: any, res: any) => {
     handleError(error, res);
   }
 });
-  
+
+/**
+ * @swagger
+ * /cart:
+ *   put:
+ *     summary: Update an existing cart
+ *     description: This endpoint allows users to update an existing cart by providing the cart ID and updated items.
+ *     tags:
+ *       - Cart
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               cartId:
+ *                 type: string
+ *                 description: The unique identifier of the cart to be updated.
+ *               updatedItems:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     externalProductId:
+ *                       type: string
+ *                       description: The external product ID for the item.
+ *                     name:
+ *                       type: string
+ *                       description: The name of the product.
+ *                     description:
+ *                       type: string
+ *                       description: A description of the product.
+ *                     quantity:
+ *                       type: integer
+ *                       description: The quantity of the product.
+ *                     units:
+ *                       type: string
+ *                       description: The unit of the product (e.g., kg, piece, etc.).
+ *                     price:
+ *                       type: number
+ *                       format: float
+ *                       description: The price per unit of the product.
+ *                     image:
+ *                       type: string
+ *                       description: The URL of the product image.
+ *             required:
+ *               - cartId
+ *               - updatedItems
+ *     responses:
+ *       200:
+ *         description: Cart successfully updated.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cart successfully updated"
+ *                 cart:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "cart_123"
+ *                     userId:
+ *                       type: string
+ *                       example: "user_123"
+ *                     vendorId:
+ *                       type: string
+ *                       example: "vendor_123"
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             example: "item_123"
+ *                           externalProductId:
+ *                             type: string
+ *                             example: "prod_456"
+ *                           name:
+ *                             type: string
+ *                             example: "Sample Product"
+ *                           description:
+ *                             type: string
+ *                             example: "A sample product description."
+ *                           quantity:
+ *                             type: integer
+ *                             example: 2
+ *                           units:
+ *                             type: string
+ *                             example: "kg"
+ *                           price:
+ *                             type: number
+ *                             format: float
+ *                             example: 100.5
+ *                           image:
+ *                             type: string
+ *                             example: "https://example.com/product-image.jpg"
+ *       400:
+ *         description: Bad Request - Invalid input or missing fields.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid input data"
+ *       401:
+ *         description: Unauthorized - Invalid or missing token.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized"
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "An unexpected error occurred"
+ */
 cartRouter.put('/', async (req: any, res: any) => {
   const { cartId, updatedItems } = req.body;
 

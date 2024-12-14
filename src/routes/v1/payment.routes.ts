@@ -68,7 +68,7 @@ paymentRouter.post('/', async (req: any, res: any) => {
         currency: 'INR',
         payment_capture: true
       });
-      res.status(200).json(payment);
+      res.json(payment);
     } catch (error) {
       handleError(error, res);
     }
