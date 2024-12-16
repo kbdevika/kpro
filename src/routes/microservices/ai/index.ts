@@ -9,7 +9,7 @@ const aiRouter = express.Router();
 
 /**
  * @swagger
- * /ai/{id}:
+ * /ai/{taskId}:
  *   get:
  *     summary: Fetches enriched cart details by task ID
  *     description: This endpoint retrieves the enriched cart details using the provided task ID.
@@ -17,7 +17,7 @@ const aiRouter = express.Router();
  *       - multipart/form-data
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: taskId
  *         required: true
  *         description: The task ID used to fetch the cart details.
  *         schema:
@@ -27,12 +27,58 @@ const aiRouter = express.Router();
  *         description: Successfully retrieved the cart details.
  *         content:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 cart:
- *                   type: object
- *                   description: The enriched cart details.
+ *             examples:
+ *               example1:
+ *                 value:
+ *                   cart:
+ *                     cartId: string
+ *                     items:
+ *                       - itemId: string
+ *                         itemName: "Mawana Sugar/Sakkare - Premium Crystal, 1 Kg Pouch"
+ *                         itemDescription: "Mawana Premium Crystal Sugar is SULPHUR-FREE whitest refined sugar conforming to EEC Grade I standards. It is produced in a word class germ-free facility, with no Harmful chemicals used, completely untouched by hand and is hygienically packed in a Dust-free environment."
+ *                         itemImageUrl:
+ *                           - "https://www.bigbasket.com/media/uploads/p/xxl/70001579_10-mawana-sugar-premium-crystal.jpg"
+ *                           - "https://www.bigbasket.com/media/uploads/p/xxl/70001579-2_9-mawana-sugar-premium-crystal.jpg"
+ *                           - "https://www.bigbasket.com/media/uploads/p/xxl/70001579-3_8-mawana-sugar-premium-crystal.jpg"
+ *                           - "https://www.bigbasket.com/media/uploads/p/xxl/70001579-4_8-mawana-sugar-premium-crystal.jpg"
+ *                         itemQuantity: 1
+ *                         itemOriginalPrice: 75
+ *                         itemDiscountedPrice: 75
+ *                         itemStockStatus: "In Stock"
+ *                         itemWeight: 1
+ *                         itemWeightUnit: "KG"
+ *                     recommendedItems:
+ *                       - itemId: string
+ *                         itemName: string
+ *                         itemDescription: "Mawana Brown Sugar contains real flavour, crunchy texture and the perfect way to enhance your coffee, cookies and dessert. It dissolves 3 times faster than the regular sugar and is an ideal partner for your coffee."
+ *                         itemImageUrl:
+ *                           - "https://www.bigbasket.com/media/uploads/p/xxl/40131642_2-mawana-sugar-brown.jpg"
+ *                           - "https://www.bigbasket.com/media/uploads/p/xxl/40131642-2_2-mawana-sugar-brown.jpg"
+ *                           - "https://www.bigbasket.com/media/uploads/p/xxl/40131642-3_2-mawana-sugar-brown.jpg"
+ *                           - "https://www.bigbasket.com/media/uploads/p/xxl/40131642-4_2-mawana-sugar-brown.jpg"
+ *                           - "https://www.bigbasket.com/media/uploads/p/xxl/40131642-5_1-mawana-sugar-brown.jpg"
+ *                         itemQuantity: 1
+ *                         itemOriginalPrice: 86
+ *                         itemDiscountedPrice: 86
+ *                         itemStockStatus: "In Stock"
+ *                         itemWeight: 1
+ *                         itemWeightUnit: "KG"
+ *                   orderSummary:
+ *                     subTotal: 470
+ *                     total: 505
+ *                     deliverytime: "25 minutes"
+ *                     freeDeliveryThreshold: 199
+ *                     deliveryCharges: 35
+ *                     saved: "You saved ₹33.00!"
+ *                     discount: 33
+ *                   storeInfo:
+ *                     storeName: string
+ *                     storePhone: string
+ *                     storeContactPerson: string
+ *                     storeAddress: string
+ *                   additionalInfo:
+ *                     savingsMessage: string
+ *                     cartNote: string
  *       400:
  *         description: Task ID is missing or invalid.
  *       500:

@@ -63,7 +63,7 @@ export default async function convertToCart(
         itemWeight: productMetadata.weight,
         itemWeightUnit: productMetadata.weightUnit,
       }
-  });
+  }).filter((item) => item !== null);
 
   let recommendedCartItems: CartReponseItem[] = data.result.items.flatMap((item: Items) => {
     const recommendations = item?.metadata?.recommendations;

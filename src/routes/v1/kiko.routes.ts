@@ -4,11 +4,20 @@ import prisma from '../../config/prisma.config';
 
 const kikoRouter = express.Router();
 
+const verifyAPIKey = (apiKey: string): boolean => {
+  const validApiKey = process.env.KIKO_APIKEY || '7e563319-978e-4248-9474-5c0b8e767768';
+  return apiKey === validApiKey;
+};
+
 /**
  * No swagger
  */
 kikoRouter.post('/', async (req: any, res: any) => {
-    const { orderId, orderStatus, deliveryStatus } = req.body;
+    const { apiKey, orderId, orderStatus, deliveryStatus } = req.body;
+
+    if(!verifyAPIKey(apiKey)){
+      return res.status(401).json({ error: 'Unauthorized request' })
+    }
   
     const orderStatusRef = ['in-progress', 'completed', 'cancelled'];
     const deliveryStatusRef = [

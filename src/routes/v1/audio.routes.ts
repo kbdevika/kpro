@@ -56,57 +56,9 @@ const upload = multer({
  *             schema:
  *               type: object
  *               properties:
- *                 message:
+ *                 taskId:
  *                   type: string
- *                   example: Cart successfully created
- *                 deliverytime:
- *                   type: string
- *                   example: '25 minutes'
- *                 saved:
- *                   type: string
- *                   example: '₹50.00'
- *                 storeName:
- *                   type: string
- *                   example: 'Example Store'
- *                 storePhone:
- *                   type: string
- *                   example: '+1234567890'
- *                 storeContactPerson:
- *                   type: string
- *                   example: 'John Doe'
- *                 cart:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       example: 'cart_1631671123456'
- *                     items:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Catalogue'
- *                     orderSummary:
- *                       type: object
- *                       properties:
- *                         items:
- *                           type: array
- *                           items:
- *                             $ref: '#/components/schemas/OrderItems'
- *                         subTotal:
- *                           type: number
- *                           format: float
- *                           example: 100.00
- *                         shipping:
- *                           type: number
- *                           format: float
- *                           example: 27.00
- *                         discount:
- *                           type: number
- *                           format: float
- *                           example: 10.00
- *                         total:
- *                           type: number
- *                           format: float
- *                           example: 117.00
+ *                   example: "12"
  *       '400':
  *         description: Bad Request - Missing or invalid headers or audio file
  *         content:
