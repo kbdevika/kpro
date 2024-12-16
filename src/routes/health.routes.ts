@@ -11,7 +11,7 @@ const healthCheckRouter = express.Router();
 healthCheckRouter.get('/health', (req: any, res: any) => { res.status(200).json({ health: "OK" }) });
 
 /** Add new admins */
-healthCheckRouter.post('/admin', async (req: any, res: any) => {
+healthCheckRouter.post('/admin', middleware.authenticateAdminToken, async (req: any, res: any) => {
     const { email, password } = req.body;
 
     // Ensure password is provided
