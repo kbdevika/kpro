@@ -3,6 +3,9 @@ import handleError from '../../helper/handleError';
 import crypto from 'crypto';
 import RazorPay from 'razorpay';
 import * as dotenv from 'dotenv';
+import orderToKikoOrder from '../../helper/orderToKikoOrder';
+import convertToOrderSummary from '../../helper/convertToOrderSummary';
+import kikoUrl from '../../constants';
 
 dotenv.config();
 
@@ -144,7 +147,12 @@ paymentRouter.post('/', async (req: any, res: any) => {
 
   paymentRouter.post('/verify', async (req: any, res: any) => {
     try {
-      const { order_id, payment_id, signature } = req.body;
+      const { order_id, payment_id, signature, cart_id, address_id } = req.body;
+
+      if(!order_id || !payment_id ||  !signature || !cart_id || !address_id){
+        return res.status(400).json({ error: 'Missing or invalid inputs!'})
+      }
+
       const secret = process.env.RAZORPAY_SECRET || 'rzp_secret_xxx';
   
       const hmac = crypto.createHmac("sha256", secret)
@@ -153,10 +161,46 @@ paymentRouter.post('/', async (req: any, res: any) => {
       const generatedSignature = hmac.digest("hex")
       
       if(generatedSignature === signature){
-        res.status(200).json({
-          success: true,
-          message: "Payment verified!"
+        const { order, _order } = await orderToKikoOrder(cart_id.toString(), req.user.id, parseInt(address_id))
+        const orderSummary = convertToOrderSummary(_order)
+        
+        // Development environment: return early with mock data
+        if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'localhost') {
+          return res.json({
+            success: true,
+            message: "Order to Kiko is disabled in development mode",
+            orderSummary
+          });
+        }
+        
+        // Fetch request to the external API
+        const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(order),
         });
+  
+        // Handle external API response
+        if (!response.ok) {
+          const errorMessage = await response.text(); // Capture error message from API
+          return res.status(response.status).json({
+            error: `Failed to create order!`,
+            details: errorMessage,
+          });
+        }
+    
+        // Parse the response and forward the external API response back to the client
+        const data = await response.json();
+  
+        if(data.Status === false && data.outOfStock === true){
+          return res.status(409).json({ success: true, message: 'out-of-stock'});
+        }
+  
+        if(data.Status === true){
+          return res.json({success: true, message: 'order-success', orderSummary});
+        }
+  
+        return res.json({ status: true, message: 'order-failed', ...data})
       }
       res.status(400).json({
         success: false,

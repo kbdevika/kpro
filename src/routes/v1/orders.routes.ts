@@ -3,12 +3,12 @@ import handleError from '../../helper/handleError';
 import prisma from '../../config/prisma.config';
 import orderToKikoOrder from '../../helper/orderToKikoOrder';
 import * as dotenv from 'dotenv';
+import convertToOrderSummary from '../../helper/convertToOrderSummary';
+import kikoUrl from '../../constants';
 
 dotenv.config();
 
 const ordersRouter = express.Router();
-
-const kikoUrl = "https://ondc.kiko.live/ondc-seller"
 
 /**
  * @swagger
@@ -191,13 +191,14 @@ ordersRouter.post('/', async (req: any, res: any) => {
     }
 
     try {
-      const modifiedOrder = await orderToKikoOrder(cartId.toString(), req.user.id, parseInt(addressId))
+      const { order, _order } = await orderToKikoOrder(cartId.toString(), req.user.id, parseInt(addressId))
+      const orderSummary = convertToOrderSummary(_order)
       
       // Development environment: return early with mock data
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'localhost') {
         return res.json({
           message: "Order to Kiko is disabled in development mode",
-          modifiedOrder,
+          orderSummary
         });
       }
       
@@ -205,7 +206,7 @@ ordersRouter.post('/', async (req: any, res: any) => {
       const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(modifiedOrder),
+        body: JSON.stringify(order),
       });
 
       // Handle external API response
@@ -219,7 +220,16 @@ ordersRouter.post('/', async (req: any, res: any) => {
   
       // Parse the response and forward the external API response back to the client
       const data = await response.json();
-      return res.json(data);
+
+      if(data.Status === false && data.outOfStock === true){
+        return res.json({ message: 'out-of-stock'});
+      }
+
+      if(data.Status === true){
+        return res.json({message: 'created', orderSummary});
+      }
+
+      return res.json({ message: 'failed', ...data})
 
     } catch (error) {
       handleError(error, res);

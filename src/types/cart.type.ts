@@ -8,17 +8,26 @@ type Product = {
     image: string; // URL or path to the product image
   };
 
-type CartItems = {
-    id: number;
-    name: string;
-    cartId: string;
-    externalProductId: string;
-    description: string;
-    quantity: number;
-    units: string;
-    price: number;
-    image: string;
+  type CartItems = {
+      id?: number;
+      name: string;
+      cartId?: string;
+      externalProductId?: string;
+      description: string;
+      quantity: number;
+      units: string;
+      price: number;
+      image: string;
+      recommended: boolean | null
   }
+
+  type Cart = {
+    id: string;
+    userId: string;
+    vendorId: string;
+    storeName?: string | null;
+    items: CartItems[]; 
+  };
 
 type AICartResponse = {
     items: CartItems[],
@@ -68,6 +77,7 @@ type CartReponseItem = {
   };
 
 export {
+    Cart,
     CartItems,
     CartResponse,
     AICartResponse,

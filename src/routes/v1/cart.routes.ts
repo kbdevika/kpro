@@ -302,9 +302,17 @@ cartRouter.put('/', async (req: any, res: any) => {
 
   try {
     const updateCart = await updatedCart(req.user.id, cartId, updatedItems)
-    return res.status(200).json({
-      message: 'Cart successfully updated',
-      cart: updateCart,
+
+    const subTotal = updateCart.items.reduce((sum: number, item: any) => item.recommended === true ? sum : sum + (item.price * item.quantity), 0);
+    const shipping = 35;
+    const total = subTotal + shipping;
+
+    return res.json({
+      id: updateCart.id,
+      items: updateCart.items,
+      subTotal,
+      shipping,
+      total
     });
 
   } catch (error) {

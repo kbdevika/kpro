@@ -1,50 +1,6 @@
 import prisma from "../config/prisma.config";
-
-type Order = {
-    settlementData: {
-      amount: number;
-      status: "pending"
-    };
-    kiranaProOrderId: string;
-    buyerName: string;
-    buyerPhoneNumber: string;
-    orderAmount: number;
-    orderExpiresTime: number;
-    orderMode: "Offline"
-    orderPaymentMode: string;
-    orderDeliveryMode: string | null;
-    totalWeight: number;
-    vendorId: string;
-    addressAddedBy: string;
-    orderStatus: "payment-completed";
-    coinAmount: "0";
-    shippingAmount: number;
-    orderDescription: string;
-    freeDelivery: boolean;
-    actualShippingAmount: number;
-    shippingAmountDiscount: number;
-    cartItem: {
-      id: string;
-      quantity: {
-        count: number;
-      };
-      price: number;
-    }[];
-    userAddress: {
-      city: string;
-      state: string;
-      zipcode: string;
-      contactName: string;
-      latitude: string;
-      longitude: string;
-      contactPhone: string;
-      addressType: "HOME" | "WORK" | "OTHER";
-      address_line1: string;
-      landmark: string;
-      address_line2: string;
-    };
-    createdFrom: string;
-  };
+import { Cart } from "../types/cart.type";
+import { Order, OrderResponse } from "../types/order.type";
 
   type DBOrder = {
     id: string;
@@ -52,25 +8,6 @@ type Order = {
     status: string;
     deliveryStatus: string;
   }
-
-  type CartItems = {
-      id: number;
-      name: string;
-      cartId: string;
-      externalProductId: string;
-      description: string;
-      quantity: number;
-      units: string;
-      price: number;
-      image: string;
-  }
-
-  type Cart = {
-    id: string;
-    userId: string;
-    vendorId: string;
-    items: CartItems[]; 
-  };
 
   const shippingAmount = 35
   
@@ -147,7 +84,7 @@ function mapIncomingToOutgoing(order: DBOrder, cart: Cart, address: any, filtere
 }
 
 
-export default async function orderToKikoOrder(cartId: string, userId: string, addressId: number): Promise<Order> {
+export default async function orderToKikoOrder(cartId: string, userId: string, addressId: number): Promise<{order: Order, _order: OrderResponse }> {
 
     const cart = await prisma.cart.findFirst({
       where: {
@@ -191,15 +128,24 @@ export default async function orderToKikoOrder(cartId: string, userId: string, a
         phone: userProfile['phone'] || '',
       };
 
-      const order = await prisma.order.create({
+      const _order = await prisma.order.create({
         data: {
           cartId: cartId,
           status: 'created',
           addressId: addressId,
-          storeName: '',
+          storeName: cart.storeName ? cart.storeName : '',
           vendorId: cart.vendorId
+        },
+        include: {
+          address: true,
+          cart: {
+            include: {
+              items: true
+            }
+          },
         }
       });
-    const modifiedorder = mapIncomingToOutgoing(order, cart, address, filteredProfile)
-    return modifiedorder;
+      
+    const order = mapIncomingToOutgoing(_order, cart, address, filteredProfile)
+    return { order, _order };
 }

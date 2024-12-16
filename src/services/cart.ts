@@ -1,6 +1,5 @@
 import prisma from "../config/prisma.config";
-import fetchJwtToken from "../helper/fetchAiJwtToken";
-import Product, { AICartResponse, CartResponse } from "../types/cart.type";
+import Product, { AICartResponse } from "../types/cart.type";
 
 /**
  * Cart Services:
@@ -15,6 +14,7 @@ const createCart = async (userId: string, vendorId: string, items: Product[]): P
     const cart = await prisma.cart.create({
         data: {
         userId: userId,
+        storeName: '',
         vendorId,
         },
     });
