@@ -192,21 +192,35 @@ ordersRouter.post('/', async (req: any, res: any) => {
 
     try {
       const modifiedOrder = await orderToKikoOrder(cartId.toString(), req.user.id, parseInt(addressId))
-
+      
+      // Development environment: return early with mock data
+      if (process.env.NODE_ENV === 'development') {
+        return res.json({
+          message: "Order to Kiko is disabled in development mode",
+          modifiedOrder,
+        });
+      }
+      
       // Fetch request to the external API
-      // const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(modifiedOrder),
-      // });
+      const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modifiedOrder),
+      });
+
+      // Handle external API response
+      if (!response.ok) {
+        const errorMessage = await response.text(); // Capture error message from API
+        return res.status(response.status).json({
+          error: `Failed to create order!`,
+          details: errorMessage,
+        });
+      }
   
-      // // Parse the response
-      const data = 'Order to Kiko is disabled' // await response.json();
-  
-      // Forward the external API response back to the client
-      return res.status(200).json({data, modifiedOrder});
+      // Parse the response and forward the external API response back to the client
+      const data = await response.json();
+      return res.json(data);
+
     } catch (error) {
       handleError(error, res);
     }

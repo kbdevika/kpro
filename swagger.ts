@@ -19,8 +19,8 @@ const options: Options = {
     openapi: '3.0.0',
     info: {
       title: 'API Documentation',
-      version: '1.2.7',
-      description: 'Stable Release V1.2.7',
+      version: '1.2.9',
+      description: 'Stable Release V1.2.9',
     },
     servers: [
       {
