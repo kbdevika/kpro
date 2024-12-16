@@ -31,12 +31,14 @@ const taskRouter = express.Router();
  *         description: Internal server error.
  */
 taskRouter.post('/', async (req: any, res: any) => {
+    const { taskId, cartId } = req.body 
     try {
       const task = await prisma.task.create({
         data: {
           status: 'processing',
           userId: req.user.id,
-          summary: ''
+          taskId: taskId.toString(),
+          cartId: cartId.toString()
         }
       });
       res.json({ task_id: task.id });
@@ -103,9 +105,6 @@ taskRouter.post('/', async (req: any, res: any) => {
         where: {
           id: req.params.taskId,
           userId: req.user.id
-        },
-        include: {
-          lineItems: true
         }
       });
   
@@ -117,8 +116,10 @@ taskRouter.post('/', async (req: any, res: any) => {
         res.json({
           status: 'success',
           output: {
-            summary: task.summary,
-            lineItems: task.lineItems
+            cartId: task.cartId,
+            taskId: task.taskId,
+            userId: task.userId,
+            createdAt: task.createdDate
           }
         });
       } else {

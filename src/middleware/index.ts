@@ -2,6 +2,7 @@ import admin from "../config/firebase.config";
 import prisma from "../config/prisma.config";
 import jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -77,6 +78,54 @@ class Middleware{
             return res.status(401).json({ error: 'Invalid token' });
         }
     };
+
+    async authenticateAdminToken(req: any, res: any, next: any) {
+        const authHeader = req.headers['authorization'];
+    
+        if (!authHeader || !authHeader.startsWith('Basic ')) {
+            return res.status(401).json({ error: 'Authentication required' });
+        }
+    
+        const token = authHeader.split(' ')[1];
+        
+        // Decode the base64 encoded token
+        const decoded = Buffer.from(token, 'base64').toString('utf-8');
+        const [email, password] = decoded.split(':');
+    
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Missing or Invalid inputs' });
+        }
+
+        const emailRegex = /^[a-zA-Z0-9._-]+@kirana\.pro$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Invalid email format. Only kirana.pro domain is allowed.' });
+        }
+
+        try {
+            // Find user from the database
+            const user = await prisma.admin.findUnique({
+                where: { email }
+            });
+    
+            if (!user) {
+                return res.status(401).json({ error: 'User not found!' });
+            }
+    
+            // Compare the decoded password with the stored hash
+            const hashedPassword = crypto
+                .createHmac('sha256', 'password-secret')
+                .update(password)
+                .digest('hex');
+    
+            if (hashedPassword !== user.password) {
+                return res.status(401).json({ error: 'Invalid password' });
+            }
+            
+            next();
+        } catch (error: any) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+    }
 }
 
 export default new Middleware();

@@ -13,6 +13,8 @@ import homeRouter from './home.routes';
 import middleware from '../../middleware';
 import authRouter from './auth.routes';
 import aiRouter from '../microservices/ai';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from '../../../swagger';
 
 const v1Routers = express.Router();
 
@@ -24,6 +26,7 @@ const selectedMiddleware = process.env.NODE_ENV === 'production'
 /** Routes without middleware or relies on APIKEY */
 v1Routers.use('/auth', authRouter);
 v1Routers.use('/kikoOrderStatus', kikoRouter);
+v1Routers.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 /** Routes with middleware */
 const middlewareRoutes = [

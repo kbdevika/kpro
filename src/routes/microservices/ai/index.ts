@@ -4,6 +4,7 @@ import convertToCart from '../../../helper/convertToCart';
 import validateHeaders from '../../../helper/validateHeader';
 import getPincodeFromCoordinates from '../../../helper/convertLatLongToPincode';
 import handleError from '../../../helper/handleError';
+import prisma from '../../../config/prisma.config';
 
 const aiRouter = express.Router();
 
@@ -117,6 +118,25 @@ aiRouter.get('/:id', async (req: any, res: any) => {
         }
         
         const cart = await convertToCart(req.user.id, data)
+
+        if(cart){
+            await prisma.task.create({
+                data:{
+                    taskId: taskId,
+                    status: 'success',
+                    cartId: cart.cart.cartId,
+                    userId: req.user.id
+                }
+            })
+
+            await prisma.notification.create({
+                data:{
+                    message: `Your cart is ready`,
+                    createdDate: new Date().toISOString(),
+                }
+            })
+        }
+
         res.json(cart)
 
     } catch (error){

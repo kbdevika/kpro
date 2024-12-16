@@ -6,12 +6,10 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { WebSocket, WebSocketServer } from 'ws';
 import * as dotenv from 'dotenv';
-import swaggerUi from 'swagger-ui-express';
 
 import healthCheckRouter from './src/routes/health.routes';
 import ondcRouter from './src/routes/ondc.routes';
 import v1Routers from './src/routes/v1';
-import swaggerSpec from './swagger';
 
 dotenv.config();
 
@@ -48,7 +46,6 @@ const handleWebSocket = (socket: WebSocket, req: any) => {
 // Apply routes
 app.use('/', healthCheckRouter);
 app.use('/', ondcRouter);
-app.use('/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/v1', v1Routers);
 
 // Start server

@@ -102,28 +102,20 @@ model Order {
 model Task {
   id        String     @id @default(uuid())
   status    String
-  summary   String
+  cartId    String
+  taskId    String
   userId    String
+  createdDate DateTime @default(now())
   user      User       @relation(fields: [userId], references: [id])
-  lineItems LineItem[]
 
   @@index([userId])
 }
 
-model LineItem {
-  id       Int    @id @default(autoincrement())
-  taskId   String
-  name     String
-  quantity String
-  task     Task   @relation(fields: [taskId], references: [id])
-
-  @@index([taskId])
-}
-
 model Notification {
   id          String   @id @default(uuid())
+  userId      String?
   message     String
-  mediaUrl    String? // Optional field for media
+  mediaUrl    String?
   createdDate DateTime @default(now())
 }
 
@@ -132,4 +124,12 @@ model Catalogue {
   pincode   String   @unique
   jsonData  Json
   createdAt DateTime @default(now())
+}
+
+model Admin {
+  id        String   @id @default(uuid()) @unique
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

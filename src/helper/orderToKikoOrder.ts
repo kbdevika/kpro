@@ -196,6 +196,8 @@ export default async function orderToKikoOrder(cartId: string, userId: string, a
           cartId: cartId,
           status: 'created',
           addressId: addressId,
+          storeName: '',
+          vendorId: cart.vendorId
         }
       });
     const modifiedorder = mapIncomingToOutgoing(order, cart, address, filteredProfile)
