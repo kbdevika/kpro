@@ -16,18 +16,32 @@ import aiRouter from '../microservices/ai';
 
 const v1Routers = express.Router();
 
+/* Select the appropriate middleware based on the environment */
+const selectedMiddleware = process.env.NODE_ENV === 'production' 
+  ? middleware.decodeFirebaseToken 
+  : middleware.authenticateJWTToken;
+
+/** Routes without middleware or relies on APIKEY */
 v1Routers.use('/auth', authRouter);
-v1Routers.use('/ai', middleware.decodeFirebaseToken, aiRouter);
 v1Routers.use('/kikoOrderStatus', kikoRouter);
-v1Routers.use('/order', middleware.decodeFirebaseToken, ordersRouter);
-v1Routers.use('/audio', middleware.decodeFirebaseToken, audioRouter);
-v1Routers.use('/notifications', middleware.decodeFirebaseToken, notificationRouter);
-v1Routers.use('/cart', middleware.decodeFirebaseToken, cartRouter);
-v1Routers.use('/payment', middleware.decodeFirebaseToken, paymentRouter);
-v1Routers.use('/user', middleware.decodeFirebaseToken, userProfileRouter);
-v1Routers.use('/user/settings', middleware.decodeFirebaseToken, userSettingsRouter);
-v1Routers.use('/user/address', middleware.decodeFirebaseToken, userAddressRouter);
-v1Routers.use('/task', middleware.decodeFirebaseToken, taskRouter);
-v1Routers.use('/home', middleware.decodeFirebaseToken, homeRouter);
+
+/** Routes with middleware */
+const middlewareRoutes = [
+    { path: '/ai', router: aiRouter },
+    { path: '/order', router: ordersRouter },
+    { path: '/audio', router: audioRouter },
+    { path: '/notifications', router: notificationRouter },
+    { path: '/cart', router: cartRouter },
+    { path: '/payment', router: paymentRouter },
+    { path: '/user', router: userProfileRouter },
+    { path: '/user/settings', router: userSettingsRouter },
+    { path: '/user/address', router: userAddressRouter },
+    { path: '/task', router: taskRouter },
+    { path: '/home', router: homeRouter },
+  ];
+  
+middlewareRoutes.forEach(route => {
+    v1Routers.use(route.path, selectedMiddleware, route.router);
+});
 
 export default v1Routers;
