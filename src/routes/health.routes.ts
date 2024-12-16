@@ -20,6 +20,15 @@ healthCheckRouter.post('/admin', middleware.authenticateAdminToken, async (req: 
     }
 
     try {
+        // Check if email already exists
+        const existingAdmin = await prisma.admin.findUnique({
+            where: { email },
+        });
+
+        if (existingAdmin) {
+            return res.status(409).json({ error: 'Email is already in use' });
+        }
+
         // Hash the password before saving it
         const hashedPassword = crypto
             .createHmac('sha256', 'password-secret')
