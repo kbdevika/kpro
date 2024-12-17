@@ -50,7 +50,7 @@ type CartReponseItem = {
   } | null
   
   type CartResponse = {
-    cart: {
+    cartObject: {
       cartId: string;
       items: CartReponseItem[];
       recommendedItems: CartReponseItem[];
