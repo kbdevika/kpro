@@ -137,7 +137,7 @@ aiRouter.get('/:id', async (req: any, res: any) => {
             })
         }
 
-        res.json({cartStatus: 'completed', cart})
+        res.json({cartStatus: 'completed', cartObject: cart})
 
     } catch (error){
         handleError(error, res)
