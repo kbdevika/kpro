@@ -147,6 +147,7 @@ export default async function convertToCart(
 
   // Construct the CartResponse
   const cartResponse: CartResponse = {
+    aiStoreId: data.result.storeId, 
     cartId: newCart.id,
     items: cartItems,
     recommendedItems: recommendedCartItems,

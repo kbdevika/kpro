@@ -137,7 +137,94 @@ aiRouter.get('/:id', async (req: any, res: any) => {
             })
         }
 
-        res.json({cartStatus: 'completed', cart: cart})
+        res.json({cartStatus: 'completed', cart: data})
+
+    } catch (error){
+        handleError(error, res)
+    }
+})
+
+/**
+ * @swagger
+ * /v1/ai/search:
+ *   post:
+ *     summary: Search items using AI with query and store filters
+ *     description: |
+ *       Fetches search results for items based on the given query and AI store ID. 
+ *       It requires a valid JWT token to authorize the request.
+ *     tags:
+ *       - AI
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - query
+ *               - aiStoreId
+ *             properties:
+ *               query:
+ *                 type: string
+ *                 description: The search query to find items.
+ *                 example: "biscuits"
+ *               aiStoreId:
+ *                 type: string
+ *                 description: The store ID used to filter the search results.
+ *                 example: "123"
+ *     responses:
+ *       200:
+ *         description: Successful response with the search results.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               additionalProperties: true
+ *       400:
+ *         description: Missing or invalid inputs.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing or invalid inputs!"
+ *       500:
+ *         description: Internal server error while fetching the AI response.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error occurred while fetching AI response."
+ */
+aiRouter.post('/search', async (req: any, res: any) => {
+    const { query, aiStoreId } = req.body;
+
+    if(!query || !aiStoreId){
+        return res.status(400).json({ error: 'Missing or invalid inputs!' })
+    }
+
+    try{
+        const filters = `storeId="${aiStoreId}"`;
+        const jwtToken = await fetchJwtToken();
+        const response = await fetch(`https://dev-ai-api.kpro42.com/api/item/search?q=${query}&filters=${encodeURIComponent(filters)}`, {
+            method: 'GET',
+            headers: {
+            Authorization: `Bearer ${jwtToken}`,
+            }
+        });
+
+        if(!response.ok){
+            return res.status(response.status).json({ error: `Error occured while fetching AI response. ${response.text()}`})
+        }
+
+        const data = await response.json()
+
+        res.json(data)
 
     } catch (error){
         handleError(error, res)

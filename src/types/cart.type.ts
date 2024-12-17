@@ -50,6 +50,7 @@ type CartReponseItem = {
   } | null
   
   type CartResponse = {
+    aiStoreId: string;
     cartId: string;
     items: CartReponseItem[];
     recommendedItems: CartReponseItem[];
