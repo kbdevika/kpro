@@ -112,9 +112,9 @@ aiRouter.get('/:id', async (req: any, res: any) => {
         const data = await response.json()
 
         if(data.state === 'failed') {
-            return res.json({ cart: 'failed'})
+            return res.json({ cartStatus: 'failed'})
         } else if(data.result === null && data.state === 'active') {
-            return res.json({ cart: 'in-progress'})
+            return res.json({ cartStatus: 'in-progress'})
         }
         
         const cart = await convertToCart(req.user.id, data)
@@ -137,7 +137,7 @@ aiRouter.get('/:id', async (req: any, res: any) => {
             })
         }
 
-        res.json(cart)
+        res.json({cartStatus: 'completed', cart})
 
     } catch (error){
         handleError(error, res)
