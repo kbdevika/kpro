@@ -65,15 +65,31 @@ const razorpay = new RazorPay({
  */
 paymentRouter.post('/', async (req: any, res: any) => {
     try {
-      const { amount } = req.body;
+      let { amount } = req.body;
       
-      if (!amount || typeof amount !== 'number' || amount <= 0) {
-        return res.status(400).json({ error: 'Invalid amount specified.' });
+      if (!amount) {
+        return res.status(400).json({ error: 'Missing or invalid inputs!' });
       }
+
+      // Validate if the amount is an integer-convertible string
+      if (typeof amount === 'string') {
+        if (!/^\d+$/.test(amount)) { // Check if the string contains only digits
+            return res.status(400).json({ error: 'Amount must be a valid number!' });
+        }
+        amount = parseInt(amount, 10); // Safely parse to integer
+      }
+
+      // Validate if the amount is now a positive number
+      if (typeof amount !== 'number' || isNaN(amount) || amount <= 0) {
+          return res.status(400).json({ error: 'Amount must be a positive number!' });
+      }
+
+      // Convert the amount to paisa (if not already in paisa)
+      amount = Math.round(amount * 100);
 
       // Convert the amount to paisa
       const payment = await razorpay.orders.create({
-        amount: Math.round(amount * 100),
+        amount: amount,
         currency: 'INR',
         payment_capture: true
       });
