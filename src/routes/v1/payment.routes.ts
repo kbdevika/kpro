@@ -66,8 +66,14 @@ const razorpay = new RazorPay({
 paymentRouter.post('/', async (req: any, res: any) => {
     try {
       const { amount } = req.body;
+      
+      if (!amount || typeof amount !== 'number' || amount <= 0) {
+        return res.status(400).json({ error: 'Invalid amount specified.' });
+      }
+
+      // Convert the amount to paisa
       const payment = await razorpay.orders.create({
-        amount: amount,
+        amount: Math.round(amount * 100),
         currency: 'INR',
         payment_capture: true
       });
