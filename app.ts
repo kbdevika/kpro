@@ -10,6 +10,7 @@ import * as dotenv from 'dotenv';
 import healthCheckRouter from './src/routes/health.routes';
 import ondcRouter from './src/routes/ondc.routes';
 import v1Routers from './src/routes/v1';
+import qrRouter from './src/routes/qr.routes';
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ const handleWebSocket = (socket: WebSocket, req: any) => {
 // Apply routes
 app.use('/', healthCheckRouter);
 app.use('/', ondcRouter);
+app.use('/', qrRouter);
 app.use('/v1', v1Routers);
 
 // Start server
