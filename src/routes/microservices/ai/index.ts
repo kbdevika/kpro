@@ -124,7 +124,7 @@ aiRouter.get('/:id', async (req: any, res: any) => {
                 data:{
                     taskId: taskId,
                     status: 'success',
-                    cartId: cart.cartObject.cartId,
+                    cartId: cart.cartId,
                     userId: req.user.id
                 }
             })

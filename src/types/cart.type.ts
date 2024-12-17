@@ -50,11 +50,9 @@ type CartReponseItem = {
   } | null
   
   type CartResponse = {
-    cartObject: {
-      cartId: string;
-      items: CartReponseItem[];
-      recommendedItems: CartReponseItem[];
-    };
+    cartId: string;
+    items: CartReponseItem[];
+    recommendedItems: CartReponseItem[];
     orderSummary: {
       subTotal: number;
       total: number;

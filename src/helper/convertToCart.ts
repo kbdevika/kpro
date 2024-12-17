@@ -147,11 +147,9 @@ export default async function convertToCart(
 
   // Construct the CartResponse
   const cartResponse: CartResponse = {
-    cartObject: {
-      cartId: newCart.id,
-      items: cartItems,
-      recommendedItems: recommendedCartItems
-    },
+    cartId: newCart.id,
+    items: cartItems,
+    recommendedItems: recommendedCartItems,
     orderSummary: {
       subTotal: subTotal,
       total: total,
