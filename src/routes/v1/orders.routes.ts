@@ -195,7 +195,7 @@ ordersRouter.post('/', async (req: any, res: any) => {
       const orderSummary = convertToOrderSummary(_order)
       
       // Development environment: return early with mock data
-      if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'localhost' || process.env.NODE_ENV === 'production') {
+      if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'localhost') {
         return res.json({
           message: "Order to Kiko is disabled in development mode",
           orderSummary
