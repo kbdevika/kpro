@@ -16,13 +16,13 @@ export class CartRouter {
     this.router.get("/", this.getAllCarts);
     this.router.get("/:id", this.getCartbyId);
     this.router.post("/", this.createCart);
-    this.router.put("/", this.updateCart);
+    this.router.put("/:id", this.updateCart);
     this.router.delete("/:id", this.deleteCartbyId);
   }
 
   private updateCart = async (req: any, res: any) => {
     try {
-      const data = await this.cartController.updateCart(req, req.body)
+      const data = await this.cartController.updateCart(req, req.params.id, req.body)
       res.json(data);
     } catch (error) {
       handleError(error, res);
@@ -40,7 +40,7 @@ export class CartRouter {
 
   private getCartbyId = async (req: any, res: any) => {
     try {
-      const cart = await this.cartController.getCartbyId(req.params.id)
+      const cart = await this.cartController.getCartbyId(req, req.params.id)
   
       if (!cart) {
         return res.status(404).json({ error: 'Cart not found' });
@@ -53,7 +53,7 @@ export class CartRouter {
 
   private getAllCarts = async (req: any, res: any) => {
     try {
-      const cart = await this.cartController.getAllCarts(req.params.id)
+      const cart = await this.cartController.getAllCarts(req)
       if (!cart) {
         return res.status(404).json({ error: 'Cart not found' });
       }
@@ -66,7 +66,7 @@ export class CartRouter {
 
   private deleteCartbyId = async (req: any, res: any) => {
     try {
-      const data = await this.cartController.deleteCartbyId(req)
+      const data = await this.cartController.deleteCartbyId(req.params.id, req)
       res.json(data);
     } catch (error) {
       handleError(error, res);

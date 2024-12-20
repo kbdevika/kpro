@@ -1,13 +1,13 @@
-import { CartModel } from "@prisma/client";
 import { deliveryCharges } from "../constants";
-import TaskResult, { Items } from "../types/ai.types";
+import TaskResult from "../types/ai.types";
 import mapCartItems from "./aiToCartMapper";
-import createCart, { createCartItems, fetchCart } from "../services/cart";
+import createCart, { createCartItems, fetchCartbyId } from "../services/cart";
 import { createTask } from "../services/task";
 import { createNotification } from "../services/notification";
+import { CartModelType } from "../types/database.types";
 
 // Modify mapCartItems to return items only
-export default async function convertToCart(data: TaskResult, taskId: string, userId: string): Promise<CartModel | null> {
+export default async function convertToCart(data: TaskResult, taskId: string, userId: string): Promise<CartModelType | null> {
   try {
     // Process items and recommendations
     let combinedSubTotal = 0;
@@ -31,11 +31,14 @@ export default async function convertToCart(data: TaskResult, taskId: string, us
     const total = combinedSubTotal + deliveryCharges;
 
     // Creating a cart with details 
-    const cart = await createCart(data, combinedTotalSavedAmount, combinedSubTotal, total);
+    const cart = await createCart(userId, data, combinedTotalSavedAmount, combinedSubTotal, total);
+    if(!cart || !cart.id){
+      throw new Error('Cart is not created in process! Try again!')
+    }
     await createCartItems(combinedCartItems, cart.id);
     await createTask(taskId, cart.id, userId);
     await createNotification(userId);
-    const responseCart = await fetchCart(cart.id);
+    const responseCart = await fetchCartbyId(cart.id);
 
     return responseCart
   } catch(error: any){

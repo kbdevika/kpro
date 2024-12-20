@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Post, Put, Request, Route, Security, Tags } from "tsoa";
+import { Body, Controller, Delete, Get, Post, Put, Request, Route, Security, Tags, Path } from "tsoa";
 import createCart, { createCartItems, deleteCartbyId, fetchAllCart, fetchCartbyId, updatedCart } from "../services/cart";
 import { CartItemsModelType, CartModelType } from "../types/database.types";
-import TaskResult, { Result } from "../types/ai.types";
+import TaskResult from "../types/ai.types";
 
 @Route("cart")
 @Tags("Cart")
@@ -13,9 +13,15 @@ export class CartController extends Controller {
      * @returns A cart model with updated values
      */
     @Put('/:cartId')
-    public async updateCart(@Request() req: any, @Body() body: { cartId: string; updatedItems: CartItemsModelType[] }): Promise<CartModelType>{
+    public async updateCart(
+        @Request() req: any, 
+        @Path('cartId') cartId: string,
+        @Body() body: { 
+            updatedItems: CartItemsModelType[] 
+        }
+    ): Promise<CartModelType> {
         try {
-            const { cartId, updatedItems } = body;
+            const { updatedItems } = body;
             
             if(!cartId || !updatedItems){
                 throw new Error('Missing or invalid inputs!')
@@ -34,13 +40,15 @@ export class CartController extends Controller {
      * @returns A cart model with created cart values.
      */
     @Post('/')
-    public async createCart(@Request() req: any, @Body() body: { 
-        data: TaskResult, 
-        combinedTotalSavedAmount: number, 
-        combinedSubTotal: number, 
-        total: number 
-        }): 
-            Promise<CartModelType> {
+    public async createCart(
+        @Request() req: any, 
+        @Body() body: { 
+            data: TaskResult, 
+            combinedTotalSavedAmount: number, 
+            combinedSubTotal: number, 
+            total: number 
+        }
+    ): Promise<CartModelType> {
         try {
             const { data, combinedTotalSavedAmount, combinedSubTotal, total } = body;
 
@@ -61,12 +69,16 @@ export class CartController extends Controller {
      * @param body contains a list of CartItems and cartId
      * @returns A list of CartItems which are inserted
      */
-    @Post('/items')
-    public async createCartItems(@Request() req: any, @Body() body: {
-        combinedCartItems: CartItemsModelType[], cartId: string
-    }): Promise<CartItemsModelType[]>{
+    @Post('/:cartId/items')
+    public async createCartItems(
+        @Request() req: any, 
+        @Path('cartId') cartId: string,
+        @Body() body: {
+            combinedCartItems: CartItemsModelType[],
+        }
+    ): Promise<CartItemsModelType[]> {
         try {
-            const { combinedCartItems, cartId } = body;
+            const { combinedCartItems } = body;
 
             if(!combinedCartItems || !cartId){
                 throw new Error('Missing or invalid inputs!')
@@ -85,7 +97,9 @@ export class CartController extends Controller {
      * @returns A list of Cart
      */
     @Get('/')
-    public async getAllCarts(@Request() req: any): Promise<CartModelType[]>{
+    public async getAllCarts(
+        @Request() req: any
+    ): Promise<CartModelType[]>{
         try {
             const carts = await fetchAllCart(req.user.id)
             return carts
@@ -101,9 +115,12 @@ export class CartController extends Controller {
      * @returns A Cart model
      */
     @Get('/:cartId')
-    public async getCartbyId(@Request() req: any): Promise<CartModelType>{
+    public async getCartbyId(
+        @Request() req: any,
+        @Path('cartId') cartId: string,
+    ): Promise<CartModelType>{
         try {
-            const cart = await fetchCartbyId(req.params.id)
+            const cart = await fetchCartbyId(cartId)
             return cart
         } catch (error: any){
             throw new Error(error.message)
@@ -116,9 +133,12 @@ export class CartController extends Controller {
      * @returns A Cart model
      */
     @Delete('/:cartId')
-    public async deleteCartbyId(@Request() req: any): Promise<CartModelType>{
+    public async deleteCartbyId(
+        @Path('cartId') cartId: string,
+        @Request() req: any
+    ): Promise<CartModelType>{
         try {
-            const deletedCart = await deleteCartbyId(req.params.id, req.user.id)
+            const deletedCart = await deleteCartbyId(cartId, req.user.Id)
             return deletedCart
         } catch (error: any){
             throw new Error(error.message)

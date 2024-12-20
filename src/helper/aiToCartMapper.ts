@@ -1,5 +1,5 @@
 import { Items, MorRItems } from "../types/ai.types";
-import CartItemsModel from "../types/database.types";
+import CartItemsModel, { CartItemsModelType } from "../types/database.types";
 import { OndcCatalogue } from "../types/ondcStore.types";
 
 /**
@@ -75,7 +75,7 @@ export function mapSingleItem(
     productMetadata: OndcCatalogue,
     recommended: boolean,
     quantity: number
-  ): CartItemsModel {
+  ): CartItemsModelType {
     const originalPrice = parseFloat(productMetadata.price) || 0;
     const discountedPrice = parseFloat(productMetadata.discountedPrice) || 0;
   
@@ -106,7 +106,7 @@ export default function mapCartItems(
     items: Items[],
     recommended: boolean,
     getSource: (item: Items) => MorRItems[]
-  ): { cartItems: CartItemsModel[]; subTotal: number; totalSavedAmount: number } {
+  ): { cartItems: CartItemsModelType[]; subTotal: number; totalSavedAmount: number } {
     let localSubTotal = 0;
     let localSavedAmount = 0;
   
