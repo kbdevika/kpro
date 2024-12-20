@@ -187,7 +187,7 @@ paymentRouter.post('/', async (req: any, res: any) => {
         const orderSummary = convertToOrderSummary(_order)
         
         // Development environment: return early with mock data
-        if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'localhost') {
+        if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'localhost' || process.env.NODE_ENV === 'production') {
           return res.json({
             success: true,
             message: "Order to Kiko is disabled in development mode",
