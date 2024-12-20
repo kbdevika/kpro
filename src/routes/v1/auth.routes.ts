@@ -62,12 +62,12 @@ authRouter.post('/continue', async (req: any, res: any) => {
       // Validate Truecaller token (implement actual validation)
       const userId = token;
   
-      let user = await prisma.user.findUnique({
+      let user = await prisma.userModel.findUnique({
         where: { id: userId }
       });
   
       if (!user) {
-        user = await prisma.user.create({
+        user = await prisma.userModel.create({
           data: { id: userId }
         });
       }

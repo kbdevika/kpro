@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request } from 'express';
 import middleware from '../middleware';
 import prisma from '../config/prisma.config';
 import handleError from '../helper/handleError';
@@ -11,7 +11,7 @@ const healthCheckRouter = express.Router();
 healthCheckRouter.get('/health', (req: any, res: any) => { res.status(200).json({ health: "OK" }) });
 
 /** Add new admins */
-healthCheckRouter.post('/admin', middleware.authenticateAdminToken, async (req: any, res: any) => {
+healthCheckRouter.post('/admin', middleware.authenticateAdminToken, async (req: Request, res: any) => {
     const { email, password } = req.body;
 
     // Ensure password is provided
@@ -52,18 +52,18 @@ healthCheckRouter.post('/admin', middleware.authenticateAdminToken, async (req: 
 healthCheckRouter.get('/database', middleware.authenticateAdminToken, async (req: any, res: any) => {
     try {
         // Get the number of users
-        const userCount = await prisma.user.count();
+        const userCount = await prisma.userModel.count();
 
         // Aggregation for count of users per city or pincode
-        const cityUserCounts = await prisma.address.groupBy({
-            by: ['city'],
+        const cityUserCounts = await prisma.userAddressModel.groupBy({
+            by: ['addressCity'],
             _count: {
                 userId: true,
             },
         });
 
-        const pincodeUserCounts = await prisma.address.groupBy({
-            by: ['postalCode'],
+        const pincodeUserCounts = await prisma.userAddressModel.groupBy({
+            by: ['addressPostalCode'],
             _count: {
                 userId: true,
             },
@@ -77,25 +77,19 @@ healthCheckRouter.get('/database', middleware.authenticateAdminToken, async (req
         };
         
         // Get the total number of orders
-        const orderCount = await prisma.order.count();
+        const orderCount = await prisma.orderModel.count();
         
         // Get the total number of carts
-        const cartCount = await prisma.cart.count();
+        const cartCount = await prisma.cartModel.count();
         
         // Get the total number of processed audios
-        const processedAudioCount = await prisma.task.count();
+        const processedAudioCount = await prisma.taskModel.count();
         
         // Get the number of admins
-        const adminCount = await prisma.admin.findMany();
+        const adminCount = await prisma.adminModel.findMany();
         
         // Get database health status by running a simple query
         const dbHealthStatus = 'ok'; // You can perform additional checks if necessary
-
-        // Server stats (CPU, memory, etc.)
-        const cpuUsage = os.loadavg(); // Array of 1, 5, 15 minute CPU load averages
-        const freeMemory = os.freemem(); // Free memory in bytes
-        const totalMemory = os.totalmem(); // Total memory in bytes
-        const uptime = os.uptime(); // System uptime in seconds
 
         // Prepare response data
         const stats = {
@@ -105,6 +99,25 @@ healthCheckRouter.get('/database', middleware.authenticateAdminToken, async (req
             processedAudioCount,
             adminCount,
             dbHealthStatus,
+        };
+
+        // Respond with the stats
+        return res.json(stats);
+    } catch (error) {
+        handleError(error, res);
+    }
+});
+
+healthCheckRouter.get('/telemetry', middleware.authenticateAdminToken, async (req: any, res: any) => {
+    try {
+        // Server stats (CPU, memory, etc.)
+        const cpuUsage = os.loadavg(); // Array of 1, 5, 15 minute CPU load averages
+        const freeMemory = os.freemem(); // Free memory in bytes
+        const totalMemory = os.totalmem(); // Total memory in bytes
+        const uptime = os.uptime(); // System uptime in seconds
+
+        // Prepare response data
+        const stats = {
             cpuUsage,
             memory: {
                 free: freeMemory,

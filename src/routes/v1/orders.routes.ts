@@ -3,7 +3,6 @@ import handleError from '../../helper/handleError';
 import prisma from '../../config/prisma.config';
 import orderToKikoOrder from '../../helper/orderToKikoOrder';
 import * as dotenv from 'dotenv';
-import convertToOrderSummary from '../../helper/convertToOrderSummary';
 import kikoUrl from '../../constants';
 
 dotenv.config();
@@ -87,16 +86,14 @@ const ordersRouter = express.Router();
  */
 ordersRouter.get('/', async (req: any, res: any) => {
     try {
-      const orders = await prisma.order.findMany({
+      const orders = await prisma.orderModel.findMany({
         where: {
-          cart: {
-            userId: req.user.id,
-          },
+          userId: req.user.id
         },
         include: {
           cart: {
             include: {
-              items: true,
+              cartItems: true,
             },
           },
           address: true
@@ -191,14 +188,13 @@ ordersRouter.post('/', async (req: any, res: any) => {
     }
 
     try {
-      const { order, _order } = await orderToKikoOrder(cartId.toString(), req.user.id, parseInt(addressId))
-      const orderSummary = convertToOrderSummary(_order)
+      const {kikoOrder, order} = await orderToKikoOrder(cartId.toString(), req.user.id, addressId)
       
       // Development environment: return early with mock data
       if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'localhost') {
         return res.json({
           message: "Order to Kiko is disabled in development mode",
-          orderSummary
+          order
         });
       }
       
@@ -206,7 +202,7 @@ ordersRouter.post('/', async (req: any, res: any) => {
       const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(order),
+        body: JSON.stringify(kikoOrder),
       });
 
       // Handle external API response
@@ -226,7 +222,7 @@ ordersRouter.post('/', async (req: any, res: any) => {
       }
 
       if(data.Status === true){
-        return res.json({message: 'created', orderSummary});
+        return res.json({message: 'created', order});
       }
 
       return res.json({ message: 'failed', ...data})
@@ -325,7 +321,7 @@ ordersRouter.post('/', async (req: any, res: any) => {
  */
   ordersRouter.get('/:id', async (req: any, res: any) => {
     try {
-      const orders = await prisma.order.findFirst({
+      const orders = await prisma.orderModel.findFirst({
         where: {
           id: req.params.id
         },
@@ -335,7 +331,7 @@ ordersRouter.post('/', async (req: any, res: any) => {
         }
       });
   
-      if (orders && orders.cart.userId === req.userId) {
+      if (orders && orders.userId === req.userId) {
         return res.status(403).json({ error: 'Unauthorized user' });
       }
   
@@ -423,7 +419,7 @@ ordersRouter.post('/', async (req: any, res: any) => {
  */
   ordersRouter.get('/:id/track', async (req: any, res: any) => {
     try {
-      const orders = await prisma.order.findUnique({
+      const orders = await prisma.orderModel.findUnique({
         where: {
           id: req.params.id
         },
@@ -432,7 +428,7 @@ ordersRouter.post('/', async (req: any, res: any) => {
         }
       });
   
-      if (orders && orders.cart.userId === req.userId) {
+      if (orders && orders.userId === req.userId) {
         return res.status(401).json({ error: 'Unauthorized user' });
       }
   
@@ -440,7 +436,7 @@ ordersRouter.post('/', async (req: any, res: any) => {
         return res.status(404).json({ error: 'No orders found for this user' });
       }
   
-      res.json({ orderStatus: orders.status, deliveryStatus: orders.deliveryStatus });
+      res.json({ orderStatus: orders.orderStatus, deliveryStatus: orders.orderDeliveryStatus });
     } catch (error) {
       handleError(error, res);
     }
@@ -541,7 +537,7 @@ ordersRouter.post('/', async (req: any, res: any) => {
     ];
   
     try {
-      const orders = await prisma.order.findFirst({
+      const orders = await prisma.orderModel.findFirst({
         where: {
           id: req.params.id
         },
@@ -553,26 +549,26 @@ ordersRouter.post('/', async (req: any, res: any) => {
       // Check if the order exists
       if(orders){
         // Check if the user owns the order
-        if (orders.cart.userId !== req.user.id) {
+        if (orders.userId !== req.user.id) {
           return res.status(403).json({ error: 'You are not authorized to cancel this order' });
         }
   
         // Check if the order is already marked completed
-        if(orders.status === 'completed'){
+        if(orders.orderStatus === 'completed'){
           return res.status(400).json({ 
             error: 'Order is delivered'
           })
         }
   
         // Check if the order is already marked cancelled
-        if(orders.deliveryStatus === 'cancelled'){
+        if(orders.orderDeliveryStatus === 'cancelled'){
           return res.status(400).json({ 
             error: 'Order has been cancelled'
           })
         }
     
         // Check if the order is already left the warehouse
-        if(deliveryStatusRef.includes(orders.deliveryStatus) && orderStatusRef.includes(orders.status)){
+        if(deliveryStatusRef.includes(orders.orderDeliveryStatus) && orderStatusRef.includes(orders.orderStatus)){
           return res.status(400).json({ 
             error: 'Order has been picked-up. No more cancellation possible'
           })

@@ -1,6 +1,7 @@
 import express from 'express';
 import prisma from '../../config/prisma.config';
 import handleError from '../../helper/handleError';
+import isValidInt, { isValidFloat } from '../../helper/validations';
 
 const userAddressRouter = express.Router()
 
@@ -250,9 +251,9 @@ userAddressRouter.get('/', async (req: any, res: any) => {
  */
  userAddressRouter.delete('/:id', async (req: any, res: any) => {
   try {
-    const address = await prisma.address.delete({
+    const address = await prisma.userAddressModel.delete({
       where: { 
-        id: parseInt(req.params.id),
+        id: req.params.id,
         userId: req.user.id
        }
     });
@@ -383,24 +384,55 @@ userAddressRouter.get('/', async (req: any, res: any) => {
  */
   userAddressRouter.post('/', async (req: any, res: any) => {
     try {
-      const { address_line1, address_line2, street, city, state, country,latitude, longitude, addressType, landmark, postalCode } = req.body;
-      const address = await prisma.address.create({
+      const { address_line1, address_line2, street, city, state, country, latitude, longitude, addressType, landmark, postalCode } = req.body;
+
+      if (
+        !address_line1 ||
+        !state ||
+        !city ||
+        !isValidFloat(latitude) ||
+        !isValidFloat(longitude) ||
+        !isValidInt(postalCode)
+      ){
+        return res.status(400).json({ error: 'Missing or invalid inputs'})
+      }
+
+      const settings = await prisma.userSettingsModel.findMany({
+        where: {
+          userId: req.user.id,
+          settingsKey: {
+            in: ['phone', 'name'],
+          },
+        },
+      });
+      
+      const phone = settings.find((setting) => setting.settingsKey === 'phone');
+      const name = settings.find((setting) => setting.settingsKey === 'name');
+      
+      // Check if either phone or name is missing
+      if (!phone) {
+        return res.status(400).json({ error: 'Missing phone number in profile!' });
+      }
+
+      const address = await prisma.userAddressModel.create({
         data: {
           userId: req.user.id,
-          address_line1,
-          address_line2,
-          street,
-          city,
-          state,
-          country,
-          latitude,
-          longitude,
-          addressType,
-          landmark,
-          postalCode
+          addressLine1: address_line1,
+          addressLine2: address_line2,
+          addressStreet: street,
+          addressCity: city,
+          addressState: state,
+          addressCountry: country,
+          addressLatitude: latitude,
+          addressLongitude: longitude,
+          addressAddressType: addressType,
+          addressLandmark: landmark,
+          addressPostalCode: postalCode,
+          addressContactName: name ? name.settingsValue : `trendsetter`,
+          addressContactPhone: phone.settingsValue,
         }
       });
-      res.json({ message: 'Address created successfully', id: address.id });
+      res.json({ message: 'Address created successfully', address: address });
     } catch (error) {
       handleError(error, res);
     }

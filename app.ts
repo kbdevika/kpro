@@ -2,23 +2,24 @@
  * KiranaPro Software Private Limited, 2024
  * 
  */
-import express from 'express';
+import express, { Application } from 'express';
 import jwt from 'jsonwebtoken';
 import { WebSocket, WebSocketServer } from 'ws';
 import * as dotenv from 'dotenv';
-
+import swaggerUi from "swagger-ui-express";
 import healthCheckRouter from './src/routes/health.routes';
 import ondcRouter from './src/routes/ondc.routes';
 import v1Routers from './src/routes/v1';
-import qrRouter from './src/routes/qr.routes';
+import { RegisterRoutes } from "./src/routes/routes";
+import * as swaggerDocument from "./src/swagger/swagger.json";
 
 dotenv.config();
 
-const app = express();
+const app: Application = express();
 const wss = new WebSocketServer({ noServer: true });
 
 app.use(express.json());
-
+RegisterRoutes(app);
 const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key';
 
 // WebSocket handling
@@ -47,8 +48,8 @@ const handleWebSocket = (socket: WebSocket, req: any) => {
 // Apply routes
 app.use('/', healthCheckRouter);
 app.use('/', ondcRouter);
-app.use('/', qrRouter);
 app.use('/v1', v1Routers);
+app.use('/v1/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Start server
 const server = app.listen(8000, () => {

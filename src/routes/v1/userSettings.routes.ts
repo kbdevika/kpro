@@ -43,7 +43,7 @@ const userSettingsRouter = express.Router();
  */
 userSettingsRouter.get('/', async (req: any, res) => {
     try {
-      const settings = await prisma.userSetting.findMany({
+      const settings = await prisma.userSettingsModel.findMany({
         where: { userId: req.user.id }
       });
       res.json(settings);
@@ -94,11 +94,11 @@ userSettingsRouter.get('/', async (req: any, res) => {
   userSettingsRouter.post('/', async (req: any, res) => {
     try {
       const { key, value } = req.body;
-      await prisma.userSetting.create({
+      await prisma.userSettingsModel.create({
         data: {
           userId: req.user.id,
-          key,
-          value
+          settingsKey: key,
+          settingsValue: value,
         }
       });
       res.json({ message: 'Setting created successfully' });
@@ -157,12 +157,12 @@ userSettingsRouter.get('/', async (req: any, res) => {
       const { key } = req.params;
       const { value } = req.body;
       
-      const updated = await prisma.userSetting.updateMany({
+      const updated = await prisma.userSettingsModel.updateMany({
         where: {
           userId: req.user.id,
-          key
+          settingsKey: key,
         },
-        data: { value }
+        data: { settingsValue: value }
       });
   
       if (updated.count === 0) {
@@ -214,10 +214,10 @@ userSettingsRouter.get('/', async (req: any, res) => {
     try {
       const { key } = req.params;
       
-      const deleted = await prisma.userSetting.deleteMany({
+      const deleted = await prisma.userSettingsModel.deleteMany({
         where: {
           userId: req.user.id,
-          key
+          settingsKey: key
         }
       });
   

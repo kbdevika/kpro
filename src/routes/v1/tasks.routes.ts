@@ -33,11 +33,11 @@ const taskRouter = express.Router();
 taskRouter.post('/', async (req: any, res: any) => {
     const { taskId, cartId } = req.body 
     try {
-      const task = await prisma.task.create({
+      const task = await prisma.taskModel.create({
         data: {
-          status: 'processing',
+          taskStatus: 'processing',
           userId: req.user.id,
-          taskId: taskId.toString(),
+          taskExternalId: taskId.toString(),
           cartId: cartId.toString()
         }
       });
@@ -101,7 +101,7 @@ taskRouter.post('/', async (req: any, res: any) => {
  */
   taskRouter.get('/:taskId', async (req: any, res: any) => {
     try {
-      const task = await prisma.task.findFirst({
+      const task = await prisma.taskModel.findFirst({
         where: {
           id: req.params.taskId,
           userId: req.user.id
@@ -112,18 +112,18 @@ taskRouter.post('/', async (req: any, res: any) => {
         return res.status(404).json({ error: 'Task not found' });
       }
   
-      if (task.status === 'success') {
+      if (task.taskStatus === 'success') {
         res.json({
           status: 'success',
           output: {
             cartId: task.cartId,
-            taskId: task.taskId,
+            taskId: task.taskExternalId,
             userId: task.userId,
-            createdAt: task.createdDate
+            createdAt: task.taskCreatedDate
           }
         });
       } else {
-        res.json({ status: task.status });
+        res.json({ status: task.taskStatus });
       }
     } catch (error) {
       handleError(error, res);

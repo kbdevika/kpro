@@ -4,7 +4,6 @@ import crypto from 'crypto';
 import RazorPay from 'razorpay';
 import * as dotenv from 'dotenv';
 import orderToKikoOrder from '../../helper/orderToKikoOrder';
-import convertToOrderSummary from '../../helper/convertToOrderSummary';
 import kikoUrl from '../../constants';
 
 dotenv.config();
@@ -183,15 +182,14 @@ paymentRouter.post('/', async (req: any, res: any) => {
       const generatedSignature = hmac.digest("hex")
       
       if(generatedSignature === signature){
-        const { order, _order } = await orderToKikoOrder(cart_id.toString(), req.user.id, parseInt(address_id))
-        const orderSummary = convertToOrderSummary(_order)
+        const { kikoOrder, order } = await orderToKikoOrder(cart_id.toString(), req.user.id, address_id)
         
         // Development environment: return early with mock data
         if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'localhost') {
           return res.json({
             success: true,
             message: "Order to Kiko is disabled in development mode",
-            orderSummary
+            order
           });
         }
         
@@ -199,7 +197,7 @@ paymentRouter.post('/', async (req: any, res: any) => {
         const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(order),
+          body: JSON.stringify(kikoOrder),
         });
   
         // Handle external API response
@@ -219,7 +217,7 @@ paymentRouter.post('/', async (req: any, res: any) => {
         }
   
         if(data.Status === true){
-          return res.json({success: true, message: 'order-success', orderSummary});
+          return res.json({success: true, message: 'order-success', order});
         }
   
         return res.json({ status: true, message: 'order-failed', ...data})

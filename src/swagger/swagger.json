@@ -1,0 +1,1100 @@
+{
+	"openapi": "3.0.0",
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"CartItemsModelType": {
+				"properties": {
+					"itemExternalId": {
+						"type": "string",
+						"nullable": true
+					},
+					"itemRecommended": {
+						"type": "boolean"
+					},
+					"itemWeightUnit": {
+						"type": "string"
+					},
+					"itemWeight": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemStockStatus": {
+						"type": "string"
+					},
+					"itemDiscountedPrice": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemOriginalPrice": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemQuantity": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemImageUrl": {
+						"type": "string"
+					},
+					"itemDescription": {
+						"type": "string"
+					},
+					"itemName": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"itemExternalId",
+					"itemRecommended",
+					"itemWeightUnit",
+					"itemWeight",
+					"itemStockStatus",
+					"itemDiscountedPrice",
+					"itemOriginalPrice",
+					"itemQuantity",
+					"itemImageUrl",
+					"itemDescription",
+					"itemName"
+				],
+				"type": "object",
+				"description": "Cart Items"
+			},
+			"CartModelType": {
+				"properties": {
+					"userId": {
+						"type": "string"
+					},
+					"cartNote": {
+						"type": "string"
+					},
+					"cartSavingsMessage": {
+						"type": "string"
+					},
+					"cartSaved": {
+						"type": "number",
+						"format": "double"
+					},
+					"cartDiscount": {
+						"type": "number",
+						"format": "double"
+					},
+					"cartDeliveryCharges": {
+						"type": "number",
+						"format": "double"
+					},
+					"cartFreeDeliveryThreshold": {
+						"type": "number",
+						"format": "double"
+					},
+					"cartDeliverytime": {
+						"type": "number",
+						"format": "double"
+					},
+					"cartTotal": {
+						"type": "number",
+						"format": "double"
+					},
+					"cartSubTotal": {
+						"type": "number",
+						"format": "double"
+					},
+					"cartItems": {
+						"items": {
+							"$ref": "#/components/schemas/CartItemsModelType"
+						},
+						"type": "array"
+					},
+					"cartStoreContact": {
+						"type": "string"
+					},
+					"cartStorePhone": {
+						"type": "string"
+					},
+					"cartStoreName": {
+						"type": "string"
+					},
+					"cartStoreId": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"userId",
+					"cartNote",
+					"cartSavingsMessage",
+					"cartSaved",
+					"cartDiscount",
+					"cartDeliveryCharges",
+					"cartFreeDeliveryThreshold",
+					"cartDeliverytime",
+					"cartTotal",
+					"cartSubTotal",
+					"cartStoreContact",
+					"cartStorePhone",
+					"cartStoreName",
+					"cartStoreId"
+				],
+				"type": "object",
+				"description": "Cart"
+			},
+			"OndcStoreAddress": {
+				"properties": {
+					"contactPersonMobile": {
+						"type": "string"
+					},
+					"contactPersonName": {
+						"type": "string"
+					},
+					"longitude": {
+						"type": "number",
+						"format": "double"
+					},
+					"latitude": {
+						"type": "number",
+						"format": "double"
+					},
+					"country": {
+						"type": "string"
+					},
+					"city": {
+						"type": "string"
+					},
+					"state": {
+						"type": "string"
+					},
+					"nearBy": {
+						"type": "string"
+					},
+					"address2": {
+						"type": "string"
+					},
+					"address1": {
+						"type": "string"
+					},
+					"pincode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"contactPersonMobile",
+					"contactPersonName",
+					"longitude",
+					"latitude",
+					"country",
+					"city",
+					"state",
+					"nearBy",
+					"address2",
+					"address1",
+					"pincode"
+				],
+				"type": "object"
+			},
+			"OndcStatutoryReqsPackagedCommodities": {
+				"properties": {
+					"net_quantity_or_measure_of_commodity_in_pkg": {
+						"type": "string"
+					},
+					"month_year_of_manufacture_packing_import": {
+						"type": "string"
+					},
+					"common_or_generic_name_of_commodity": {
+						"type": "string"
+					},
+					"imported_product_country_of_origin": {
+						"type": "string"
+					},
+					"manufacturer_or_packer_address": {
+						"type": "string"
+					},
+					"manufacturer_or_packer_name": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"net_quantity_or_measure_of_commodity_in_pkg",
+					"month_year_of_manufacture_packing_import",
+					"common_or_generic_name_of_commodity",
+					"imported_product_country_of_origin",
+					"manufacturer_or_packer_address",
+					"manufacturer_or_packer_name"
+				],
+				"type": "object"
+			},
+			"OndcCatalogue": {
+				"properties": {
+					"statutory_reqs_packaged_commodities": {
+						"$ref": "#/components/schemas/OndcStatutoryReqsPackagedCommodities"
+					},
+					"petpoojaVariationId": {
+						"type": "string"
+					},
+					"petpoojaAddonitemId": {
+						"type": "string"
+					},
+					"childCustomGroupId": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"availableQuantity": {
+						"type": "string"
+					},
+					"mainRestaurantId": {
+						"type": "string"
+					},
+					"discountedPrice": {
+						"type": "string"
+					},
+					"countryOfOrigin": {
+						"type": "string"
+					},
+					"petpoojaItemId": {
+						"type": "string"
+					},
+					"subCategoryId": {
+						"type": "string"
+					},
+					"productImages": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"packagingCost": {
+						"type": "number",
+						"format": "double"
+					},
+					"isCancellable": {
+						"type": "boolean"
+					},
+					"customGroupId": {
+						"type": "string"
+					},
+					"restaurantId": {
+						"type": "string"
+					},
+					"packagedFood": {
+						"type": "boolean"
+					},
+					"isReturnable": {
+						"type": "boolean"
+					},
+					"productName": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"weightUnit": {
+						"type": "string"
+					},
+					"categoryId": {
+						"type": "string"
+					},
+					"bulkUpload": {
+						"type": "boolean"
+					},
+					"updatedAt": {
+						"type": "string"
+					},
+					"productId": {
+						"type": "string"
+					},
+					"isDeleted": {
+						"type": "boolean"
+					},
+					"createdAt": {
+						"type": "string"
+					},
+					"isCustom": {
+						"type": "boolean"
+					},
+					"weight": {
+						"type": "number",
+						"format": "double"
+					},
+					"userId": {
+						"type": "string"
+					},
+					"status": {
+						"type": "string"
+					},
+					"menuId": {
+						"type": "string"
+					},
+					"price": {
+						"type": "string"
+					},
+					"brand": {
+						"type": "string"
+					},
+					"tax": {
+						"type": "number",
+						"format": "double"
+					},
+					"gst": {
+						"type": "number",
+						"format": "double"
+					},
+					"_id": {
+						"type": "string"
+					},
+					"__v": {
+						"type": "number",
+						"format": "double"
+					},
+					"l4": {
+						"type": "string"
+					},
+					"l3": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"statutory_reqs_packaged_commodities",
+					"petpoojaVariationId",
+					"petpoojaAddonitemId",
+					"childCustomGroupId",
+					"availableQuantity",
+					"mainRestaurantId",
+					"discountedPrice",
+					"countryOfOrigin",
+					"petpoojaItemId",
+					"subCategoryId",
+					"productImages",
+					"packagingCost",
+					"isCancellable",
+					"customGroupId",
+					"restaurantId",
+					"packagedFood",
+					"isReturnable",
+					"productName",
+					"description",
+					"weightUnit",
+					"categoryId",
+					"bulkUpload",
+					"updatedAt",
+					"productId",
+					"isDeleted",
+					"createdAt",
+					"isCustom",
+					"weight",
+					"userId",
+					"status",
+					"menuId",
+					"price",
+					"brand",
+					"tax",
+					"gst",
+					"_id",
+					"__v",
+					"l4",
+					"l3"
+				],
+				"type": "object"
+			},
+			"ItemProduct": {
+				"properties": {
+					"createdAt": {
+						"type": "string"
+					},
+					"storeId": {
+						"type": "string"
+					},
+					"lastUpdated": {
+						"type": "string"
+					},
+					"metadata": {
+						"$ref": "#/components/schemas/OndcCatalogue"
+					},
+					"kikoId": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"createdAt",
+					"storeId",
+					"lastUpdated",
+					"metadata",
+					"kikoId",
+					"id"
+				],
+				"type": "object"
+			},
+			"MorRItems": {
+				"properties": {
+					"product": {
+						"$ref": "#/components/schemas/ItemProduct"
+					},
+					"matchReason": {
+						"type": "string"
+					},
+					"confidence": {
+						"type": "string"
+					},
+					"productId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"product",
+					"matchReason",
+					"productId"
+				],
+				"type": "object"
+			},
+			"ItemsMetadata": {
+				"properties": {
+					"recommendations": {
+						"items": {
+							"$ref": "#/components/schemas/MorRItems"
+						},
+						"type": "array"
+					},
+					"matching": {
+						"$ref": "#/components/schemas/MorRItems"
+					}
+				},
+				"required": [
+					"recommendations",
+					"matching"
+				],
+				"type": "object"
+			},
+			"Items": {
+				"properties": {
+					"metadata": {
+						"$ref": "#/components/schemas/ItemsMetadata"
+					},
+					"unit": {
+						"type": "string"
+					},
+					"quantity": {
+						"type": "number",
+						"format": "double"
+					},
+					"name": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"metadata",
+					"unit",
+					"quantity",
+					"name"
+				],
+				"type": "object"
+			},
+			"OriginalItems": {
+				"properties": {
+					"unit": {
+						"type": "string"
+					},
+					"quantity": {
+						"type": "number",
+						"format": "double"
+					},
+					"name": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"unit",
+					"quantity",
+					"name"
+				],
+				"type": "object"
+			},
+			"Result": {
+				"properties": {
+					"originalItems": {
+						"items": {
+							"$ref": "#/components/schemas/OriginalItems"
+						},
+						"type": "array"
+					},
+					"completeness": {
+						"type": "number",
+						"format": "double"
+					},
+					"items": {
+						"items": {
+							"$ref": "#/components/schemas/Items"
+						},
+						"type": "array"
+					},
+					"storeData": {
+						"properties": {
+							"ondcOrderServiceability": {
+								"properties": {
+									"panIndiaDeliveryCharges": {
+										"type": "number",
+										"format": "double"
+									},
+									"freeDeliveryMinValue": {
+										"type": "number",
+										"format": "double"
+									},
+									"panIndiaDelivery": {
+										"type": "boolean"
+									},
+									"nightTimeTat": {
+										"type": "string"
+									},
+									"freeDelivery": {
+										"type": "boolean"
+									},
+									"dayTimeTat": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"panIndiaDeliveryCharges",
+									"freeDeliveryMinValue",
+									"panIndiaDelivery",
+									"nightTimeTat",
+									"freeDelivery",
+									"dayTimeTat"
+								],
+								"type": "object"
+							},
+							"deliveryRadius": {
+								"type": "number",
+								"format": "double"
+							},
+							"storeAddress": {
+								"$ref": "#/components/schemas/OndcStoreAddress"
+							},
+							"ondcVerified": {
+								"type": "boolean"
+							},
+							"fssaiLicense": {
+								"type": "string"
+							},
+							"storeTiming": {
+								"properties": {
+									"availability": {
+										"items": {
+											"type": "string"
+										},
+										"type": "array"
+									},
+									"storeTime": {
+										"items": {
+											"type": "string"
+										},
+										"type": "array"
+									},
+									"breakTime": {
+										"items": {
+											"type": "string"
+										},
+										"type": "array"
+									},
+									"holidays": {
+										"items": {
+											"type": "string"
+										},
+										"type": "array"
+									}
+								},
+								"required": [
+									"availability",
+									"storeTime",
+									"breakTime",
+									"holidays"
+								],
+								"type": "object"
+							},
+							"storeStatus": {
+								"type": "string"
+							},
+							"storeImages": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"description": {
+								"type": "string"
+							},
+							"storeName": {
+								"type": "string"
+							},
+							"storeLogo": {
+								"type": "string"
+							},
+							"mobile": {
+								"type": "string"
+							},
+							"phone": {
+								"type": "string"
+							},
+							"email": {
+								"type": "string"
+							},
+							"name": {
+								"type": "string"
+							},
+							"_id": {
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"ondcOrderServiceability",
+							"deliveryRadius",
+							"storeAddress",
+							"ondcVerified",
+							"fssaiLicense",
+							"storeTiming",
+							"storeStatus",
+							"storeImages",
+							"description",
+							"storeName",
+							"storeLogo",
+							"mobile",
+							"phone",
+							"email",
+							"name",
+							"_id",
+							"id"
+						],
+						"type": "object"
+					},
+					"storeId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"originalItems",
+					"completeness",
+					"items",
+					"storeData",
+					"storeId"
+				],
+				"type": "object"
+			},
+			"TaskResult": {
+				"properties": {
+					"result": {
+						"$ref": "#/components/schemas/Result"
+					},
+					"progress": {
+						"type": "number",
+						"format": "double"
+					},
+					"state": {
+						"type": "string"
+					},
+					"taskId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"result",
+					"progress",
+					"state",
+					"taskId"
+				],
+				"type": "object"
+			}
+		},
+		"securitySchemes": {
+			"jwt": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT"
+			}
+		}
+	},
+	"info": {
+		"title": "core-api",
+		"version": "1.4.0",
+		"license": {
+			"name": "ISC"
+		},
+		"contact": {}
+	},
+	"paths": {
+		"/home": {
+			"get": {
+				"operationId": "GetHome",
+				"responses": {
+					"200": {
+						"description": "Home page details",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"carousels": {
+											"properties": {
+												"title": {
+													"type": "string"
+												},
+												"data": {
+													"items": {
+														"properties": {
+															"deeplink": {
+																"type": "string"
+															},
+															"image_url": {
+																"type": "string"
+															},
+															"id": {
+																"type": "string"
+															}
+														},
+														"required": [
+															"deeplink",
+															"image_url",
+															"id"
+														],
+														"type": "object"
+													},
+													"type": "array"
+												}
+											},
+											"required": [
+												"title",
+												"data"
+											],
+											"type": "object"
+										},
+										"banners": {
+											"properties": {
+												"title": {
+													"type": "string"
+												},
+												"data": {
+													"items": {
+														"properties": {
+															"deeplink": {
+																"type": "string"
+															},
+															"image_url": {
+																"type": "string"
+															},
+															"id": {
+																"type": "string"
+															}
+														},
+														"required": [
+															"deeplink",
+															"image_url",
+															"id"
+														],
+														"type": "object"
+													},
+													"type": "array"
+												}
+											},
+											"required": [
+												"title",
+												"data"
+											],
+											"type": "object"
+										},
+										"welcomeSubText": {
+											"type": "string"
+										},
+										"welcomeText": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"carousels",
+										"banners",
+										"welcomeSubText",
+										"welcomeText"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "Retrieves home page data, including welcome text, banners, and carousels.",
+				"tags": [
+					"Home"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
+			}
+		},
+		"/cart/{cartId}": {
+			"put": {
+				"operationId": "UpdateCart",
+				"responses": {
+					"200": {
+						"description": "A cart model with updated values",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CartModelType"
+								}
+							}
+						}
+					}
+				},
+				"description": "Updates a cart with the specified cart ID.",
+				"tags": [
+					"Cart"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"updatedItems": {
+										"items": {
+											"$ref": "#/components/schemas/CartItemsModelType"
+										},
+										"type": "array"
+									},
+									"cartId": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"updatedItems",
+									"cartId"
+								],
+								"type": "object"
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "GetCartbyId",
+				"responses": {
+					"200": {
+						"description": "A Cart model",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CartModelType"
+								}
+							}
+						}
+					}
+				},
+				"description": "Fetch specific carts using cartId for a specific user",
+				"tags": [
+					"Cart"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
+			},
+			"delete": {
+				"operationId": "DeleteCartbyId",
+				"responses": {
+					"200": {
+						"description": "A Cart model",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CartModelType"
+								}
+							}
+						}
+					}
+				},
+				"description": "Delete a specific cart using cartId",
+				"tags": [
+					"Cart"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
+			}
+		},
+		"/cart": {
+			"post": {
+				"operationId": "CreateCart",
+				"responses": {
+					"200": {
+						"description": "A cart model with created cart values.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CartModelType"
+								}
+							}
+						}
+					}
+				},
+				"description": "Creates a new Cart from AI Microservice.",
+				"tags": [
+					"Cart"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"total": {
+										"type": "number",
+										"format": "double"
+									},
+									"combinedSubTotal": {
+										"type": "number",
+										"format": "double"
+									},
+									"combinedTotalSavedAmount": {
+										"type": "number",
+										"format": "double"
+									},
+									"data": {
+										"$ref": "#/components/schemas/TaskResult"
+									}
+								},
+								"required": [
+									"total",
+									"combinedSubTotal",
+									"combinedTotalSavedAmount",
+									"data"
+								],
+								"type": "object"
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "GetAllCarts",
+				"responses": {
+					"200": {
+						"description": "A list of Cart",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/CartModelType"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Fetch multiple carts for a specific user",
+				"tags": [
+					"Cart"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
+			}
+		},
+		"/cart/items": {
+			"post": {
+				"operationId": "CreateCartItems",
+				"responses": {
+					"200": {
+						"description": "A list of CartItems which are inserted",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/CartItemsModelType"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create multiple cartItems for a specific cart with cartId",
+				"tags": [
+					"Cart"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "contains a list of CartItems and cartId",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"cartId": {
+										"type": "string"
+									},
+									"combinedCartItems": {
+										"items": {
+											"$ref": "#/components/schemas/CartItemsModelType"
+										},
+										"type": "array"
+									}
+								},
+								"required": [
+									"cartId",
+									"combinedCartItems"
+								],
+								"type": "object",
+								"description": "contains a list of CartItems and cartId"
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "/v1"
+		}
+	]
+}

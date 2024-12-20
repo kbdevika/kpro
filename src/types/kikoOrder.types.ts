@@ -1,24 +1,22 @@
-import { UserAddress } from "./address.type";
-import { Cart, CartItems, CartReponseItem } from "./cart.type";
 
-export type Order = {
+type KikoOrder = {
     settlementData: {
       amount: number;
-      status: "pending"
+      status: string
     };
     kiranaProOrderId: string;
     buyerName: string;
     buyerPhoneNumber: string;
     orderAmount: number;
     orderExpiresTime: number;
-    orderMode: "Offline"
+    orderMode: string
     orderPaymentMode: string;
     orderDeliveryMode: string | null;
     totalWeight: number;
     vendorId: string;
     addressAddedBy: string;
-    orderStatus: "payment-completed";
-    coinAmount: "0";
+    orderStatus: string;
+    coinAmount: string;
     shippingAmount: number;
     orderDescription: string;
     freeDelivery: boolean;
@@ -39,7 +37,7 @@ export type Order = {
       latitude: string;
       longitude: string;
       contactPhone: string;
-      addressType: "HOME" | "WORK" | "OTHER";
+      addressType: string;
       address_line1: string;
       landmark: string;
       address_line2: string;
@@ -47,33 +45,4 @@ export type Order = {
     createdFrom: string;
   };
 
-export type OrderSummaryResponse = {
-    orderId:string,
-    cart: {
-      cartId: string;
-      items: CartItems[];
-    };
-    orderSummary: {
-      subTotal: number;
-      total: number;
-      payment: string;
-    };
-    storeInfo: {
-      storeName: string;
-    };
-    additionalInfo: {
-      savingsMessage: string;
-      cartNote: string;
-    }
-  };
-
-export type OrderResponse = {
-    id: string;
-    cart: Cart;
-    cartId: string;
-    status: string;
-    addressId: number | null;
-    storeName: string;
-    vendorId: string;
-    address: UserAddress | null;
-}
+export default KikoOrder;

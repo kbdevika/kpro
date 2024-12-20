@@ -57,13 +57,13 @@ kikoRouter.post('/', async (req: any, res: any) => {
   
   
       // Update the order with the new statuses
-      await prisma.order.update({
+      await prisma.orderModel.update({
         where: {
           id: orderId,
         },
         data: {
-          status: normalizedOrderStatus,      
-          deliveryStatus: normalizedDeliveryStatus,
+          orderStatus: normalizedOrderStatus,      
+          orderDeliveryStatus: normalizedDeliveryStatus,
         },
       });
   
@@ -77,49 +77,5 @@ kikoRouter.post('/', async (req: any, res: any) => {
       handleError(error, res);
     }
   })
-
-  kikoRouter.post('/search', async (req: any, res: any) => {
-    const { pincode } = req.body;
-
-    if (!pincode) {
-      throw new Error('Pincode is not available');
-    }
   
-    try {
-      // Fetch from the external API if not present
-      const response = await fetch('https://ondc.kiko.live/ondc-seller/kiranaProSearch', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ pincode: parseInt(pincode) }),
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Failed to fetch catalogue from API: ${response.statusText}`);
-      }
-      const data = await response.json();
-
-      const newCatalogue = await prisma.catalogue.upsert({
-        where: {
-          pincode: `${pincode}`, 
-        },
-        update: {
-          jsonData: data,
-        },
-        create: {
-          pincode: `${pincode}`,
-          jsonData: data,
-        },
-      });
-
-      res.status(response.status).json(newCatalogue)
-    }catch (error: any){
-      res.status(400).json({
-        error: error.message
-      })
-    }
-  })
-  
-
 export default kikoRouter;

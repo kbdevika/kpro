@@ -1,161 +1,251 @@
 import prisma from "../config/prisma.config";
-import Product, { AICartResponse } from "../types/cart.type";
+import { cartDiscount, cartFreeDeliveryThreshold, deliveryCharges, deliveryTime } from "../constants";
+import TaskResult from "../types/ai.types";
+import { CartItemsModelType, CartModelType } from "../types/database.types";
 
 /**
- * Cart Services:
- *      - Create cart with items, vendorId
- *      - Update cart with quantities, new items and delete item if any
- *      - Delete cart on Order
+ * 
+ * @param data 
+ * @param combinedTotalSavedAmount 
+ * @param combinedSubTotal 
+ * @param total 
+ * @returns 
  */
+export async function createCart(userId: string, data: TaskResult, combinedTotalSavedAmount: number, combinedSubTotal: number, total: number): Promise<CartModelType> {
+    try {
+        const cart = await prisma.cartModel.create({
+            data: {
+            userId: userId,
+            cartStoreId: data.result.storeData._id,
+            cartStoreName: data.result.storeData.storeName,
+            cartDeliveryCharges: deliveryCharges,
+            cartDeliverytime: deliveryTime,
+            cartDiscount: cartDiscount,
+            cartFreeDeliveryThreshold: cartFreeDeliveryThreshold,
+            cartNote: `Your's truly, Kiranapro!`,
+            cartSaved: combinedTotalSavedAmount,
+            cartSavingsMessage:
+                combinedTotalSavedAmount === 0
+                ? "Add more items for more saving!"
+                : `You saved ₹${combinedTotalSavedAmount.toFixed(2)}!`,
+            cartStoreContact: data.result.storeData.name,
+            cartStorePhone: data.result.storeData.mobile,
+            cartSubTotal: combinedSubTotal,
+            cartTotal: total,
+            }
+        });
 
-const createCart = async (userId: string, vendorId: string, items: Product[]): Promise<AICartResponse> => {
-
-    // Create a new cart
-    const cart = await prisma.cart.create({
-        data: {
-        userId: userId,
-        storeName: '',
-        vendorId,
-        },
-    });
-
-    // Add items to the cart
-    const cartItems = items.map((item: Product) => ({
-        cartId: cart.id,
-        externalProductId: item.externalProductId,
-        name: item.name,
-        description: item.description,
-        quantity: item.quantity,
-        units: item.units,
-        price: item.price,
-        image: item.image,
-    }));
-
-    await prisma.cartItem.createMany({
-        data: cartItems,
-    });
-
-    // Fetch the created cart with items
-    const createdCart = await prisma.cart.findUnique({
-        where: { id: cart.id },
-        include: {
-        items: true,
-        },
-    });
-
-    if(!createdCart){
-        throw new Error('Cart was not created! Try again') 
+        return cart;
+    } catch(error: any){
+        throw new Error(`Create cart failed! ${error.message}`)
     }
-
-    return createdCart;
 }
 
-const updatedCart = async (userId: string, cartId: string, updatedItems: Product[]): Promise<AICartResponse> => {
-    // Ensure the cart belongs to the user
-    const existingCart = await prisma.cart.findUnique({
-        where: { id: cartId },
-        include: { items: true },
-    });
-
-    if (!existingCart || existingCart.userId !== userId) {
-        throw new Error('Cart not found! Try again')
+/**
+ * 
+ * @param combinedCartItems 
+ * @param cartId 
+ */
+export async function createCartItems(combinedCartItems: CartItemsModelType[], cartId: string): Promise<CartItemsModelType[]> {
+    try {
+        const cartItems: CartItemsModelType[] = []
+        if (combinedCartItems.length > 0) {
+            await prisma.cartItemsModel.createMany({
+                data: combinedCartItems.map((item) => ({
+                    ...item,
+                    cartId: cartId,
+                })),
+            });
+        
+            // Retrieve the created cart items
+            const createdItems = await prisma.cartItemsModel.findMany({
+                where: {
+                    cartId: cartId,
+                },
+            });
+        
+            cartItems.push(...createdItems);
+        }
+        return cartItems
+        
+    } catch(error: any){
+        throw new Error(`Create cartItems failed! ${error.message}`)
     }
+}
 
+/**
+ * 
+ * @param userId 
+ * @param cartId 
+ * @param updatedItems 
+ * @returns 
+ */
+export async function updatedCart(userId: string, cartId: string, updatedItems: CartItemsModelType[]): Promise<CartModelType> {
     try {
         // Fetch all existing cart items
-        const existingCartItems = await prisma.cartItem.findMany({
+        const existingCartItems = await prisma.cartItemsModel.findMany({
             where: { cartId },
         });
         
         // Determine which items should be removed
-        const updatedExternalProductIds = updatedItems.map((item: Product) => item.externalProductId);
+        const updatedExternalProductIds = updatedItems.map((item: CartItemsModelType) => item.itemExternalId);
         const itemsToRemove = existingCartItems.filter(
-            (existingItem) => !updatedExternalProductIds.includes(existingItem.externalProductId)
+            (existingItem) => !updatedExternalProductIds.includes(existingItem.itemExternalId)
         );
         
         // Remove items that are in the existing cart but not in the updated cart
         await Promise.all(
             itemsToRemove.map(async (item) => {
-            await prisma.cartItem.deleteMany({
-                where: { cartId, externalProductId: item.externalProductId },
+            await prisma.cartItemsModel.deleteMany({
+                where: { cartId, itemExternalId: item.itemExternalId },
             });
             })
         );
         
         // Iterate over the updated items to add or update them
         await Promise.all(
-            updatedItems.map(async (item: Product) => {
-            const existingCartItem = existingCartItems.find(
-                (existingItem) => existingItem.externalProductId === item.externalProductId
-            );
-        
-            if (item.quantity <= 0) {
-                if (existingCartItem) {
-                // Remove the item from the cart if quantity is zero or less and it exists
-                await prisma.cartItem.deleteMany({
-                    where: { cartId, externalProductId: item.externalProductId },
-                });
+            updatedItems.map(async (item: CartItemsModelType) => {
+                const existingCartItem = existingCartItems.find(
+                    (existingItem) => existingItem.itemExternalId === item.itemExternalId
+                );
+            
+                if (item.itemQuantity <= 0) {
+                    if (existingCartItem) {
+                    // Remove the item from the cart if quantity is zero or less and it exists
+                    await prisma.cartItemsModel.deleteMany({
+                        where: { cartId, itemExternalId: item.itemExternalId },
+                    });
+                    }
+                } else if (existingCartItem) {
+                    // Update the quantity of the item if it exists
+                    await prisma.cartItemsModel.updateMany({
+                    where: { cartId, itemExternalId: item.itemExternalId },
+                    data: { itemQuantity: item.itemQuantity },
+                    });
+                } else {
+                    // Add the item to the cart if it does not exist
+                    await prisma.cartItemsModel.create({
+                    data: {
+                        cartId,
+                        itemExternalId: item.itemExternalId,
+                        itemName: item.itemName,
+                        itemDescription: item.itemDescription,
+                        itemQuantity: item.itemQuantity,
+                        itemWeight: item.itemWeight,
+                        itemWeightUnit: item.itemWeightUnit,
+                        itemOriginalPrice: item.itemOriginalPrice,
+                        itemDiscountedPrice: item.itemDiscountedPrice,
+                        itemImageUrl: item.itemImageUrl,
+                        itemRecommended: false,
+                        itemStockStatus: item.itemStockStatus
+                    },
+                    });
                 }
-            } else if (existingCartItem) {
-                // Update the quantity of the item if it exists
-                await prisma.cartItem.updateMany({
-                where: { cartId, externalProductId: item.externalProductId },
-                data: { quantity: item.quantity },
-                });
-            } else {
-                // Add the item to the cart if it does not exist
-                await prisma.cartItem.create({
-                data: {
-                    cartId,
-                    externalProductId: item.externalProductId,
-                    name: item.name,
-                    description: item.description,
-                    quantity: item.quantity,
-                    units: item.units,
-                    price: item.price,
-                    image: item.image,
-                },
-                });
-            }
             })
         );
+
+        // Ensure the cart belongs to the user
+        const existingCart = await prisma.cartModel.findUnique({
+            where: { id: cartId, userId: userId },
+            include: { cartItems: true },
+        });
+
+        if (!existingCart) {
+            throw new Error('Cart not found! Try again')
+        }
+
+        // Calculate the subtotal based on the final cart items
+        let subtotal = 0;
+        existingCart.cartItems.forEach((item) => {
+            subtotal += item.itemQuantity * item.itemDiscountedPrice;
+        });
+
+        // You can calculate 'total' here by adding any additional charges (e.g., taxes, shipping, etc.)
+        const total = subtotal + deliveryCharges;
+
+        // Update the cart with the new subtotal and total
+        await prisma.cartModel.update({
+            where: { id: cartId },
+            data: {
+                cartSubTotal: subtotal,
+                cartTotal: total,
+            },
+            include: { cartItems: true },
+        });
         
     } catch (error: any){
         throw new Error(`Cart was not updated! ${error.message}`)
     }
 
     // Fetch the updated cart
-    const updatedCart = await prisma.cart.findUnique({
+    const updateCart = await prisma.cartModel.findUnique({
         where: { id: cartId },
-        include: { items: true },
+        include: { cartItems: true },
     });
 
-    if(!updatedCart){
+    if(!updateCart){
         throw new Error('Cart was not updated! Try again')
     }
 
-    return updatedCart;
+    return updateCart;
 }
 
-const fetchCart = async (cartId: string, userId: string): Promise<AICartResponse> => {
-    const cart = await prisma.cart.findFirst({
+/**
+ * 
+ * @param cartId 
+ * @returns 
+ */
+export async function fetchCartbyId(cartId: string): Promise<CartModelType>{
+    const cart = await prisma.cartModel.findUnique({
         where: {
-          id: cartId,
-          userId: userId
+          id: cartId
         },
         include: {
-          items: true
+            cartItems: true
         }
       });
 
     if(!cart){
-        throw new Error('Cart was not updated! Try again')
+        throw new Error('Cart was not found! Try again')
     }
     return cart
 }
 
-export {
-    updatedCart,
-    fetchCart
+/**
+ * 
+ * @param userId 
+ * @returns 
+ */
+export async function fetchAllCart(userId: string): Promise<CartModelType[]>{
+    const cart = await prisma.cartModel.findMany({
+        where: {
+          userId: userId
+        },
+        include: {
+            cartItems: true
+        }
+      });
+
+    if(!cart){
+        throw new Error('Cart(s) was not found! Try again')
+    }
+    return cart
 }
+
+export async function deleteCartbyId(cartId: string, userId: string): Promise<CartModelType>{
+    const cart = await prisma.cartModel.delete({
+        where: {
+          id: cartId
+        },
+        include: {
+            cartItems: true
+        }
+      });
+
+    if(!cart){
+        throw new Error('Cart is not found! Try again')
+    }
+    return cart
+}
+
 export default createCart;

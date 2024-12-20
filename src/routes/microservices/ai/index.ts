@@ -97,47 +97,54 @@ aiRouter.get('/:id', async (req: any, res: any) => {
     }
 
     try{
-        const jwtToken = await fetchJwtToken();
-        const response = await fetch(`https://dev-ai-api.kpro42.com/api/cart/enrich/${taskId}`, {
-            method: 'GET',
-            headers: {
-            Authorization: `Bearer ${jwtToken}`,
+        const task = await prisma.taskModel.findUnique({
+            where: {
+                taskExternalId: taskId.toString(),
+                userId: req.user.id
             }
-        });
+        })
 
-        if(!response.ok){
-            return res.status(response.status).json({ error: `Error occured while fetching AI response. ${response.text()}`})
+        if(!task || task.taskStatus !== 'success'){
+            const jwtToken = await fetchJwtToken();
+            const response = await fetch(`https://dev-ai-api.kpro42.com/api/cart/enrich/${taskId}`, {
+                method: 'GET',
+                headers: {
+                Authorization: `Bearer ${jwtToken}`,
+                }
+            });
+    
+            if(!response.ok){
+                return res.status(response.status).json({ error: `Error occured while fetching AI response. ${response.text()}`})
+            }
+    
+            const data = await response.json()
+    
+            if(data.state === 'failed') {
+                return res.json({ cartStatus: 'failed'})
+            } 
+
+            if(data.result === null && data.state === 'active') {
+                return res.json({ cartStatus: 'in-progress'})
+            }
+            
+            const cart = await convertToCart(data, taskId, req.user.id)
+            if(cart) { return res.json({ cartStatus: 'success', cart}) }
+
+            return res.status(400).json({ error: 'Something went wrong! Try again' })
         }
 
-        const data = await response.json()
+        const cart = await prisma.cartModel.findUnique({
+            where: {
+                id: task.cartId
+            }, 
+            include: {
+                cartItems: true
+            }
+        })
 
-        if(data.state === 'failed') {
-            return res.json({ cartStatus: 'failed'})
-        } else if(data.result === null && data.state === 'active') {
-            return res.json({ cartStatus: 'in-progress'})
-        }
+        if(cart) { return res.json({ cartStatus: 'success', cart}) }
         
-        const cart = await convertToCart(req.user.id, data)
-
-        if(cart){
-            await prisma.task.create({
-                data:{
-                    taskId: taskId,
-                    status: 'success',
-                    cartId: cart.cartId,
-                    userId: req.user.id
-                }
-            })
-
-            await prisma.notification.create({
-                data:{
-                    message: `Your cart is ready`,
-                    createdDate: new Date().toISOString(),
-                }
-            })
-        }
-
-        res.json({cartStatus: 'completed', cart: cart})
+        return res.status(400).json({ error: 'Something went wrong! Try again' })
 
     } catch (error){
         handleError(error, res)

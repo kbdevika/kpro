@@ -40,9 +40,12 @@ const notificationRouter = express.Router();
  */
 notificationRouter.get('/', async (req: any, res: any) => {
     try {
-      const notifications = await prisma.notification.findMany({
+      const notifications = await prisma.notificationModel.findMany({
+        where: {
+          userId: req.user.id
+        },
         orderBy: {
-          createdDate: 'desc', // Sort notifications by creation time (latest first)
+          notificationCreatedDate: 'desc',
         },
       });
   
@@ -111,18 +114,19 @@ notificationRouter.get('/', async (req: any, res: any) => {
  */
   notificationRouter.post('/', async (req: any, res: any) => {
     try {
-      const { message, media_url } = req.body;
+      const { message, media_url, userId } = req.body;
   
       // Validate input
-      if (!message) {
-        return res.status(400).json({ error: 'Message is required' });
+      if (!message || !userId) {
+        return res.status(400).json({ error: 'Missing or invalid inputs' });
       }
   
       // Create a new notification
-      const newNotification = await prisma.notification.create({
+      const newNotification = await prisma.notificationModel.create({
         data: {
-          message: message,
-          mediaUrl: media_url || '',  // Optional field
+          notificationMessage: message,
+          notificationMediaUrl: media_url || '',
+          userId: userId
         },
       });
   
@@ -188,7 +192,7 @@ notificationRouter.get('/', async (req: any, res: any) => {
   
     try {
       // Find and delete the notification with the provided ID
-      const deletedNotification = await prisma.notification.delete({
+      const deletedNotification = await prisma.notificationModel.delete({
         where: {
           id: notificationId,
         },

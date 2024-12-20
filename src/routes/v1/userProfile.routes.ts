@@ -72,120 +72,7 @@ const profileRouter = express.Router();
  *                   type: string
  *                   example: Internal server error
  */
-profileRouter.post('/', async (req: any, res: any) => {
-    try {
-      const { name, email } = req.body;
-  
-      // Check if the user already has a profile
-      const existingProfile = await prisma.userSetting.findMany({
-        where: {
-          userId: req.user.id,
-          key: { in: ['name', 'email'] },
-        },
-      });
-  
-      if (existingProfile.length > 0) {
-        return res.status(400).json({ error: 'User profile already exists' });
-      }
-  
-      // If no profile exists, create the new profile
-      const data = [
-        { key: 'name', value: name },
-        { key: 'email', value: email },
-      ];
-  
-      for (const item of data) {
-        await prisma.userSetting.create({
-          data: {
-            userId: req.user.id,
-            key: item.key,
-            value: item.value,
-          },
-        });
-      }
-  
-      res.status(201).json({ message: 'Settings created successfully' });
-    } catch (error) {
-      handleError(error, res);
-    }
-  });
-  
-/**
- * @swagger
- * /user:
- *   put:
- *     summary: Update user profile settings
- *     description: Updates the user's name and email settings. Inserts new settings if they do not exist or updates existing ones.
- *     tags:
- *       - User Profile
- *     consumes:
- *       - application/json
- *     produces:
- *       - application/json
- *     parameters:
- *       - in: body
- *         name: body
- *         required: true
- *         description: User profile details to update
- *         schema:
- *           type: object
- *           properties:
- *             name:
- *               type: string
- *               description: User's name
- *               example: "John Doe"
- *             email:
- *               type: string
- *               description: User's email address
- *               example: "johndoe@example.com"
- *     responses:
- *       200:
- *         description: Successfully updated user profile
- *         content:
- *           application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  message:
- *                    type: string
- *                    example: "Settings updated successfully"
- *                  updatedProfile:
- *                    type: object
- *                    properties:
- *                      id:
- *                        type: string
- *                        description: User ID
- *                        example: "123e4567-e89b-12d3-a456-426614174000"
- *                      name:
- *                        type: string
- *                        description: Updated user name
- *                        example: "John Doe"
- *                      email:
- *                        type: string
- *                        description: Updated user email
- *                        example: "johndoe@example.com"
- *                      phone:
- *                        type: string
- *                        description: User's phone number
- *                        example: "9876543210"
- *       400:
- *         description: Bad Request
- *         schema:
- *           type: object
- *           properties:
- *             error:
- *               type: string
- *               example: "Invalid request body"
- *       500:
- *         description: Internal Server Error
- *         schema:
- *           type: object
- *           properties:
- *             error:
- *               type: string
- *               example: "An unexpected error occurred"
- */
-  profileRouter.put('/', async (req: any, res: any) => {
+  profileRouter.post('/', async (req: any, res: any) => {
     try {
       const { name, email } = req.body;
   
@@ -196,31 +83,31 @@ profileRouter.post('/', async (req: any, res: any) => {
   
       // Use upsert to update existing settings or insert new ones if they don't exist
       for (const item of data) {
-        await prisma.userSetting.upsert({
+        await prisma.userSettingsModel.upsert({
           where: {
-            userId_key: {
+            userId_settingsKey: {
               userId: req.user.id,
-              key: item.key,
+              settingsKey: item.key,
             },
           },
           update: {
-            value: item.value,
+            settingsValue: item.value,
           },
           create: {
             userId: req.user.id,
-            key: item.key,
-            value: item.value,
+            settingsKey: item.key,
+            settingsValue: item.value,
           },
         });
       }
 
-      const settings = await prisma.userSetting.findMany({
+      const settings = await prisma.userSettingsModel.findMany({
         where: { userId: req.user.id }
       });
   
       // Transform settings array into a key-value object
       const userProfile = settings.reduce((profile: any, setting: any) => {
-        profile[setting.key] = setting.value;
+        profile[setting.settingsKey] = setting.settingsValue;
         return profile;
       }, {});
   
@@ -290,13 +177,13 @@ profileRouter.post('/', async (req: any, res: any) => {
  */
   profileRouter.get('/', async (req: any, res: any) => {
     try {
-      const settings = await prisma.userSetting.findMany({
+      const settings = await prisma.userSettingsModel.findMany({
         where: { userId: req.user.id }
       });
   
       // Transform settings array into a key-value object
       const userProfile = settings.reduce((profile: any, setting: any) => {
-        profile[setting.key] = setting.value;
+        profile[setting.settingsKey] = setting.settingsValue;
         return profile;
       }, {});
   

@@ -1,4 +1,4 @@
-type StatutoryReqsPackagedCommodities =   {
+type OndcStatutoryReqsPackagedCommodities =   {
   manufacturer_or_packer_name: string;
   manufacturer_or_packer_address: string;
   imported_product_country_of_origin: string;
@@ -7,7 +7,7 @@ type StatutoryReqsPackagedCommodities =   {
   net_quantity_or_measure_of_commodity_in_pkg: string;
 };
 
-  type StoreAddress = {
+  type OndcStoreAddress = {
     pincode: number;
     address1: string;
     address2: string;
@@ -30,14 +30,14 @@ type StatutoryReqsPackagedCommodities =   {
     nightTimeTat: string;
   };
   
-  type StoreTiming = {
+  type OndcStoreTiming = {
     availability: string[];
     holidays: string[];
     storeTime: string[];
     breakTime: string[];
   };
   
-  type Catalogue = {
+  type OndcCatalogue = {
     l3: string;
     l4: string;
     __v: number;
@@ -46,10 +46,11 @@ type StatutoryReqsPackagedCommodities =   {
     tax: number;
     brand: string;
     price: string;
+    menuId: string;
     status: string;
     userId: string;
     weight: number;
-    skuCode: string;
+    isCustom: boolean;
     createdAt: string;
     isDeleted: boolean;
     productId: string;
@@ -61,21 +62,28 @@ type StatutoryReqsPackagedCommodities =   {
     productName: string;
     isReturnable: boolean;
     packagedFood: boolean;
+    restaurantId: string;
+    customGroupId: string;
     isCancellable: boolean;
     packagingCost: number;
     productImages: string[];
     subCategoryId: string;
+    petpoojaItemId: string;
     countryOfOrigin: string;
     discountedPrice: string;
+    mainRestaurantId: string;
     availableQuantity: string;
-    statutory_reqs_packaged_commodities: StatutoryReqsPackagedCommodities
-    requiredQuantity?: number;
+    childCustomGroupId: string[];
+    petpoojaAddonitemId: string;
+    petpoojaVariationId: string;
+    statutory_reqs_packaged_commodities: OndcStatutoryReqsPackagedCommodities
   };
   
   
-  type Store = {
+  type OndcStore = {
     _id: string;
-    ondcOrderServiceability: OndcOrderServiceability;
+    id: string;
+    name: string;
     phone: string;
     mobile: string;
     storeStatus: string;
@@ -84,22 +92,21 @@ type StatutoryReqsPackagedCommodities =   {
     ondcVerified: boolean;
     email: string;
     fssaiLicense: string;
-    name: string;
-    storeAddress: StoreAddress;
+    storeAddress: OndcStoreAddress;
     storeLogo: string;
     storeName: string;
-    storeTiming: StoreTiming;
-    id: string;
-    cataloguesArray: Catalogue[];
+    storeTiming: OndcStoreTiming;
+    ondcOrderServiceability: OndcOrderServiceability;
+    cataloguesArray: OndcCatalogue[];
   };
 
   export { 
-    Store, 
-    StatutoryReqsPackagedCommodities,
-    Catalogue,
-    StoreTiming,
+    OndcStore, 
+    OndcStatutoryReqsPackagedCommodities,
+    OndcCatalogue,
+    OndcStoreTiming,
     OndcOrderServiceability,
-    StoreAddress
+    OndcStoreAddress
   }
 
-  export default Store
+  export default OndcStore
