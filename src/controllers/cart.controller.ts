@@ -5,7 +5,7 @@ import TaskResult from "../types/ai.types";
 
 @Route("cart")
 @Tags("Cart")
-@Security("jwt") 
+@Security("jwt")
 export class CartController extends Controller {
     /**
      * Updates a cart with the specified cart ID.

@@ -1,317 +1,50 @@
-import express from 'express';
-import fetchJwtToken from '../../../helper/fetchAiJwtToken';
-import convertToCart from '../../../helper/convertToCart';
-import validateHeaders from '../../../helper/validateHeader';
-import getPincodeFromCoordinates from '../../../helper/convertLatLongToPincode';
-import handleError from '../../../helper/handleError';
-import prisma from '../../../config/prisma.config';
+import express, { Router } from "express";
+import { AIController } from "../../../controllers/ai.controller";
+import handleError from "../../../helper/handleError";
 
-const aiRouter = express.Router();
+export class AIRouter {
+  public router: Router;
+  private aiController: AIController;
 
-/**
- * @swagger
- * /ai/{taskId}:
- *   get:
- *     summary: Fetches enriched cart details by task ID
- *     description: This endpoint retrieves the enriched cart details using the provided task ID.
- *     consumes:
- *       - multipart/form-data
- *     parameters:
- *       - in: path
- *         name: taskId
- *         required: true
- *         description: The task ID used to fetch the cart details.
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Successfully retrieved the cart details.
- *         content:
- *           application/json:
- *             examples:
- *               example1:
- *                 value:
- *                   cart:
- *                     cartId: string
- *                     items:
- *                       - itemId: string
- *                         itemName: "Mawana Sugar/Sakkare - Premium Crystal, 1 Kg Pouch"
- *                         itemDescription: "Mawana Premium Crystal Sugar is SULPHUR-FREE whitest refined sugar conforming to EEC Grade I standards. It is produced in a word class germ-free facility, with no Harmful chemicals used, completely untouched by hand and is hygienically packed in a Dust-free environment."
- *                         itemImageUrl:
- *                           - "https://www.bigbasket.com/media/uploads/p/xxl/70001579_10-mawana-sugar-premium-crystal.jpg"
- *                           - "https://www.bigbasket.com/media/uploads/p/xxl/70001579-2_9-mawana-sugar-premium-crystal.jpg"
- *                           - "https://www.bigbasket.com/media/uploads/p/xxl/70001579-3_8-mawana-sugar-premium-crystal.jpg"
- *                           - "https://www.bigbasket.com/media/uploads/p/xxl/70001579-4_8-mawana-sugar-premium-crystal.jpg"
- *                         itemQuantity: 1
- *                         itemOriginalPrice: 75
- *                         itemDiscountedPrice: 75
- *                         itemStockStatus: "In Stock"
- *                         itemWeight: 1
- *                         itemWeightUnit: "KG"
- *                     recommendedItems:
- *                       - itemId: string
- *                         itemName: string
- *                         itemDescription: "Mawana Brown Sugar contains real flavour, crunchy texture and the perfect way to enhance your coffee, cookies and dessert. It dissolves 3 times faster than the regular sugar and is an ideal partner for your coffee."
- *                         itemImageUrl:
- *                           - "https://www.bigbasket.com/media/uploads/p/xxl/40131642_2-mawana-sugar-brown.jpg"
- *                           - "https://www.bigbasket.com/media/uploads/p/xxl/40131642-2_2-mawana-sugar-brown.jpg"
- *                           - "https://www.bigbasket.com/media/uploads/p/xxl/40131642-3_2-mawana-sugar-brown.jpg"
- *                           - "https://www.bigbasket.com/media/uploads/p/xxl/40131642-4_2-mawana-sugar-brown.jpg"
- *                           - "https://www.bigbasket.com/media/uploads/p/xxl/40131642-5_1-mawana-sugar-brown.jpg"
- *                         itemQuantity: 1
- *                         itemOriginalPrice: 86
- *                         itemDiscountedPrice: 86
- *                         itemStockStatus: "In Stock"
- *                         itemWeight: 1
- *                         itemWeightUnit: "KG"
- *                   orderSummary:
- *                     subTotal: 470
- *                     total: 505
- *                     deliverytime: "25 minutes"
- *                     freeDeliveryThreshold: 199
- *                     deliveryCharges: 35
- *                     saved: "You saved ₹33.00!"
- *                     discount: 33
- *                   storeInfo:
- *                     storeName: string
- *                     storePhone: string
- *                     storeContactPerson: string
- *                     storeAddress: string
- *                   additionalInfo:
- *                     savingsMessage: string
- *                     cartNote: string
- *       400:
- *         description: Task ID is missing or invalid.
- *       500:
- *         description: Error occurred while processing the request.
- *       503:
- *         description: AI response fetching failed or in-progress.
- *     tags:
- *       - AI
- */
-aiRouter.get('/:id', async (req: any, res: any) => {
-    const taskId = req.params.id;
+  constructor() {
+    this.router = express.Router();
+    this.aiController = new AIController();
+    this.initializeRoutes();
+  }
 
-    if(!taskId){
-        return res.status(400).json({ error: 'Task ID missing!'})
-    }
+  private initializeRoutes() {
+    this.router.get("/", this.getPincodeAvailability);
+    this.router.get("/:taskId", this.getCartStatus);
+    this.router.post("/search", this.searchItems);
+  }
 
-    try{
-        const task = await prisma.taskModel.findUnique({
-            where: {
-                taskExternalId: taskId.toString(),
-                userId: req.user.id
-            }
-        })
-
-        if(!task || task.taskStatus !== 'success'){
-            const jwtToken = await fetchJwtToken();
-            const response = await fetch(`https://dev-ai-api.kpro42.com/api/cart/enrich/${taskId}`, {
-                method: 'GET',
-                headers: {
-                Authorization: `Bearer ${jwtToken}`,
-                }
-            });
-    
-            if(!response.ok){
-                return res.status(response.status).json({ error: `Error occured while fetching AI response. ${response.text()}`})
-            }
-    
-            const data = await response.json()
-    
-            if(data.state === 'failed') {
-                return res.json({ cartStatus: 'failed'})
-            } 
-
-            if(data.result === null && data.state === 'active') {
-                return res.json({ cartStatus: 'in-progress'})
-            }
-            
-            const cart = await convertToCart(data, taskId, req.user.id)
-            if(cart) { return res.json({ cartStatus: 'success', cart}) }
-
-            return res.status(400).json({ error: 'Something went wrong! Try again' })
-        }
-
-        const cart = await prisma.cartModel.findUnique({
-            where: {
-                id: task.cartId
-            }, 
-            include: {
-                cartItems: true
-            }
-        })
-
-        if(cart) { return res.json({ cartStatus: 'success', cart}) }
-        
-        return res.status(400).json({ error: 'Something went wrong! Try again' })
-
-    } catch (error){
-        handleError(error, res)
-    }
-})
-
-/**
- * @swagger
- * /v1/ai/search:
- *   post:
- *     summary: Search items using AI with query and store filters
- *     description: |
- *       Fetches search results for items based on the given query and AI store ID. 
- *       It requires a valid JWT token to authorize the request.
- *     tags:
- *       - AI
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - query
- *               - aiStoreId
- *             properties:
- *               query:
- *                 type: string
- *                 description: The search query to find items.
- *                 example: "biscuits"
- *               aiStoreId:
- *                 type: string
- *                 description: The store ID used to filter the search results.
- *                 example: "123"
- *     responses:
- *       200:
- *         description: Successful response with the search results.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               additionalProperties: true
- *       400:
- *         description: Missing or invalid inputs.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Missing or invalid inputs!"
- *       500:
- *         description: Internal server error while fetching the AI response.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Error occurred while fetching AI response."
- */
-aiRouter.post('/search', async (req: any, res: any) => {
-    const { query, aiStoreId } = req.body;
-
-    if(!query || !aiStoreId){
-        return res.status(400).json({ error: 'Missing or invalid inputs!' })
-    }
-
-    try{
-        const filters = `storeId="${aiStoreId}"`;
-        const jwtToken = await fetchJwtToken();
-        const response = await fetch(`https://dev-ai-api.kpro42.com/api/item/search?q=${query}&filters=${encodeURIComponent(filters)}`, {
-            method: 'GET',
-            headers: {
-            Authorization: `Bearer ${jwtToken}`,
-            }
-        });
-
-        if(!response.ok){
-            return res.status(response.status).json({ error: `Error occured while fetching AI response. ${response.text()}`})
-        }
-
-        const data = await response.json()
-
-        res.json(data)
-
-    } catch (error){
-        handleError(error, res)
-    }
-})
-
-/**
- * @swagger
- * /ai:
- *   get:
- *     summary: Verifies if stores exist for a given pincode from coordinates
- *     description: This endpoint retrieves store information for a given pincode based on the user’s coordinates.
- *     consumes:
- *       - multipart/form-data
- *     parameters:
- *       - name: User-Agent
- *         in: header
- *         description: User-Agent header must contain latitude and longitude in the format `lat:<latitude>; lon:<longitude>`
- *         required: true
- *         type: string
- *     responses:
- *       200:
- *         description: Successfully retrieved pincode verification.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 pincode:
- *                   type: boolean
- *                   description: Indicates whether the pincode has associated stores.
- *       400:
- *         description: Invalid User-Agent header or pincode missing.
- *       500:
- *         description: Error occurred while processing the request.
- *     tags:
- *       - AI
- */
-aiRouter.get('/', async (req: any, res: any) => {
+  private getCartStatus = async (req: any, res: any) => {
     try {
-        // Extract the User-Agent header
-        const userAgent = req.headers['user-agent'];
-
-        // Validate User-Agent header
-        const coordinates = validateHeaders(userAgent);
-        if (!coordinates) {
-        return res.status(400).json({ error: 'Missing or invalid User-Agent header.' });
-        }
-
-        const { latitude, longitude } = coordinates;
-        // Get pincode from coordinates
-        const pincode = await getPincodeFromCoordinates(latitude, longitude);
-
-        if(!pincode){
-            return res.status(400).json({ error: 'Pincode missing!'})
-        }
-
-        const jwtToken = await fetchJwtToken();
-        const response = await fetch(`https://dev-ai-api.kpro42.com/api/stores/${pincode}`, {
-            method: 'GET',
-            headers: {
-            Authorization: `Bearer ${jwtToken}`,
-            }
-        });
-
-        if(!response.ok){
-            return res.status(response.status).json({ error: `Error occured while fetching AI response. ${response.text}`})
-        }
-
-        const data = await response.json()
-        if(data.stores.length > 0) {
-            return res.json({ pincode: true })
-        }
-
-        res.json({ pincode: false })
-
-    } catch (error){
-        handleError(error, res)
+      const data = await this.aiController.getCartStatus(req.params.taskId, req.user.id);
+      res.status(200).json(data);
+    } catch (error) {
+      handleError(error, res);
     }
-})
+  };
 
-export default aiRouter;
+  private searchItems = async (req: any, res: any) => {
+    try {
+      const data = await this.aiController.searchItems(req.body);
+      res.status(200).json(data);
+    } catch (error) {
+      handleError(error, res);
+    }
+  };
 
+  private getPincodeAvailability = async (req: any, res: any) => {
+    try {
+      const data = await this.aiController.getPincodeAvailability(req.headers["user-agent"]);
+      res.status(200).json(data);
+    } catch (error) {
+      handleError(error, res);
+    }
+  };
+}
+
+// Export an instance of the router
+export default new AIRouter().router;

@@ -1,4 +1,4 @@
-import { Route, Tags, Post, Get, Body, Path, Request } from 'tsoa';
+import { Route, Tags, Post, Get, Body, Path, Request, Security } from 'tsoa';
 import jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
 import prisma from '../config/prisma.config';
@@ -26,6 +26,7 @@ interface FirebaseAuthResponse {
 
 @Route('auth')
 @Tags('Auth')
+@Security("jwt")
 export class AuthController {
   /**
    * Generate a JWT for the user
@@ -34,10 +35,10 @@ export class AuthController {
    */
   @Post('/continue')
   public async getJWTAuth(
-    @Body() token: string,
+    @Body() body: { token : string },
   ): Promise<JWTAuthResponse> {
     // Validate Truecaller token (mock validation here)
-    const userId = token;
+    const userId = body.token;
 
     let user = await prisma.userModel.findUnique({
       where: { id: userId },

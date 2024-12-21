@@ -7,6 +7,495 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
+			"UserProfile": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					},
+					"phone": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"email",
+					"phone"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateProfileRequest": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserSettingsModelType": {
+				"properties": {
+					"userId": {
+						"type": "string"
+					},
+					"settingsValue": {
+						"type": "string"
+					},
+					"settingsKey": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"userId",
+					"settingsValue",
+					"settingsKey"
+				],
+				"type": "object",
+				"description": "User Settings"
+			},
+			"CreateSettingRequest": {
+				"properties": {
+					"key": {
+						"type": "string"
+					},
+					"value": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"key",
+					"value"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateSettingRequest": {
+				"properties": {
+					"value": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"value"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserAddressModelType": {
+				"properties": {
+					"userId": {
+						"type": "string"
+					},
+					"addressContactPhone": {
+						"type": "string"
+					},
+					"addressContactName": {
+						"type": "string"
+					},
+					"addressLandmark": {
+						"type": "string"
+					},
+					"addressAddressType": {
+						"type": "string"
+					},
+					"addressLongitude": {
+						"type": "number",
+						"format": "double"
+					},
+					"addressLatitude": {
+						"type": "number",
+						"format": "double"
+					},
+					"addressPostalCode": {
+						"type": "number",
+						"format": "double"
+					},
+					"addressCountry": {
+						"type": "string"
+					},
+					"addressState": {
+						"type": "string"
+					},
+					"addressCity": {
+						"type": "string"
+					},
+					"addressStreet": {
+						"type": "string"
+					},
+					"addressLine2": {
+						"type": "string"
+					},
+					"addressLine1": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"userId",
+					"addressContactPhone",
+					"addressContactName",
+					"addressLandmark",
+					"addressAddressType",
+					"addressLongitude",
+					"addressLatitude",
+					"addressPostalCode",
+					"addressCountry",
+					"addressState",
+					"addressCity",
+					"addressStreet",
+					"addressLine2",
+					"addressLine1"
+				],
+				"type": "object",
+				"description": "User Address"
+			},
+			"CreatedAddressResponse": {
+				"properties": {
+					"message": {
+						"type": "string"
+					},
+					"address": {
+						"$ref": "#/components/schemas/UserAddressModelType"
+					}
+				},
+				"required": [
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserAddressRequest": {
+				"properties": {
+					"address_line1": {
+						"type": "string"
+					},
+					"address_line2": {
+						"type": "string"
+					},
+					"street": {
+						"type": "string"
+					},
+					"city": {
+						"type": "string"
+					},
+					"state": {
+						"type": "string"
+					},
+					"country": {
+						"type": "string"
+					},
+					"latitude": {
+						"type": "string"
+					},
+					"longitude": {
+						"type": "string"
+					},
+					"addressType": {
+						"type": "string"
+					},
+					"landmark": {
+						"type": "string"
+					},
+					"postalCode": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"address_line1",
+					"city",
+					"state",
+					"country",
+					"latitude",
+					"longitude",
+					"postalCode"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateTaskRequest": {
+				"properties": {
+					"taskId": {
+						"type": "string"
+					},
+					"cartId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"taskId",
+					"cartId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TaskResponse": {
+				"properties": {
+					"status": {
+						"type": "string"
+					},
+					"output": {
+						"properties": {
+							"createdAt": {
+								"type": "string",
+								"format": "date-time"
+							},
+							"userId": {
+								"type": "string"
+							},
+							"taskId": {
+								"type": "string"
+							},
+							"cartId": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"createdAt",
+							"userId",
+							"taskId",
+							"cartId"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"status"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RazorPayOrderResponse": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"entity": {
+						"type": "string"
+					},
+					"amount": {
+						"anyOf": [
+							{
+								"type": "number",
+								"format": "double"
+							},
+							{
+								"type": "string"
+							}
+						]
+					},
+					"currency": {
+						"type": "string"
+					},
+					"receipt": {
+						"type": "string"
+					},
+					"status": {
+						"type": "string"
+					},
+					"created_at": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"id",
+					"entity",
+					"amount",
+					"currency",
+					"status",
+					"created_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"VerifyPaymentBody": {
+				"properties": {
+					"order_id": {
+						"type": "string"
+					},
+					"payment_id": {
+						"type": "string"
+					},
+					"signature": {
+						"type": "string"
+					},
+					"cart_id": {
+						"type": "string"
+					},
+					"address_id": {
+						"type": "string"
+					},
+					"userId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"order_id",
+					"payment_id",
+					"signature",
+					"cart_id",
+					"address_id",
+					"userId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"OrderResponse": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"cart": {},
+					"address": {},
+					"orderStatus": {
+						"type": "string"
+					},
+					"orderDeliveryStatus": {
+						"type": "string"
+					},
+					"userId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"cart",
+					"address",
+					"orderStatus",
+					"orderDeliveryStatus",
+					"userId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Notification": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"notificationMessage": {
+						"type": "string"
+					},
+					"notificationMediaUrl": {
+						"type": "string",
+						"nullable": true
+					},
+					"userId": {
+						"type": "string"
+					},
+					"notificationCreatedDate": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"notificationMessage",
+					"notificationMediaUrl",
+					"userId",
+					"notificationCreatedDate"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateNotificationResponse": {
+				"properties": {
+					"message": {
+						"type": "string"
+					},
+					"notification": {
+						"$ref": "#/components/schemas/Notification"
+					}
+				},
+				"required": [
+					"message",
+					"notification"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateNotificationRequest": {
+				"properties": {
+					"message": {
+						"type": "string"
+					},
+					"media_url": {
+						"type": "string"
+					},
+					"userId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"message",
+					"userId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateOrderResponse": {
+				"properties": {
+					"message": {
+						"type": "string"
+					},
+					"orderId": {
+						"type": "string"
+					},
+					"orderStatus": {
+						"type": "string"
+					},
+					"deliveryStatus": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"message",
+					"orderId",
+					"orderStatus",
+					"deliveryStatus"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateOrderRequest": {
+				"properties": {
+					"apiKey": {
+						"type": "string"
+					},
+					"orderId": {
+						"type": "string"
+					},
+					"orderStatus": {
+						"type": "string"
+					},
+					"deliveryStatus": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"apiKey",
+					"orderId",
+					"orderStatus",
+					"deliveryStatus"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"CartItemsModelType": {
 				"properties": {
 					"itemExternalId": {
@@ -747,6 +1236,34 @@
 				],
 				"type": "object",
 				"additionalProperties": false
+			},
+			"AudioProcessResponse": {
+				"properties": {
+					"taskId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"taskId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SearchRequest": {
+				"properties": {
+					"query": {
+						"type": "string"
+					},
+					"aiStoreId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"query",
+					"aiStoreId"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {
@@ -760,12 +1277,1053 @@
 	"info": {
 		"title": "core-api",
 		"version": "1.4.0",
+		"description": "API documentation for the KiranaPro - 'PROD' Backend microservice, designed for seamless integration with multiple microservices, including AI, ONDC/ KIKO/ third-party ONDC services, and mobile frontends (iOS & Android).",
 		"license": {
-			"name": "ISC"
+			"name": "Proprietary - Copyright (c) 2024, KiranaPro"
 		},
-		"contact": {}
+		"contact": {
+			"name": "Sandeep K ",
+			"email": "sandeep@kirana.pro"
+		}
 	},
 	"paths": {
+		"/user": {
+			"post": {
+				"operationId": "UpdateProfile",
+				"responses": {
+					"200": {
+						"description": "The updated profile.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"updatedProfile": {
+											"$ref": "#/components/schemas/UserProfile"
+										},
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"updatedProfile",
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid inputs"
+					}
+				},
+				"description": "Update the user's profile settings.",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "The updated profile data (name and/or email).",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateProfileRequest",
+								"description": "The updated profile data (name and/or email)."
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "GetProfile",
+				"responses": {
+					"200": {
+						"description": "The user's profile.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserProfile"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get the user's profile settings.",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
+			}
+		},
+		"/user/settings": {
+			"get": {
+				"operationId": "GetUserSettings",
+				"responses": {
+					"200": {
+						"description": "An array of user settings.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/UserSettingsModelType"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Retrieve all user settings.",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateUserSetting",
+				"responses": {
+					"200": {
+						"description": "A success message.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid inputs"
+					}
+				},
+				"description": "Create a new user setting.",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "The key and value of the setting.",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateSettingRequest",
+								"description": "The key and value of the setting."
+							}
+						}
+					}
+				}
+			}
+		},
+		"/user/settings/{key}": {
+			"put": {
+				"operationId": "UpdateUserSetting",
+				"responses": {
+					"200": {
+						"description": "A success message or an error if the setting is not found.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Setting not found"
+					}
+				},
+				"description": "Update an existing user setting.",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The key of the setting to update.",
+						"in": "path",
+						"name": "key",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "The updated value.",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateSettingRequest",
+								"description": "The updated value."
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteUserSetting",
+				"responses": {
+					"200": {
+						"description": "A success message or an error if the setting is not found.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Setting not found"
+					}
+				},
+				"description": "Delete a user setting.",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The key of the setting to delete.",
+						"in": "path",
+						"name": "key",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/user/address": {
+			"get": {
+				"operationId": "GetUserAddresses",
+				"responses": {
+					"200": {
+						"description": "An array of user addresses.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/UserAddressModelType"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get all user addresses.",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateUserAddress",
+				"responses": {
+					"200": {
+						"description": "A success message and the created address.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CreatedAddressResponse"
+								}
+							}
+						}
+					},
+					"201": {
+						"description": "Missing or invalid inputs"
+					},
+					"400": {
+						"description": "Missing or invalid inputs"
+					}
+				},
+				"description": "Create a new user address.",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "The address details.",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UserAddressRequest",
+								"description": "The address details."
+							}
+						}
+					}
+				}
+			}
+		},
+		"/user/address/{id}": {
+			"get": {
+				"operationId": "GetUserAddressById",
+				"responses": {
+					"200": {
+						"description": "The address or an error if not found.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"address": {
+											"$ref": "#/components/schemas/UserAddressModelType"
+										},
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Address not found"
+					}
+				},
+				"description": "Get a specific user address by ID.",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The address ID.",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"delete": {
+				"operationId": "DeleteUserAddress",
+				"responses": {
+					"200": {
+						"description": "A success message or an error if the address is not found.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"address": {
+											"$ref": "#/components/schemas/UserAddressModelType"
+										},
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Address not found"
+					}
+				},
+				"description": "Delete a user address by ID.",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The address ID.",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/tasks": {
+			"post": {
+				"operationId": "CreateTask",
+				"responses": {
+					"200": {
+						"description": "Task ID of the created task",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"task_id": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"task_id"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid input"
+					}
+				},
+				"description": "Create a new task for a user.",
+				"tags": [
+					"Task"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "Task creation data",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateTaskRequest",
+								"description": "Task creation data"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/tasks/{taskId}": {
+			"get": {
+				"operationId": "GetTask",
+				"responses": {
+					"200": {
+						"description": "Task status or details",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TaskResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Task not found"
+					}
+				},
+				"description": "Fetch the status or details of a task based on task ID.",
+				"tags": [
+					"Task"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Task ID to retrieve",
+						"in": "path",
+						"name": "taskId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/payments": {
+			"post": {
+				"operationId": "CreatePayment",
+				"responses": {
+					"200": {
+						"description": "The Razorpay order details.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/RazorPayOrderResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Missing or invalid inputs"
+					}
+				},
+				"description": "Create a new Razorpay payment order.",
+				"tags": [
+					"Payments"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"amount": {
+										"type": "number",
+										"format": "double"
+									}
+								},
+								"required": [
+									"amount"
+								],
+								"type": "object"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/payments/verify": {
+			"post": {
+				"operationId": "VerifyPayment",
+				"responses": {
+					"200": {
+						"description": "A success message or an error.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"order": {},
+										"message": {
+											"type": "string"
+										},
+										"success": {
+											"type": "boolean"
+										}
+									},
+									"required": [
+										"message",
+										"success"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Missing or invalid inputs"
+					}
+				},
+				"description": "Verify a Razorpay payment and create an order.",
+				"tags": [
+					"Payments"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "The request body with payment and order details.",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/VerifyPaymentBody",
+								"description": "The request body with payment and order details."
+							}
+						}
+					}
+				}
+			}
+		},
+		"/orders": {
+			"get": {
+				"operationId": "GetOrders",
+				"responses": {
+					"200": {
+						"description": "A list of orders.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"orders": {
+											"items": {
+												"$ref": "#/components/schemas/OrderResponse"
+											},
+											"type": "array"
+										}
+									},
+									"required": [
+										"orders"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "Fetch all orders for the logged-in user.",
+				"tags": [
+					"Orders"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateOrder",
+				"responses": {
+					"200": {
+						"description": "The created order.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"order": {},
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"order",
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "CartId and AddressId are required"
+					}
+				},
+				"description": "Create a new order.",
+				"tags": [
+					"Orders"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "The request body containing cartId and addressId.",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"addressId": {
+										"type": "string"
+									},
+									"cartId": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"addressId",
+									"cartId"
+								],
+								"type": "object",
+								"description": "The request body containing cartId and addressId."
+							}
+						}
+					}
+				}
+			}
+		},
+		"/orders/{id}": {
+			"get": {
+				"operationId": "GetOrder",
+				"responses": {
+					"200": {
+						"description": "The order details.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OrderResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get a specific order by ID.",
+				"tags": [
+					"Orders"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The ID of the order to fetch.",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/orders/{id}/track": {
+			"get": {
+				"operationId": "TrackOrder",
+				"responses": {
+					"200": {
+						"description": "The order's tracking status.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"deliveryStatus": {
+											"type": "string"
+										},
+										"orderStatus": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"deliveryStatus",
+										"orderStatus"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get the tracking status of a specific order.",
+				"tags": [
+					"Orders"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The ID of the order to track.",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/orders/{id}/cancel": {
+			"post": {
+				"operationId": "CancelOrder",
+				"responses": {
+					"200": {
+						"description": "A success message or an error.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "Cancel an order.",
+				"tags": [
+					"Orders"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The ID of the order to cancel.",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/notifications": {
+			"get": {
+				"operationId": "GetNotifications",
+				"responses": {
+					"200": {
+						"description": "A list of notifications.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"notifications": {
+											"items": {
+												"$ref": "#/components/schemas/Notification"
+											},
+											"type": "array"
+										}
+									},
+									"required": [
+										"notifications"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "No notifications found"
+					}
+				},
+				"description": "Fetch all notifications for the logged-in user.",
+				"tags": [
+					"Notifications"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateNotification",
+				"responses": {
+					"200": {
+						"description": "A success message with the created notification.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CreateNotificationResponse"
+								}
+							}
+						}
+					},
+					"201": {
+						"description": "Notification added successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CreateNotificationResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Missing or invalid inputs"
+					}
+				},
+				"description": "Create a new notification.",
+				"tags": [
+					"Notifications"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "The request body containing the notification details.",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateNotificationRequest",
+								"description": "The request body containing the notification details."
+							}
+						}
+					}
+				}
+			}
+		},
+		"/notifications/{id}": {
+			"delete": {
+				"operationId": "DeleteNotification",
+				"responses": {
+					"200": {
+						"description": "A success message with the deleted notification details.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"notification": {
+											"$ref": "#/components/schemas/Notification"
+										},
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"notification",
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Notification not found"
+					}
+				},
+				"description": "Delete a notification by ID.",
+				"tags": [
+					"Notifications"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The ID of the notification to delete.",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/kikoOrderStatus": {
+			"post": {
+				"operationId": "UpdateOrder",
+				"responses": {
+					"200": {
+						"description": "A success message with updated order details.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UpdateOrderResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation error"
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				},
+				"description": "Updates the status of an order.",
+				"tags": [
+					"Kiko"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "UpdateOrderRequest object containing the API key, order ID, order status, and delivery status.",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateOrderRequest",
+								"description": "UpdateOrderRequest object containing the API key, order ID, order status, and delivery status."
+							}
+						}
+					}
+				}
+			}
+		},
 		"/home": {
 			"get": {
 				"operationId": "GetHome",
@@ -1170,16 +2728,26 @@
 				"tags": [
 					"Auth"
 				],
-				"security": [],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
 				"parameters": [],
 				"requestBody": {
-					"description": "Truecaller token to validate and generate a JWT",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
-								"type": "string",
-								"description": "Truecaller token to validate and generate a JWT"
+								"properties": {
+									"token": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"token"
+								],
+								"type": "object"
 							}
 						}
 					}
@@ -1205,8 +2773,195 @@
 				"tags": [
 					"Auth"
 				],
-				"security": [],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
 				"parameters": []
+			}
+		},
+		"/audio": {
+			"post": {
+				"operationId": "ProcessAudio",
+				"responses": {
+					"200": {
+						"description": "A task ID for the processed audio",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AudioProcessResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Process an uploaded audio file and return a task ID.",
+				"tags": [
+					"Audio"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The User-Agent header for device identification",
+						"in": "header",
+						"name": "user-agent",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"file": {
+										"type": "string",
+										"format": "binary",
+										"description": "The uploaded MP3 audio file"
+									}
+								},
+								"required": [
+									"file"
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		"/ai/{taskId}": {
+			"get": {
+				"operationId": "GetCartStatus",
+				"responses": {
+					"200": {
+						"description": "The cart status or cart details.",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"400": {
+						"description": "Task ID missing!"
+					}
+				},
+				"description": "Fetches the cart status or details based on task ID.",
+				"tags": [
+					"AI"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The unique task ID.",
+						"in": "path",
+						"name": "taskId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/ai/search": {
+			"post": {
+				"operationId": "SearchItems",
+				"responses": {
+					"200": {
+						"description": "The search results.",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"400": {
+						"description": "Missing or invalid inputs!"
+					}
+				},
+				"description": "Searches for items based on a query and AI store ID.",
+				"tags": [
+					"AI"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "The search request containing the query and AI store ID.",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/SearchRequest",
+								"description": "The search request containing the query and AI store ID."
+							}
+						}
+					}
+				}
+			}
+		},
+		"/ai": {
+			"get": {
+				"operationId": "GetPincodeAvailability",
+				"responses": {
+					"200": {
+						"description": "Whether stores are available in the pincode.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"pincode": {
+											"type": "boolean"
+										}
+									},
+									"required": [
+										"pincode"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Missing or invalid User-Agent header."
+					}
+				},
+				"description": "Retrieves the pincode from the User-Agent header.",
+				"tags": [
+					"AI"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The User-Agent header.",
+						"in": "query",
+						"name": "userAgent",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
 			}
 		}
 	},

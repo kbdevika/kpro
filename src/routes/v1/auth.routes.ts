@@ -21,8 +21,7 @@ export class AuthRouter {
 
   private getJWTAuth = async (req: Request, res: Response) => {
     try {
-      const { token } = req.body;
-      const response = await this.authController.getJWTAuth(token);
+      const response = await this.authController.getJWTAuth(req.body);
       res.json(response);
     } catch (error) {
       handleError(error, res)

@@ -1,21 +1,23 @@
 {
-    "entryFile": "app.ts",
-    "noImplicitAdditionalProperties": "throw-on-extras",
-    "controllerPathGlobs": ["src/controllers/*.ts"],
-    "spec": {
-      "outputDirectory": "src/swagger",
-      "specVersion": 3,
-      "basePath": "/v1",
-      "securityDefinitions": {
-        "jwt": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT"
-        }
+  "entryFile": "app.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/controllers/*.ts"],
+  "spec": {
+    "outputDirectory": "src/swagger",
+    "specVersion": 3,
+    "basePath": "/v1",
+    "securityDefinitions": {
+      "jwt": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     },
-    "routes": {
-      "routesDir": "src/routes"
-    }
+    "host": "",
+    "schemes": ["https"]
+  },
+  "routes": {
+    "authenticationModule": "./src/middleware/authentication.ts",
+    "routesDir": "src/routes"
   }
-  
+}

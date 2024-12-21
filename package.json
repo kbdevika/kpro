@@ -1,7 +1,11 @@
 {
   "name": "core-api",
   "version": "1.4.0",
+  "author": "Sandeep K <sandeep@kirana.pro>",
+  "license": "Proprietary - Copyright (c) 2024, KiranaPro",
+  "description": "API documentation for the KiranaPro - 'PROD' Backend microservice, designed for seamless integration with multiple microservices, including AI, ONDC/ KIKO/ third-party ONDC services, and mobile frontends (iOS & Android).",
   "main": "index.js",
+  "keywords": [],
   "scripts": {
     "test": "jest --coverage",
     "local": "concurrently \"tsc -w\" \"nodemon dist/app.js\"",
@@ -18,11 +22,8 @@
     "tsoa:routes": "tsoa routes",
     "tsoa:spec": "tsoa spec"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "devDependencies": {
+    "@tsoa/cli": "^6.6.0",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.7",

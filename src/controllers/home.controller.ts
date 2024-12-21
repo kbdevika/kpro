@@ -3,7 +3,7 @@ import { Controller, Get, Route, Request, Tags, Security } from "tsoa";
 
 @Route("home")
 @Tags("Home")
-@Security("jwt")  // Requires JWT security
+@Security("jwt")
 export class HomeController extends Controller {
   /**
    * Retrieves home page data, including welcome text, banners, and carousels.

@@ -1,17 +1,18 @@
 /**
- * KiranaPro Software Private Limited, 2024
+ * Version 1.4.0
+ * KiranaPro Software Private Limited (c)
+ * 2024
  * 
+ * KiranaPro Proprietary License v1.0
  */
 import express, { Application } from 'express';
 import jwt from 'jsonwebtoken';
 import { WebSocket, WebSocketServer } from 'ws';
 import * as dotenv from 'dotenv';
-import swaggerUi from "swagger-ui-express";
 import healthCheckRouter from './src/routes/health.routes';
 import ondcRouter from './src/routes/ondc.routes';
 import v1Routers from './src/routes/v1';
 import { RegisterRoutes } from "./src/routes/routes";
-import * as swaggerDocument from "./src/swagger/swagger.json";
 
 dotenv.config();
 
@@ -19,6 +20,13 @@ const app: Application = express();
 const wss = new WebSocketServer({ noServer: true });
 
 app.use(express.json());
+app.use((err: any, req: any, res: any, next: any) => {
+  if (err instanceof SyntaxError && "body" in err) {
+    return res.status(400).json({ error: "Invalid JSON payload" });
+  }
+  next(err);
+});
+
 RegisterRoutes(app);
 const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -49,7 +57,6 @@ const handleWebSocket = (socket: WebSocket, req: any) => {
 app.use('/', healthCheckRouter);
 app.use('/', ondcRouter);
 app.use('/v1', v1Routers);
-app.use('/v1/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Start server
 const server = app.listen(8000, () => {
