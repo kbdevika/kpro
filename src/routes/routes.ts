@@ -220,9 +220,9 @@ const models: TsoaRoute.Models = {
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"additionalInfo":{"dataType":"nestedObjectLiteral","nestedProperties":{"cartNote":{"dataType":"string","required":true},"savingsMessage":{"dataType":"string","required":true}},"required":true},"storeInfo":{"dataType":"nestedObjectLiteral","nestedProperties":{"storeAddress":{"dataType":"string","required":true},"storeContactPerson":{"dataType":"string","required":true},"storePhone":{"dataType":"string","required":true},"storeName":{"dataType":"string","required":true}},"required":true},"orderSummary":{"dataType":"nestedObjectLiteral","nestedProperties":{"discount":{"dataType":"double","required":true},"saved":{"dataType":"string","required":true},"deliveryCharges":{"dataType":"double","required":true},"freeDeliveryThreshold":{"dataType":"double","required":true},"deliverytime":{"dataType":"string","required":true},"total":{"dataType":"double","required":true},"subTotal":{"dataType":"double","required":true}},"required":true},"recommendedItems":{"dataType":"array","array":{"dataType":"refAlias","ref":"_CartReponseItem"},"required":true},"items":{"dataType":"array","array":{"dataType":"refAlias","ref":"_CartReponseItem"},"required":true},"cartId":{"dataType":"string","required":true},"aiStoreId":{"dataType":"string","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "CartItemsModelType": {
+    "_CartItemsModelType": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"itemExternalId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},"itemRecommended":{"dataType":"boolean","required":true},"itemWeightUnit":{"dataType":"string","required":true},"itemWeight":{"dataType":"double","required":true},"itemStockStatus":{"dataType":"string","required":true},"itemDiscountedPrice":{"dataType":"double","required":true},"itemOriginalPrice":{"dataType":"double","required":true},"itemQuantity":{"dataType":"double","required":true},"itemImageUrl":{"dataType":"string","required":true},"itemDescription":{"dataType":"string","required":true},"itemName":{"dataType":"string","required":true},"id":{"dataType":"string"}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"itemExternalId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},"itemRecommended":{"dataType":"boolean","required":true},"itemWeightUnit":{"dataType":"string","required":true},"itemWeight":{"dataType":"double","required":true},"itemStockStatus":{"dataType":"string","required":true},"itemDiscountedPrice":{"dataType":"double","required":true},"itemOriginalPrice":{"dataType":"double","required":true},"itemQuantity":{"dataType":"double","required":true},"itemImageUrl":{"dataType":"array","array":{"dataType":"string"},"required":true},"itemDescription":{"dataType":"string","required":true},"itemName":{"dataType":"string","required":true},"id":{"dataType":"string"}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "OndcStoreAddress": {
@@ -273,6 +273,11 @@ const models: TsoaRoute.Models = {
     "TaskResult": {
         "dataType": "refAlias",
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"result":{"ref":"Result","required":true},"progress":{"dataType":"double","required":true},"state":{"dataType":"string","required":true},"taskId":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CartItemsModelType": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"itemExternalId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},"itemRecommended":{"dataType":"boolean","required":true},"itemWeightUnit":{"dataType":"string","required":true},"itemWeight":{"dataType":"double","required":true},"itemStockStatus":{"dataType":"string","required":true},"itemDiscountedPrice":{"dataType":"double","required":true},"itemOriginalPrice":{"dataType":"double","required":true},"itemQuantity":{"dataType":"double","required":true},"itemImageUrl":{"dataType":"string","required":true},"itemDescription":{"dataType":"string","required":true},"itemName":{"dataType":"string","required":true},"id":{"dataType":"string"}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "JWTAuthResponse": {
@@ -1086,7 +1091,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         const argsCartController_updateCart: Record<string, TsoaRoute.ParameterSchema> = {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
                 cartId: {"in":"path","name":"cartId","required":true,"dataType":"string"},
-                body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"updatedItems":{"dataType":"array","array":{"dataType":"refAlias","ref":"CartItemsModelType"},"required":true}}},
+                body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"updatedItems":{"dataType":"array","array":{"dataType":"refAlias","ref":"_CartItemsModelType"},"required":true}}},
         };
         app.put('/cart/:cartId',
             authenticateMiddleware([{"jwt":[]}]),

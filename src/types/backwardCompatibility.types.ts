@@ -44,6 +44,21 @@ export type _CartReponseItem = {
     itemWeightUnit: string;
 }
 
+export type _CartItemsModelType = {
+  id?: string;
+  itemName: string;
+  itemDescription: string;
+  itemImageUrl: string[];
+  itemQuantity: number;
+  itemOriginalPrice: number;
+  itemDiscountedPrice: number;
+  itemStockStatus: string;
+  itemWeight: number;
+  itemWeightUnit: string;
+  itemRecommended: boolean;
+  itemExternalId: string | null;
+}
+
 export type _AddressType = {
   id: string;
   address_line1: string;

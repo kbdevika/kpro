@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Post, Put, Request, Route, Security, Tag
 import createCart, { createCartItems, deleteCartbyId, fetchAllCart, fetchCartbyId, updatedCart } from "../services/cart";
 import { CartItemsModelType, CartModelType } from "../types/database.types";
 import TaskResult from "../types/ai.types";
-import { _CartResponseType } from "../types/backwardCompatibility.types";
+import { _CartItemsModelType, _CartResponseType } from "../types/backwardCompatibility.types";
 import { cartMapper } from "../helper/backwardMapper";
 
 @Route("cart")
@@ -19,7 +19,7 @@ export class CartController extends Controller {
         @Request() req: any, 
         @Path('cartId') cartId: string,
         @Body() body: { 
-            updatedItems: CartItemsModelType[] 
+            updatedItems: _CartItemsModelType[] 
         }
     ): Promise<_CartResponseType> {
         try {

@@ -601,7 +601,7 @@
 				"type": "object",
 				"description": "For Backward compactability,\r\nOutgoing response mapped from service is to be in specific Types,\r\nwhich are specified here"
 			},
-			"CartItemsModelType": {
+			"_CartItemsModelType": {
 				"properties": {
 					"itemExternalId": {
 						"type": "string",
@@ -633,7 +633,10 @@
 						"format": "double"
 					},
 					"itemImageUrl": {
-						"type": "string"
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					},
 					"itemDescription": {
 						"type": "string"
@@ -658,8 +661,7 @@
 					"itemDescription",
 					"itemName"
 				],
-				"type": "object",
-				"description": "Cart Items"
+				"type": "object"
 			},
 			"OndcStoreAddress": {
 				"properties": {
@@ -1230,6 +1232,66 @@
 					"taskId"
 				],
 				"type": "object"
+			},
+			"CartItemsModelType": {
+				"properties": {
+					"itemExternalId": {
+						"type": "string",
+						"nullable": true
+					},
+					"itemRecommended": {
+						"type": "boolean"
+					},
+					"itemWeightUnit": {
+						"type": "string"
+					},
+					"itemWeight": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemStockStatus": {
+						"type": "string"
+					},
+					"itemDiscountedPrice": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemOriginalPrice": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemQuantity": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemImageUrl": {
+						"type": "string"
+					},
+					"itemDescription": {
+						"type": "string"
+					},
+					"itemName": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"itemExternalId",
+					"itemRecommended",
+					"itemWeightUnit",
+					"itemWeight",
+					"itemStockStatus",
+					"itemDiscountedPrice",
+					"itemOriginalPrice",
+					"itemQuantity",
+					"itemImageUrl",
+					"itemDescription",
+					"itemName"
+				],
+				"type": "object",
+				"description": "Cart Items"
 			},
 			"JWTAuthResponse": {
 				"properties": {
@@ -2503,7 +2565,7 @@
 								"properties": {
 									"updatedItems": {
 										"items": {
-											"$ref": "#/components/schemas/CartItemsModelType"
+											"$ref": "#/components/schemas/_CartItemsModelType"
 										},
 										"type": "array"
 									}

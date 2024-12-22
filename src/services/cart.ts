@@ -1,6 +1,7 @@
 import prisma from "../config/prisma.config";
 import { cartDiscount, cartFreeDeliveryThreshold, deliveryCharges, deliveryTime } from "../constants";
 import TaskResult from "../types/ai.types";
+import { _CartItemsModelType } from "../types/backwardCompatibility.types";
 import { CartItemsModelType, CartModelType } from "../types/database.types";
 
 /**
@@ -82,7 +83,7 @@ export async function createCartItems(combinedCartItems: CartItemsModelType[], c
  * @param updatedItems 
  * @returns 
  */
-export async function updatedCart(userId: string, cartId: string, updatedItems: CartItemsModelType[]): Promise<CartModelType> {
+export async function updatedCart(userId: string, cartId: string, updatedItems: _CartItemsModelType[]): Promise<CartModelType> {
     try {
         // Fetch all existing cart items
         const existingCartItems = await prisma.cartItemsModel.findMany({
@@ -90,7 +91,7 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
         });
         
         // Determine which items should be removed
-        const updatedExternalProductIds = updatedItems.map((item: CartItemsModelType) => item.itemExternalId);
+        const updatedExternalProductIds = updatedItems.map((item: _CartItemsModelType) => item.itemExternalId);
         const itemsToRemove = existingCartItems.filter(
             (existingItem) => !updatedExternalProductIds.includes(existingItem.itemExternalId)
         );
@@ -106,7 +107,7 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
         
         // Iterate over the updated items to add or update them
         await Promise.all(
-            updatedItems.map(async (item: CartItemsModelType) => {
+            updatedItems.map(async (item: _CartItemsModelType) => {
                 const existingCartItem = existingCartItems.find(
                     (existingItem) => existingItem.itemExternalId === item.itemExternalId
                 );
@@ -140,7 +141,7 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
                             itemWeightUnit: item.itemWeightUnit,
                             itemOriginalPrice: item.itemOriginalPrice,
                             itemDiscountedPrice: item.itemDiscountedPrice,
-                            itemImageUrl: item.itemImageUrl,
+                            itemImageUrl: item.itemImageUrl[0],
                             itemRecommended: false,
                             itemStockStatus: item.itemStockStatus
                         },
