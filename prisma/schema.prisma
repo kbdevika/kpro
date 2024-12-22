@@ -160,6 +160,7 @@ model CartItemsModel {
 model CartModel {
   id                        String           @id @default(cuid())
   cartStoreId               String
+  cartaiStoreId             String           @default("")
   cartStoreName             String
   cartStorePhone            String
   cartStoreContact          String

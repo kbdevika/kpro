@@ -40,7 +40,7 @@ export default async function convertToCart(data: TaskResult, taskId: string, us
     if(!responseCart.id){
       throw new Error('Cart not found')
     }
-    return cartMapper(data.result.storeId, responseCart.id, responseCart)
+    return cartMapper(responseCart.id, responseCart)
 
   } catch(error: any){
     throw new Error(`Something went wrong in creating cart! ${error.message}`)

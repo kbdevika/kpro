@@ -17,6 +17,7 @@ export async function createCart(userId: string, data: TaskResult, combinedTotal
             data: {
             userId: userId,
             cartStoreId: data.result.storeData._id,
+            cartaiStoreId: data.result.storeId,
             cartStoreName: data.result.storeData.storeName,
             cartStoreAddress: `${data.result.storeData.storeAddress.address1}, ${data.result.storeData.storeAddress.address2}, ${data.result.storeData.storeAddress.city}, ${data.result.storeData.storeAddress.state}, ${data.result.storeData.storeAddress.pincode}, IND`,
             cartDeliveryCharges: deliveryCharges,

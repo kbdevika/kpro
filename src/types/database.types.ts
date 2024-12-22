@@ -6,6 +6,7 @@
 export type CartModelType = {
   id?: string;
   cartStoreId: string;
+  cartaiStoreId: string;
   cartStoreName: string;
   cartStorePhone: string;
   cartStoreContact: string;

@@ -1,5 +1,4 @@
 import { calculatePrices, getStockStatus } from '../../../src/helper/aiToCartMapper';
-import aiResponse from '../../mockdatasets/aiResponse.json';
 
 describe('calculatePrices', () => {
     it('should calculate total price and saved amount correctly for valid inputs', () => {
