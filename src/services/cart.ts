@@ -122,7 +122,10 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
                     // Update the quantity of the item if it exists
                     await prisma.cartItemsModel.updateMany({
                     where: { cartId, itemExternalId: item.itemExternalId },
-                    data: { itemQuantity: item.itemQuantity },
+                    data: { 
+                        itemQuantity: item.itemQuantity,
+                        itemRecommended: false
+                    },
                     });
                 } else {
                     // Add the item to the cart if it does not exist
