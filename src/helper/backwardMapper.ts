@@ -12,7 +12,7 @@ const cartItemMapper = (cartItems: CartItemsModelType[]): _CartReponseItem[] => 
     return data;
   };
 
-export const cartMapper = (cartId: string, cart: CartModelType): _CartResponseType => {
+export const cartMapper = (storeId: string, cartId: string, cart: CartModelType): _CartResponseType => {
     return {
         orderSummary: {
             deliveryCharges: cart.cartDeliveryCharges,
@@ -27,7 +27,7 @@ export const cartMapper = (cartId: string, cart: CartModelType): _CartResponseTy
             cartNote: cart.cartNote,
             savingsMessage: cart.cartSavingsMessage
         },
-        aiStoreId: cart.cartStoreId,
+        aiStoreId: storeId,
         cartId: cartId,
         items: cartItemMapper(cart.cartItems
             ? cart.cartItems.filter((a) => a.itemRecommended === false)
