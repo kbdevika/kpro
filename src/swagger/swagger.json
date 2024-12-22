@@ -2927,7 +2927,12 @@
 						"description": "The search results.",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/CartItemsModelType"
+									},
+									"type": "array"
+								}
 							}
 						}
 					},

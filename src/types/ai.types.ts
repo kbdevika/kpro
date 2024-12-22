@@ -1,5 +1,29 @@
 import { OndcCatalogue, OndcStoreAddress } from "./ondcStore.types";
 
+export type ProductSearchResponse = {
+  hits: ProductSearchItem[];
+  query: string;
+  processingTimeMs: number;
+  limit: number;
+  offset: number;
+  estimatedTotalHits: number;
+  semanticHitCount: number;
+};
+
+export type ProductSearchItem = {
+  id: string;
+  productName: string;
+  description: string;
+  brand: string;
+  categoryId: string;
+  subCategoryId: string;
+  kikoId: string;
+  price: number;
+  discountedPrice: number;
+  status: string;
+  metadata: OndcCatalogue;
+};
+
 export type TaskResult = {
     taskId: string;
     state: string;

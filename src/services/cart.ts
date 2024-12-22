@@ -127,20 +127,20 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
                 } else {
                     // Add the item to the cart if it does not exist
                     await prisma.cartItemsModel.create({
-                    data: {
-                        cartId,
-                        itemExternalId: item.itemExternalId,
-                        itemName: item.itemName,
-                        itemDescription: item.itemDescription,
-                        itemQuantity: item.itemQuantity,
-                        itemWeight: item.itemWeight,
-                        itemWeightUnit: item.itemWeightUnit,
-                        itemOriginalPrice: item.itemOriginalPrice,
-                        itemDiscountedPrice: item.itemDiscountedPrice,
-                        itemImageUrl: item.itemImageUrl,
-                        itemRecommended: false,
-                        itemStockStatus: item.itemStockStatus
-                    },
+                        data: {
+                            cartId,
+                            itemExternalId: item.itemExternalId,
+                            itemName: item.itemName,
+                            itemDescription: item.itemDescription,
+                            itemQuantity: item.itemQuantity,
+                            itemWeight: item.itemWeight,
+                            itemWeightUnit: item.itemWeightUnit,
+                            itemOriginalPrice: item.itemOriginalPrice,
+                            itemDiscountedPrice: item.itemDiscountedPrice,
+                            itemImageUrl: item.itemImageUrl,
+                            itemRecommended: false,
+                            itemStockStatus: item.itemStockStatus
+                        },
                     });
                 }
             })

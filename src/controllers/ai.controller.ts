@@ -4,8 +4,10 @@ import convertToCart from "../helper/convertToCart";
 import validateHeaders from "../helper/validateHeader";
 import getPincodeFromCoordinates from "../helper/convertLatLongToPincode";
 import prisma from "../config/prisma.config";
-import { _CartResponseType } from "../types/backwardCompatibility.types";
+import { _CartReponseItem, _CartResponseType } from "../types/backwardCompatibility.types";
 import { cartMapper } from "../helper/backwardMapper";
+import { searchProductMapper } from "../helper/productSearchMapper";
+import { CartItemsModelType } from "../types/database.types";
 
 interface SearchRequest {
   query: string;
@@ -102,7 +104,7 @@ public async getCartStatus(@Path() taskId: string, @Request() req: any): Promise
    */
   @Post("/search")
   @Response(400, "Missing or invalid inputs!")
-  public async searchItems(@Body() body: SearchRequest): Promise<any> {
+  public async searchItems(@Body() body: SearchRequest): Promise<CartItemsModelType[]> {
     const { query, aiStoreId } = body;
 
     if (!query || !aiStoreId) {
@@ -124,8 +126,10 @@ public async getCartStatus(@Path() taskId: string, @Request() req: any): Promise
       this.setStatus(response.status);
       throw new Error(`Error occurred while fetching AI response: ${await response.text()}`);
     }
-
-    return await response.json();
+    
+    const data = await response.json();
+    return searchProductMapper(data)
+    
   }
 
   /**
