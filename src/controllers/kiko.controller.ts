@@ -1,15 +1,15 @@
 import { Controller, Post, Route, Tags, Body, Response } from "tsoa";
 import prisma from "../config/prisma.config";
 
-interface UpdateOrderRequest {
-  apiKey: string;
+interface UpdateOrderResponse {
+  message: string;
   orderId: string;
   orderStatus: string;
   deliveryStatus: string;
 }
 
-interface UpdateOrderResponse {
-  message: string;
+interface UpdateOrderRequest {
+  apiKey: string;
   orderId: string;
   orderStatus: string;
   deliveryStatus: string;
@@ -78,7 +78,7 @@ export class KikoController extends Controller {
       });
 
       return {
-        message: "Order updated successfully",
+        message: "success",
         orderId: updatedOrder.id,
         orderStatus: normalizedOrderStatus,
         deliveryStatus: normalizedDeliveryStatus,

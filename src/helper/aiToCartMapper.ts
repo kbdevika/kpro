@@ -1,5 +1,5 @@
 import { Items, MorRItems } from "../types/ai.types";
-import CartItemsModel, { CartItemsModelType } from "../types/database.types";
+import { CartItemsModelType } from "../types/database.types";
 import { OndcCatalogue } from "../types/ondcStore.types";
 
 /**
@@ -15,7 +15,6 @@ export function parseMatchingProductMetadata(sourceItem: MorRItems): OndcCatalog
   return productMetadata;
 }
   
-
 /**
  * Calculates the total price and the amount saved for a given quantity of items.
  *
@@ -92,9 +91,8 @@ export function mapSingleItem(
       itemRecommended: recommended,
       itemExternalId: productMetadata._id,
     };
-  }
+}
 
-  
 /**
  * @param items
  * @param recommended 

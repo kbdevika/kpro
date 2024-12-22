@@ -2,19 +2,9 @@ import { Controller, Post, Route, Tags, Body, Response, Security } from "tsoa";
 import RazorPay from "razorpay";
 import crypto from "crypto";
 import orderToKikoOrder from "../helper/orderToKikoOrder";
-import kikoUrl from "../constants";
+import kikoUrl, { activateActualOrder } from "../constants";
 
-interface RazorPayOrderResponse {
-    id: string;
-    entity: string;
-    amount: number | string;
-    currency: string;
-    receipt?: string | undefined;
-    status: string;
-    created_at: number;
-  }
-
-interface VerifyPaymentBody {
+interface VerifyPaymentRequest {
   order_id: string;
   payment_id: string;
   signature: string;
@@ -23,7 +13,17 @@ interface VerifyPaymentBody {
   userId: string;
 }
 
-@Route("payments")
+interface RazorPayOrderResponse {
+  id: string;
+  entity: string;
+  amount: number | string;
+  currency: string;
+  receipt?: string | undefined;
+  status: string;
+  created_at: number;
+}
+
+@Route("payment")
 @Tags("Payments")
 @Security("jwt")
 export class PaymentsController extends Controller {
@@ -52,7 +52,7 @@ export class PaymentsController extends Controller {
       throw new Error("Amount must be a positive number!");
     }
 
-    const amount = Math.round(inputAmount * 100); // Convert to paisa
+    const amount = Math.round(inputAmount * 100);
     return this.razorpay.orders.create({
       amount,
       currency: "INR",
@@ -67,12 +67,15 @@ export class PaymentsController extends Controller {
    */
   @Post("/verify")
   @Response(400, "Missing or invalid inputs")
-  public async verifyPayment(@Body() body: VerifyPaymentBody): Promise<{ success: boolean; message: string; order?: any }> {
+  public async verifyPayment(@Body() body: VerifyPaymentRequest): Promise<{ success: boolean; message: string; order?: any }> {
     const { order_id, payment_id, signature, cart_id, address_id, userId } = body;
 
     if (!order_id || !payment_id || !signature || !cart_id || !address_id) {
       this.setStatus(400);
-      throw new Error("Missing or invalid inputs!");
+      return {
+        success: false,
+        message: "invalid-inputs"
+      };
     }
 
     const secret = process.env.RAZORPAY_SECRET || "rzp_secret_xxx";
@@ -82,12 +85,15 @@ export class PaymentsController extends Controller {
 
     if (generatedSignature !== signature) {
       this.setStatus(400);
-      throw new Error("Payment not verified!");
+      return {
+        success: false,
+        message: "payment-failed"
+      };
     }
 
     const { kikoOrder, order } = await orderToKikoOrder(cart_id, userId, address_id);
 
-    if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "localhost") {
+    if (activateActualOrder) {
       return {
         success: true,
         message: "Order to Kiko is disabled in development mode",
@@ -102,9 +108,11 @@ export class PaymentsController extends Controller {
     });
 
     if (!response.ok) {
-      const errorMessage = await response.text();
       this.setStatus(response.status);
-      throw new Error(errorMessage);
+      return {
+        success: true,
+        message: "order-not-placed"
+      };
     }
 
     const data = await response.json();

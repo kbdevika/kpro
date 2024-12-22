@@ -43,28 +43,29 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"UserSettingsModelType": {
+			"CreateSettingResponse": {
 				"properties": {
-					"userId": {
-						"type": "string"
-					},
-					"settingsValue": {
-						"type": "string"
-					},
-					"settingsKey": {
-						"type": "string"
-					},
 					"id": {
+						"type": "string"
+					},
+					"key": {
+						"type": "string"
+					},
+					"value": {
+						"type": "string"
+					},
+					"userId": {
 						"type": "string"
 					}
 				},
 				"required": [
-					"userId",
-					"settingsValue",
-					"settingsKey"
+					"id",
+					"key",
+					"value",
+					"userId"
 				],
 				"type": "object",
-				"description": "User Settings"
+				"additionalProperties": false
 			},
 			"CreateSettingRequest": {
 				"properties": {
@@ -94,51 +95,41 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"UserAddressModelType": {
+			"_AddressType": {
 				"properties": {
-					"userId": {
+					"postalCode": {
 						"type": "string"
 					},
-					"addressContactPhone": {
+					"landmark": {
 						"type": "string"
 					},
-					"addressContactName": {
+					"addressType": {
 						"type": "string"
 					},
-					"addressLandmark": {
-						"type": "string"
-					},
-					"addressAddressType": {
-						"type": "string"
-					},
-					"addressLongitude": {
+					"longitude": {
 						"type": "number",
 						"format": "double"
 					},
-					"addressLatitude": {
+					"latitude": {
 						"type": "number",
 						"format": "double"
 					},
-					"addressPostalCode": {
-						"type": "number",
-						"format": "double"
-					},
-					"addressCountry": {
+					"country": {
 						"type": "string"
 					},
-					"addressState": {
+					"state": {
 						"type": "string"
 					},
-					"addressCity": {
+					"city": {
 						"type": "string"
 					},
-					"addressStreet": {
+					"street": {
 						"type": "string"
 					},
-					"addressLine2": {
+					"address_line2": {
 						"type": "string"
 					},
-					"addressLine1": {
+					"address_line1": {
 						"type": "string"
 					},
 					"id": {
@@ -146,23 +137,20 @@
 					}
 				},
 				"required": [
-					"userId",
-					"addressContactPhone",
-					"addressContactName",
-					"addressLandmark",
-					"addressAddressType",
-					"addressLongitude",
-					"addressLatitude",
-					"addressPostalCode",
-					"addressCountry",
-					"addressState",
-					"addressCity",
-					"addressStreet",
-					"addressLine2",
-					"addressLine1"
+					"postalCode",
+					"landmark",
+					"addressType",
+					"longitude",
+					"latitude",
+					"country",
+					"state",
+					"city",
+					"street",
+					"address_line2",
+					"address_line1",
+					"id"
 				],
-				"type": "object",
-				"description": "User Address"
+				"type": "object"
 			},
 			"CreatedAddressResponse": {
 				"properties": {
@@ -170,59 +158,11 @@
 						"type": "string"
 					},
 					"address": {
-						"$ref": "#/components/schemas/UserAddressModelType"
+						"$ref": "#/components/schemas/_AddressType"
 					}
 				},
 				"required": [
 					"message"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"UserAddressRequest": {
-				"properties": {
-					"address_line1": {
-						"type": "string"
-					},
-					"address_line2": {
-						"type": "string"
-					},
-					"street": {
-						"type": "string"
-					},
-					"city": {
-						"type": "string"
-					},
-					"state": {
-						"type": "string"
-					},
-					"country": {
-						"type": "string"
-					},
-					"latitude": {
-						"type": "string"
-					},
-					"longitude": {
-						"type": "string"
-					},
-					"addressType": {
-						"type": "string"
-					},
-					"landmark": {
-						"type": "string"
-					},
-					"postalCode": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"address_line1",
-					"city",
-					"state",
-					"country",
-					"latitude",
-					"longitude",
-					"postalCode"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -323,7 +263,7 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"VerifyPaymentBody": {
+			"VerifyPaymentRequest": {
 				"properties": {
 					"order_id": {
 						"type": "string"
@@ -496,6 +436,171 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"_CartReponseItem": {
+				"properties": {
+					"itemWeightUnit": {
+						"type": "string"
+					},
+					"itemWeight": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemStockStatus": {
+						"type": "string"
+					},
+					"itemDiscountedPrice": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemOriginalPrice": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemQuantity": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemImageUrl": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"itemDescription": {
+						"type": "string"
+					},
+					"itemName": {
+						"type": "string"
+					},
+					"itemId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"itemWeightUnit",
+					"itemWeight",
+					"itemStockStatus",
+					"itemDiscountedPrice",
+					"itemOriginalPrice",
+					"itemQuantity",
+					"itemImageUrl",
+					"itemDescription",
+					"itemName",
+					"itemId"
+				],
+				"type": "object"
+			},
+			"_CartResponseType": {
+				"properties": {
+					"additionalInfo": {
+						"properties": {
+							"cartNote": {
+								"type": "string"
+							},
+							"savingsMessage": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"cartNote",
+							"savingsMessage"
+						],
+						"type": "object"
+					},
+					"storeInfo": {
+						"properties": {
+							"storeAddress": {
+								"type": "string"
+							},
+							"storeContactPerson": {
+								"type": "string"
+							},
+							"storePhone": {
+								"type": "string"
+							},
+							"storeName": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"storeAddress",
+							"storeContactPerson",
+							"storePhone",
+							"storeName"
+						],
+						"type": "object"
+					},
+					"orderSummary": {
+						"properties": {
+							"discount": {
+								"type": "number",
+								"format": "double"
+							},
+							"saved": {
+								"type": "string"
+							},
+							"deliveryCharges": {
+								"type": "number",
+								"format": "double"
+							},
+							"freeDeliveryThreshold": {
+								"type": "number",
+								"format": "double"
+							},
+							"deliverytime": {
+								"type": "string"
+							},
+							"total": {
+								"type": "number",
+								"format": "double"
+							},
+							"subTotal": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": [
+							"discount",
+							"saved",
+							"deliveryCharges",
+							"freeDeliveryThreshold",
+							"deliverytime",
+							"total",
+							"subTotal"
+						],
+						"type": "object"
+					},
+					"recommendedItems": {
+						"items": {
+							"$ref": "#/components/schemas/_CartReponseItem"
+						},
+						"type": "array"
+					},
+					"items": {
+						"items": {
+							"$ref": "#/components/schemas/_CartReponseItem"
+						},
+						"type": "array"
+					},
+					"cartId": {
+						"type": "string"
+					},
+					"aiStoreId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"additionalInfo",
+					"storeInfo",
+					"orderSummary",
+					"recommendedItems",
+					"items",
+					"cartId",
+					"aiStoreId"
+				],
+				"type": "object",
+				"description": "For Backward compactability,\r\nOutgoing response mapped from service is to be in specific Types,\r\nwhich are specified here"
+			},
 			"CartItemsModelType": {
 				"properties": {
 					"itemExternalId": {
@@ -555,86 +660,6 @@
 				],
 				"type": "object",
 				"description": "Cart Items"
-			},
-			"CartModelType": {
-				"properties": {
-					"userId": {
-						"type": "string"
-					},
-					"cartNote": {
-						"type": "string"
-					},
-					"cartSavingsMessage": {
-						"type": "string"
-					},
-					"cartSaved": {
-						"type": "number",
-						"format": "double"
-					},
-					"cartDiscount": {
-						"type": "number",
-						"format": "double"
-					},
-					"cartDeliveryCharges": {
-						"type": "number",
-						"format": "double"
-					},
-					"cartFreeDeliveryThreshold": {
-						"type": "number",
-						"format": "double"
-					},
-					"cartDeliverytime": {
-						"type": "number",
-						"format": "double"
-					},
-					"cartTotal": {
-						"type": "number",
-						"format": "double"
-					},
-					"cartSubTotal": {
-						"type": "number",
-						"format": "double"
-					},
-					"cartItems": {
-						"items": {
-							"$ref": "#/components/schemas/CartItemsModelType"
-						},
-						"type": "array"
-					},
-					"cartStoreContact": {
-						"type": "string"
-					},
-					"cartStorePhone": {
-						"type": "string"
-					},
-					"cartStoreName": {
-						"type": "string"
-					},
-					"cartStoreId": {
-						"type": "string"
-					},
-					"id": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"userId",
-					"cartNote",
-					"cartSavingsMessage",
-					"cartSaved",
-					"cartDiscount",
-					"cartDeliveryCharges",
-					"cartFreeDeliveryThreshold",
-					"cartDeliverytime",
-					"cartTotal",
-					"cartSubTotal",
-					"cartStoreContact",
-					"cartStorePhone",
-					"cartStoreName",
-					"cartStoreId"
-				],
-				"type": "object",
-				"description": "Cart"
 			},
 			"OndcStoreAddress": {
 				"properties": {
@@ -1288,7 +1313,7 @@
 	},
 	"paths": {
 		"/user": {
-			"post": {
+			"put": {
 				"operationId": "UpdateProfile",
 				"responses": {
 					"200": {
@@ -1376,7 +1401,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/UserSettingsModelType"
+										"$ref": "#/components/schemas/CreateSettingResponse"
 									},
 									"type": "array"
 								}
@@ -1415,6 +1440,9 @@
 								}
 							}
 						}
+					},
+					"201": {
+						"description": "Settings created"
 					},
 					"400": {
 						"description": "Invalid inputs"
@@ -1560,7 +1588,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/UserAddressModelType"
+										"$ref": "#/components/schemas/_AddressType"
 									},
 									"type": "array"
 								}
@@ -1593,7 +1621,7 @@
 						}
 					},
 					"201": {
-						"description": "Missing or invalid inputs"
+						"description": "Address created"
 					},
 					"400": {
 						"description": "Missing or invalid inputs"
@@ -1615,7 +1643,7 @@
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/UserAddressRequest",
+								"$ref": "#/components/schemas/_AddressType",
 								"description": "The address details."
 							}
 						}
@@ -1634,7 +1662,7 @@
 								"schema": {
 									"properties": {
 										"address": {
-											"$ref": "#/components/schemas/UserAddressModelType"
+											"$ref": "#/components/schemas/_AddressType"
 										},
 										"message": {
 											"type": "string"
@@ -1683,7 +1711,7 @@
 								"schema": {
 									"properties": {
 										"address": {
-											"$ref": "#/components/schemas/UserAddressModelType"
+											"$ref": "#/components/schemas/_AddressType"
 										},
 										"message": {
 											"type": "string"
@@ -1805,7 +1833,7 @@
 				]
 			}
 		},
-		"/payments": {
+		"/payment": {
 			"post": {
 				"operationId": "CreatePayment",
 				"responses": {
@@ -1854,7 +1882,7 @@
 				}
 			}
 		},
-		"/payments/verify": {
+		"/payment/verify": {
 			"post": {
 				"operationId": "VerifyPayment",
 				"responses": {
@@ -1901,7 +1929,7 @@
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/VerifyPaymentBody",
+								"$ref": "#/components/schemas/VerifyPaymentRequest",
 								"description": "The request body with payment and order details."
 							}
 						}
@@ -1909,7 +1937,7 @@
 				}
 			}
 		},
-		"/orders": {
+		"/order": {
 			"get": {
 				"operationId": "GetOrders",
 				"responses": {
@@ -2009,7 +2037,7 @@
 				}
 			}
 		},
-		"/orders/{id}": {
+		"/order/{id}": {
 			"get": {
 				"operationId": "GetOrder",
 				"responses": {
@@ -2046,7 +2074,7 @@
 				]
 			}
 		},
-		"/orders/{id}/track": {
+		"/order/{id}/track": {
 			"get": {
 				"operationId": "TrackOrder",
 				"responses": {
@@ -2095,7 +2123,7 @@
 				]
 			}
 		},
-		"/orders/{id}/cancel": {
+		"/order/{id}/cancel": {
 			"post": {
 				"operationId": "CancelOrder",
 				"responses": {
@@ -2442,7 +2470,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/CartModelType"
+									"$ref": "#/components/schemas/_CartResponseType"
 								}
 							}
 						}
@@ -2497,7 +2525,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/CartModelType"
+									"$ref": "#/components/schemas/_CartResponseType"
 								}
 							}
 						}
@@ -2532,7 +2560,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/CartModelType"
+									"$ref": "#/components/schemas/_CartResponseType"
 								}
 							}
 						}
@@ -2568,7 +2596,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/CartModelType"
+									"$ref": "#/components/schemas/_CartResponseType"
 								}
 							}
 						}
@@ -2627,7 +2655,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/CartModelType"
+										"$ref": "#/components/schemas/_CartResponseType"
 									},
 									"type": "array"
 								}
@@ -2807,7 +2835,7 @@
 				],
 				"parameters": [
 					{
-						"description": "The User-Agent header for device identification",
+						"description": "The User-Agent header for device identification. Eg: `CustomAgent/1.0 (lat: <latitude>; lon: <longitude>)`",
 						"in": "header",
 						"name": "user-agent",
 						"required": true,
@@ -2823,14 +2851,13 @@
 							"schema": {
 								"type": "object",
 								"properties": {
-									"file": {
+									"audio": {
 										"type": "string",
-										"format": "binary",
-										"description": "The uploaded MP3 audio file"
+										"format": "binary"
 									}
 								},
 								"required": [
-									"file"
+									"audio"
 								]
 							}
 						}
@@ -2846,7 +2873,23 @@
 						"description": "The cart status or cart details.",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"properties": {
+										"cart": {
+											"$ref": "#/components/schemas/_CartResponseType"
+										},
+										"error": {
+											"type": "string"
+										},
+										"cartStatus": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"cartStatus"
+									],
+									"type": "object"
+								}
 							}
 						}
 					},

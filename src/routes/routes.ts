@@ -57,9 +57,15 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "UserSettingsModelType": {
-        "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"userId":{"dataType":"string","required":true},"settingsValue":{"dataType":"string","required":true},"settingsKey":{"dataType":"string","required":true},"id":{"dataType":"string"}},"validators":{}},
+    "CreateSettingResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "key": {"dataType":"string","required":true},
+            "value": {"dataType":"string","required":true},
+            "userId": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "CreateSettingRequest": {
@@ -79,34 +85,16 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "UserAddressModelType": {
+    "_AddressType": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"userId":{"dataType":"string","required":true},"addressContactPhone":{"dataType":"string","required":true},"addressContactName":{"dataType":"string","required":true},"addressLandmark":{"dataType":"string","required":true},"addressAddressType":{"dataType":"string","required":true},"addressLongitude":{"dataType":"double","required":true},"addressLatitude":{"dataType":"double","required":true},"addressPostalCode":{"dataType":"double","required":true},"addressCountry":{"dataType":"string","required":true},"addressState":{"dataType":"string","required":true},"addressCity":{"dataType":"string","required":true},"addressStreet":{"dataType":"string","required":true},"addressLine2":{"dataType":"string","required":true},"addressLine1":{"dataType":"string","required":true},"id":{"dataType":"string"}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"postalCode":{"dataType":"string","required":true},"landmark":{"dataType":"string","required":true},"addressType":{"dataType":"string","required":true},"longitude":{"dataType":"double","required":true},"latitude":{"dataType":"double","required":true},"country":{"dataType":"string","required":true},"state":{"dataType":"string","required":true},"city":{"dataType":"string","required":true},"street":{"dataType":"string","required":true},"address_line2":{"dataType":"string","required":true},"address_line1":{"dataType":"string","required":true},"id":{"dataType":"string","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "CreatedAddressResponse": {
         "dataType": "refObject",
         "properties": {
             "message": {"dataType":"string","required":true},
-            "address": {"ref":"UserAddressModelType"},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "UserAddressRequest": {
-        "dataType": "refObject",
-        "properties": {
-            "address_line1": {"dataType":"string","required":true},
-            "address_line2": {"dataType":"string"},
-            "street": {"dataType":"string"},
-            "city": {"dataType":"string","required":true},
-            "state": {"dataType":"string","required":true},
-            "country": {"dataType":"string","required":true},
-            "latitude": {"dataType":"string","required":true},
-            "longitude": {"dataType":"string","required":true},
-            "addressType": {"dataType":"string"},
-            "landmark": {"dataType":"string"},
-            "postalCode": {"dataType":"string","required":true},
+            "address": {"ref":"_AddressType"},
         },
         "additionalProperties": false,
     },
@@ -143,7 +131,7 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "VerifyPaymentBody": {
+    "VerifyPaymentRequest": {
         "dataType": "refObject",
         "properties": {
             "order_id": {"dataType":"string","required":true},
@@ -222,14 +210,19 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "_CartReponseItem": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"itemWeightUnit":{"dataType":"string","required":true},"itemWeight":{"dataType":"double","required":true},"itemStockStatus":{"dataType":"string","required":true},"itemDiscountedPrice":{"dataType":"double","required":true},"itemOriginalPrice":{"dataType":"double","required":true},"itemQuantity":{"dataType":"double","required":true},"itemImageUrl":{"dataType":"array","array":{"dataType":"string"},"required":true},"itemDescription":{"dataType":"string","required":true},"itemName":{"dataType":"string","required":true},"itemId":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "_CartResponseType": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"additionalInfo":{"dataType":"nestedObjectLiteral","nestedProperties":{"cartNote":{"dataType":"string","required":true},"savingsMessage":{"dataType":"string","required":true}},"required":true},"storeInfo":{"dataType":"nestedObjectLiteral","nestedProperties":{"storeAddress":{"dataType":"string","required":true},"storeContactPerson":{"dataType":"string","required":true},"storePhone":{"dataType":"string","required":true},"storeName":{"dataType":"string","required":true}},"required":true},"orderSummary":{"dataType":"nestedObjectLiteral","nestedProperties":{"discount":{"dataType":"double","required":true},"saved":{"dataType":"string","required":true},"deliveryCharges":{"dataType":"double","required":true},"freeDeliveryThreshold":{"dataType":"double","required":true},"deliverytime":{"dataType":"string","required":true},"total":{"dataType":"double","required":true},"subTotal":{"dataType":"double","required":true}},"required":true},"recommendedItems":{"dataType":"array","array":{"dataType":"refAlias","ref":"_CartReponseItem"},"required":true},"items":{"dataType":"array","array":{"dataType":"refAlias","ref":"_CartReponseItem"},"required":true},"cartId":{"dataType":"string","required":true},"aiStoreId":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "CartItemsModelType": {
         "dataType": "refAlias",
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"itemExternalId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},"itemRecommended":{"dataType":"boolean","required":true},"itemWeightUnit":{"dataType":"string","required":true},"itemWeight":{"dataType":"double","required":true},"itemStockStatus":{"dataType":"string","required":true},"itemDiscountedPrice":{"dataType":"double","required":true},"itemOriginalPrice":{"dataType":"double","required":true},"itemQuantity":{"dataType":"double","required":true},"itemImageUrl":{"dataType":"string","required":true},"itemDescription":{"dataType":"string","required":true},"itemName":{"dataType":"string","required":true},"id":{"dataType":"string"}},"validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "CartModelType": {
-        "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"userId":{"dataType":"string","required":true},"cartNote":{"dataType":"string","required":true},"cartSavingsMessage":{"dataType":"string","required":true},"cartSaved":{"dataType":"double","required":true},"cartDiscount":{"dataType":"double","required":true},"cartDeliveryCharges":{"dataType":"double","required":true},"cartFreeDeliveryThreshold":{"dataType":"double","required":true},"cartDeliverytime":{"dataType":"double","required":true},"cartTotal":{"dataType":"double","required":true},"cartSubTotal":{"dataType":"double","required":true},"cartItems":{"dataType":"array","array":{"dataType":"refAlias","ref":"CartItemsModelType"}},"cartStoreContact":{"dataType":"string","required":true},"cartStorePhone":{"dataType":"string","required":true},"cartStoreName":{"dataType":"string","required":true},"cartStoreId":{"dataType":"string","required":true},"id":{"dataType":"string"}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "OndcStoreAddress": {
@@ -339,7 +332,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
                 body: {"in":"body","name":"body","required":true,"ref":"UpdateProfileRequest"},
         };
-        app.post('/user',
+        app.put('/user',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(UserController)),
             ...(fetchMiddlewares<RequestHandler>(UserController.prototype.updateProfile)),
@@ -623,7 +616,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsUserController_createUserAddress: Record<string, TsoaRoute.ParameterSchema> = {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
-                body: {"in":"body","name":"body","required":true,"ref":"UserAddressRequest"},
+                body: {"in":"body","name":"body","required":true,"ref":"_AddressType"},
         };
         app.post('/user/address',
             authenticateMiddleware([{"jwt":[]}]),
@@ -718,7 +711,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         const argsPaymentsController_createPayment: Record<string, TsoaRoute.ParameterSchema> = {
                 body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"amount":{"dataType":"double","required":true}}},
         };
-        app.post('/payments',
+        app.post('/payment',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(PaymentsController)),
             ...(fetchMiddlewares<RequestHandler>(PaymentsController.prototype.createPayment)),
@@ -747,9 +740,9 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsPaymentsController_verifyPayment: Record<string, TsoaRoute.ParameterSchema> = {
-                body: {"in":"body","name":"body","required":true,"ref":"VerifyPaymentBody"},
+                body: {"in":"body","name":"body","required":true,"ref":"VerifyPaymentRequest"},
         };
-        app.post('/payments/verify',
+        app.post('/payment/verify',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(PaymentsController)),
             ...(fetchMiddlewares<RequestHandler>(PaymentsController.prototype.verifyPayment)),
@@ -780,7 +773,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         const argsOrdersController_getOrders: Record<string, TsoaRoute.ParameterSchema> = {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
-        app.get('/orders',
+        app.get('/order',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(OrdersController)),
             ...(fetchMiddlewares<RequestHandler>(OrdersController.prototype.getOrders)),
@@ -812,7 +805,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
                 body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"addressId":{"dataType":"string","required":true},"cartId":{"dataType":"string","required":true}}},
         };
-        app.post('/orders',
+        app.post('/order',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(OrdersController)),
             ...(fetchMiddlewares<RequestHandler>(OrdersController.prototype.createOrder)),
@@ -844,7 +837,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
                 id: {"in":"path","name":"id","required":true,"dataType":"string"},
         };
-        app.get('/orders/:id',
+        app.get('/order/:id',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(OrdersController)),
             ...(fetchMiddlewares<RequestHandler>(OrdersController.prototype.getOrder)),
@@ -876,7 +869,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
                 id: {"in":"path","name":"id","required":true,"dataType":"string"},
         };
-        app.get('/orders/:id/track',
+        app.get('/order/:id/track',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(OrdersController)),
             ...(fetchMiddlewares<RequestHandler>(OrdersController.prototype.trackOrder)),
@@ -908,7 +901,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
                 id: {"in":"path","name":"id","required":true,"dataType":"string"},
         };
-        app.post('/orders/:id/cancel',
+        app.post('/order/:id/cancel',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(OrdersController)),
             ...(fetchMiddlewares<RequestHandler>(OrdersController.prototype.cancelOrder)),
@@ -1347,13 +1340,13 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsAudioController_processAudio: Record<string, TsoaRoute.ParameterSchema> = {
                 userAgent: {"in":"header","name":"user-agent","required":true,"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}]},
-                file: {"in":"formData","name":"file","required":true,"dataType":"file"},
+                audio: {"in":"formData","name":"audio","required":true,"dataType":"file"},
         };
         app.post('/audio',
             authenticateMiddleware([{"jwt":[]}]),
             upload.fields([
                 {
-                    name: "file",
+                    name: "audio",
                     maxCount: 1
                 }
             ]),

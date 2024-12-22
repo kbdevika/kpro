@@ -9,6 +9,7 @@ export type CartModelType = {
   cartStoreName: string;
   cartStorePhone: string;
   cartStoreContact: string;
+  cartStoreAddress: string;
   cartItems?: CartItemsModelType[];
   cartSubTotal: number;
   cartTotal: number;
@@ -113,7 +114,6 @@ export type NotificationModelType = {
 };
 
 /** Home */
-
 export type HomeModelType = {
   data: {
     id: string;

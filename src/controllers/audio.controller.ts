@@ -13,20 +13,20 @@ interface AudioProcessResponse {
 export class AudioController {
   /**
    * Process an uploaded audio file and return a task ID.
-   * @param userAgent The User-Agent header for device identification
+   * @param userAgent The User-Agent header for device identification. Eg: `CustomAgent/1.0 (lat: <latitude>; lon: <longitude>)`
    * @param file The uploaded MP3 audio file
    * @returns A task ID for the processed audio
    */
   @Post('/')
   public async processAudio(
     @Header('user-agent') userAgent: string | undefined,
-    @UploadedFile() file: any,
+    @UploadedFile('audio') audio: any,
   ): Promise<AudioProcessResponse> {
-    if (!file || file.mimetype !== 'audio/mpeg') {
+    if (!audio || audio.mimetype !== 'audio/mpeg') {
       throw new Error('Only MP3 files are allowed!');
     }
 
-    if (!userAgent) {
+    if (!userAgent || typeof userAgent === 'undefined') {
       throw new Error('Missing or invalid User-Agent header.');
     }
 
@@ -45,7 +45,7 @@ export class AudioController {
 
     // Create FormData for the API call
     const formData = new FormData();
-    formData.append('audio', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
+    formData.append('audio', new Blob([audio.buffer], { type: audio.mimetype }), audio.originalname);
     formData.append('pincode', pincode);
 
     const response = await fetch('https://dev-ai-api.kpro42.com/api/audio/cart/enrich', {

@@ -9,3 +9,8 @@
 # Deployment
 
 For deployment, use `/dist` folder
+
+# Versions
+
+Latest version: `1.4.0`
+Current Stable Version: `1.2.8`

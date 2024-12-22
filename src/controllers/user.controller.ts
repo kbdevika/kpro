@@ -1,7 +1,8 @@
 import { Controller, Get, Post, Put, Delete, Route, Tags, Body, Response, Security, Request, Path } from "tsoa";
 import prisma from "../config/prisma.config";
-import { UserAddressModelType, UserSettingsModelType } from "../types/database.types";
-import isValidInt, { isValidFloat } from "../helper/validations";
+import isValidInt from "../helper/validations";
+import { addressMapper } from "../helper/backwardMapper";
+import { _AddressType } from "../types/backwardCompatibility.types";
 
 interface UserProfile {
   id: string;
@@ -20,28 +21,21 @@ interface CreateSettingRequest {
   value: string;
 }
 
+interface CreateSettingResponse {
+  id: string,
+  key: string;
+  value: string;
+  userId: string
+}
+
 interface UpdateSettingRequest {
   value: string;
 }
 
 interface CreatedAddressResponse {
   message: string;
-  address?: UserAddressModelType;
+  address?: _AddressType;
 }
-
-interface UserAddressRequest {
-    address_line1: string;
-    address_line2?: string;
-    street?: string;
-    city: string;
-    state: string;
-    country: string;
-    latitude: string;
-    longitude: string;
-    addressType?: string;
-    landmark?: string;
-    postalCode: string;
-  }
 
 @Route("user")
 @Tags("User")
@@ -53,7 +47,7 @@ export class UserController extends Controller {
    * @param body The updated profile data (name and/or email).
    * @returns The updated profile.
    */
-  @Post("/")
+  @Put("/")
   @Response(400, "Invalid inputs")
   public async updateProfile(
     @Request() req: any, 
@@ -135,14 +129,14 @@ export class UserController extends Controller {
    * @returns An array of user settings.
    */
   @Get("/settings")
-  public async getUserSettings(@Request() req: any): Promise<UserSettingsModelType[]> {
+  public async getUserSettings(@Request() req: any): Promise<CreateSettingResponse[]> {
     const settings = await prisma.userSettingsModel.findMany({
       where: { userId: req.user.id },
     });
     return settings.map((setting) => ({
       id: setting.id,
-      settingsKey: setting.settingsKey,
-      settingsValue: setting.settingsValue,
+      key: setting.settingsKey,
+      value: setting.settingsValue,
       userId: setting.userId
     }));
   }
@@ -154,6 +148,7 @@ export class UserController extends Controller {
    * @returns A success message.
    */
   @Post("/settings")
+  @Response(201, "Settings created")
   @Response(400, "Invalid inputs")
   public async createUserSetting(
     @Request() req: any, 
@@ -248,10 +243,13 @@ export class UserController extends Controller {
    * @returns An array of user addresses.
    */
   @Get("/address")
-  public async getUserAddresses(@Request() req: any): Promise<UserAddressModelType[]> {
-    return await prisma.userAddressModel.findMany({
+  public async getUserAddresses(@Request() req: any): Promise<_AddressType[]> {
+    const _add = await prisma.userAddressModel.findMany({
       where: { userId: req.user.id },
     });
+
+    const address = _add.map((a) => addressMapper(a))
+    return address
   }
 
   /**
@@ -261,15 +259,17 @@ export class UserController extends Controller {
    */
   @Get("/address/{id}")
   @Response(404, "Address not found")
-  public async getUserAddressById(@Path() id: string, @Request() req: any): Promise<{ message: string; address?: UserAddressModelType }> {
+  public async getUserAddressById(@Path() id: string, @Request() req: any): Promise<{ message: string; address?: _AddressType }> {
     try {
-      const address = await prisma.userAddressModel.findUnique({
+      const a = await prisma.userAddressModel.findUnique({
         where: { id, userId: req.user.id },
       });
   
-      if (!address) {
+      if (!a) {
         return { message: "not-found" };
       }
+
+      const address = addressMapper(a)
   
       return { message: "success", address };
     } catch (e) {
@@ -288,12 +288,13 @@ export class UserController extends Controller {
   public async deleteUserAddress(
     @Path() id: string, 
     @Request() req: any
-  ): Promise<{ message: string; address?: UserAddressModelType }> {
+  ): Promise<{ message: string; address?: _AddressType }> {
 
     return await prisma.userAddressModel.delete({
       where: { id, userId: req.user.id },
 
-    }).then((address) => { 
+    }).then((a) => { 
+      const address = addressMapper(a)
       return { message: "success", address }
 
     }).catch((e) => {
@@ -308,11 +309,11 @@ export class UserController extends Controller {
    * @returns A success message and the created address.
    */
   @Post("/address")
-  @Response(201, "Missing or invalid inputs")
+  @Response(201, "Address created")
   @Response(400, "Missing or invalid inputs")
   public async createUserAddress(
     @Request() req: any,
-    @Body() body: UserAddressRequest
+    @Body() body: _AddressType
   ): Promise<CreatedAddressResponse> {
     const {
       address_line1,
@@ -333,8 +334,6 @@ export class UserController extends Controller {
       !address_line1 ||
       !state ||
       !city ||
-      !isValidFloat(latitude) ||
-      !isValidFloat(longitude) ||
       !isValidInt(postalCode)
     ) {
       this.setStatus(400);
@@ -356,7 +355,7 @@ export class UserController extends Controller {
       return { message: 'no-phonenumber-fail' }
     }
 
-    const address = await prisma.userAddressModel.create({
+    const a = await prisma.userAddressModel.create({
       data: {
         userId: req.user.id,
         addressLine1: address_line1,
@@ -365,8 +364,8 @@ export class UserController extends Controller {
         addressCity: city,
         addressState: state,
         addressCountry: country,
-        addressLatitude: parseFloat(latitude),
-        addressLongitude: parseFloat(longitude),
+        addressLatitude: latitude,
+        addressLongitude: longitude,
         addressAddressType: addressType ? addressType : 'home',
         addressLandmark: landmark ? landmark : '',
         addressPostalCode: parseInt(postalCode),
@@ -375,6 +374,7 @@ export class UserController extends Controller {
       },
     });
 
-    return { message: "success", address };
+      const address = addressMapper(a)
+      return { message: "success", address };
   }
 }

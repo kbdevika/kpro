@@ -2,6 +2,8 @@ import { Body, Controller, Delete, Get, Post, Put, Request, Route, Security, Tag
 import createCart, { createCartItems, deleteCartbyId, fetchAllCart, fetchCartbyId, updatedCart } from "../services/cart";
 import { CartItemsModelType, CartModelType } from "../types/database.types";
 import TaskResult from "../types/ai.types";
+import { _CartResponseType } from "../types/backwardCompatibility.types";
+import { cartMapper } from "../helper/backwardMapper";
 
 @Route("cart")
 @Tags("Cart")
@@ -19,7 +21,7 @@ export class CartController extends Controller {
         @Body() body: { 
             updatedItems: CartItemsModelType[] 
         }
-    ): Promise<CartModelType> {
+    ): Promise<_CartResponseType> {
         try {
             const { updatedItems } = body;
             
@@ -28,7 +30,8 @@ export class CartController extends Controller {
             }
 
             const updateCart = await updatedCart(req.user.id, cartId, updatedItems)
-            return updateCart
+            const returnCart = cartMapper(cartId, updateCart)
+            return returnCart
         } catch (error: any){
             throw new Error(error.message)
         }
@@ -48,7 +51,7 @@ export class CartController extends Controller {
             combinedSubTotal: number, 
             total: number 
         }
-    ): Promise<CartModelType> {
+    ): Promise<_CartResponseType> {
         try {
             const { data, combinedTotalSavedAmount, combinedSubTotal, total } = body;
 
@@ -57,7 +60,11 @@ export class CartController extends Controller {
             }
 
             const cart = await createCart(req.user.id, data, combinedTotalSavedAmount, combinedSubTotal, total)
-            return cart
+            if(!cart || !cart.id){
+                throw new Error('Cart creation unsuccessful! Try again!')
+            }
+            const returnCart = cartMapper(cart.id, cart)
+            return returnCart
         } catch (error: any){
             throw new Error(error.message)
         }
@@ -99,10 +106,16 @@ export class CartController extends Controller {
     @Get('/')
     public async getAllCarts(
         @Request() req: any
-    ): Promise<CartModelType[]>{
+    ): Promise<_CartResponseType[]>{
         try {
             const carts = await fetchAllCart(req.user.id)
-            return carts
+            const mappedCarts = carts.map((cart: CartModelType) => {
+                if(!cart || !cart.id){
+                    throw new Error('Carts fetch unsuccessful! Try again!')
+                }
+                return cartMapper(cart.id, cart)
+            })
+            return mappedCarts
         } catch (error: any){
             throw new Error(error.message)
         }
@@ -118,10 +131,14 @@ export class CartController extends Controller {
     public async getCartbyId(
         @Request() req: any,
         @Path('cartId') cartId: string,
-    ): Promise<CartModelType>{
+    ): Promise<_CartResponseType>{
         try {
             const cart = await fetchCartbyId(cartId)
-            return cart
+            if(!cart || !cart.id){
+                throw new Error('Cart fetch unsuccessful! Try again!')
+            }
+            const returnCart = cartMapper(cart.id, cart)
+            return returnCart
         } catch (error: any){
             throw new Error(error.message)
         }
@@ -136,10 +153,14 @@ export class CartController extends Controller {
     public async deleteCartbyId(
         @Path('cartId') cartId: string,
         @Request() req: any
-    ): Promise<CartModelType>{
+    ): Promise<_CartResponseType>{
         try {
-            const deletedCart = await deleteCartbyId(cartId, req.user.Id)
-            return deletedCart
+            const cart = await deleteCartbyId(cartId, req.user.Id)
+            if(!cart || !cart.id){
+                throw new Error('Cart delete unsuccessful! Try again!')
+            }
+            const returnCart = cartMapper(cart.id, cart)
+            return returnCart
         } catch (error: any){
             throw new Error(error.message)
         }

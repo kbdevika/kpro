@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import admin from "../config/firebase.config";
 import prisma from "../config/prisma.config";
 import * as dotenv from "dotenv";
+import { prod } from "../constants";
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ export const expressAuthentication = async (
     scopes?: string[]
 ): Promise<any> => {
   const SECRET_KEY = process.env.JWT_SECRET || "your-secret-key";
-  const authType = name || (process.env.NODE_ENV === "production" ? "firebase" : "jwt");
+  const authType = name || (prod() ? "firebase" : "jwt");
   
   if (authType === "jwt") {
     const authHeader = request.headers["authorization"];

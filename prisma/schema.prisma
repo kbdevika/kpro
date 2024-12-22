@@ -163,6 +163,7 @@ model CartModel {
   cartStoreName             String
   cartStorePhone            String
   cartStoreContact          String
+  cartStoreAddress          String
   cartItems                 CartItemsModel[]
   cartSubTotal              Float
   cartTotal                 Float

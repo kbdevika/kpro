@@ -4,6 +4,8 @@ import convertToCart from "../helper/convertToCart";
 import validateHeaders from "../helper/validateHeader";
 import getPincodeFromCoordinates from "../helper/convertLatLongToPincode";
 import prisma from "../config/prisma.config";
+import { _CartResponseType } from "../types/backwardCompatibility.types";
+import { cartMapper } from "../helper/backwardMapper";
 
 interface SearchRequest {
   query: string;
@@ -25,11 +27,17 @@ export class AIController extends Controller {
    * @returns The cart status or cart details.
    */
   @Get("/{taskId}")
-  @Response(400, "Task ID missing!")
-  public async getCartStatus(@Path() taskId: string, @Request() req: any): Promise<any> {
+@Response(400, "Task ID missing!")
+public async getCartStatus(@Path() taskId: string, @Request() req: any): Promise<{cartStatus: string, error?: string, cart?: _CartResponseType}> {
+  try {
     if (!taskId) {
       this.setStatus(400);
-      throw new Error("Task ID missing!");
+      return { cartStatus: 'error', error: "Task ID missing!" };
+    }
+
+    if (!req.user || !req.user.id) {
+      this.setStatus(401); // Unauthorized
+      return { cartStatus: 'error', error: "User not authenticated or user ID missing!" };
     }
 
     const task = await prisma.taskModel.findUnique({
@@ -38,6 +46,7 @@ export class AIController extends Controller {
 
     if (!task || task.taskStatus !== "success") {
       const jwtToken = await fetchJwtToken();
+
       const response = await fetch(`https://dev-ai-api.kpro42.com/api/cart/enrich/${taskId}`, {
         method: "GET",
         headers: { Authorization: `Bearer ${jwtToken}` },
@@ -45,7 +54,8 @@ export class AIController extends Controller {
 
       if (!response.ok) {
         this.setStatus(response.status);
-        throw new Error(`Error occurred while fetching AI response: ${await response.text()}`);
+        const errorText = await response.text();
+        return { cartStatus: 'error', error: `Error occurred while fetching AI response: ${errorText}` };
       }
 
       const data = await response.json();
@@ -58,22 +68,32 @@ export class AIController extends Controller {
       }
 
       const cart = await convertToCart(data, taskId, req.user.id);
-      if (cart) return { cartStatus: "success", cart };
+      if (cart) {
+        return { cartStatus: "success", cart };
+      }
 
       this.setStatus(400);
-      throw new Error("Something went wrong! Try again.");
+      return { cartStatus: 'error', error: "Something went wrong while converting to cart! Try again." };
     }
 
-    const cart = await prisma.cartModel.findUnique({
+    const _cart = await prisma.cartModel.findUnique({
       where: { id: task.cartId },
       include: { cartItems: true },
     });
 
-    if (cart) return { cartStatus: "success", cart };
+    if (_cart) {
+      const cart = cartMapper(_cart.id, _cart)
+      return { cartStatus: "success", cart };
+    }
 
     this.setStatus(400);
-    throw new Error("Something went wrong! Try again.");
+    return { cartStatus: 'error', error: "Cart not found. Something went wrong!" };
+
+  } catch (error:any) {
+    this.setStatus(500);
+    return { cartStatus: 'error', error: "Internal server error. Please try again later." + error.message };
   }
+}
 
   /**
    * Searches for items based on a query and AI store ID.

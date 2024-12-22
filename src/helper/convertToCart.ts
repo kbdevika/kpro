@@ -5,9 +5,11 @@ import createCart, { createCartItems, fetchCartbyId } from "../services/cart";
 import { createTask } from "../services/task";
 import { createNotification } from "../services/notification";
 import { CartModelType } from "../types/database.types";
+import { _CartResponseType } from "../types/backwardCompatibility.types";
+import { cartMapper } from "./backwardMapper";
 
 // Modify mapCartItems to return items only
-export default async function convertToCart(data: TaskResult, taskId: string, userId: string): Promise<CartModelType | null> {
+export default async function convertToCart(data: TaskResult, taskId: string, userId: string): Promise<_CartResponseType | null> {
   try {
     // Process items and recommendations
     let combinedSubTotal = 0;
@@ -39,8 +41,12 @@ export default async function convertToCart(data: TaskResult, taskId: string, us
     await createTask(taskId, cart.id, userId);
     await createNotification(userId);
     const responseCart = await fetchCartbyId(cart.id);
+    if(!responseCart.id){
+      throw new Error('Cart not found')
+    }
+    const _cart = cartMapper(responseCart.id, responseCart)
 
-    return responseCart
+    return _cart
   } catch(error: any){
     throw new Error(`Something went wrong in creating cart! ${error.message}`)
   }
