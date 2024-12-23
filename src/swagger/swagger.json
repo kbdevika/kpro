@@ -263,287 +263,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"CartItemsModelType": {
-				"properties": {
-					"itemExternalId": {
-						"type": "string",
-						"nullable": true
-					},
-					"itemRecommended": {
-						"type": "boolean"
-					},
-					"itemWeightUnit": {
-						"type": "string"
-					},
-					"itemWeight": {
-						"type": "number",
-						"format": "double"
-					},
-					"itemStockStatus": {
-						"type": "string"
-					},
-					"itemDiscountedPrice": {
-						"type": "number",
-						"format": "double"
-					},
-					"itemOriginalPrice": {
-						"type": "number",
-						"format": "double"
-					},
-					"itemQuantity": {
-						"type": "number",
-						"format": "double"
-					},
-					"itemImageUrl": {
-						"type": "string"
-					},
-					"itemDescription": {
-						"type": "string"
-					},
-					"itemName": {
-						"type": "string"
-					},
-					"id": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"itemExternalId",
-					"itemRecommended",
-					"itemWeightUnit",
-					"itemWeight",
-					"itemStockStatus",
-					"itemDiscountedPrice",
-					"itemOriginalPrice",
-					"itemQuantity",
-					"itemImageUrl",
-					"itemDescription",
-					"itemName"
-				],
-				"type": "object",
-				"description": "Cart Items"
-			},
-			"CartModelType": {
-				"properties": {
-					"userId": {
-						"type": "string"
-					},
-					"cartNote": {
-						"type": "string"
-					},
-					"cartSavingsMessage": {
-						"type": "string"
-					},
-					"cartSaved": {
-						"type": "number",
-						"format": "double"
-					},
-					"cartDiscount": {
-						"type": "number",
-						"format": "double"
-					},
-					"cartDeliveryCharges": {
-						"type": "number",
-						"format": "double"
-					},
-					"cartFreeDeliveryThreshold": {
-						"type": "number",
-						"format": "double"
-					},
-					"cartDeliverytime": {
-						"type": "number",
-						"format": "double"
-					},
-					"cartTotal": {
-						"type": "number",
-						"format": "double"
-					},
-					"cartSubTotal": {
-						"type": "number",
-						"format": "double"
-					},
-					"cartItems": {
-						"items": {
-							"$ref": "#/components/schemas/CartItemsModelType"
-						},
-						"type": "array"
-					},
-					"cartStoreAddress": {
-						"type": "string"
-					},
-					"cartStoreContact": {
-						"type": "string"
-					},
-					"cartStorePhone": {
-						"type": "string"
-					},
-					"cartStoreName": {
-						"type": "string"
-					},
-					"cartaiStoreId": {
-						"type": "string"
-					},
-					"cartStoreId": {
-						"type": "string"
-					},
-					"id": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"userId",
-					"cartNote",
-					"cartSavingsMessage",
-					"cartSaved",
-					"cartDiscount",
-					"cartDeliveryCharges",
-					"cartFreeDeliveryThreshold",
-					"cartDeliverytime",
-					"cartTotal",
-					"cartSubTotal",
-					"cartStoreAddress",
-					"cartStoreContact",
-					"cartStorePhone",
-					"cartStoreName",
-					"cartaiStoreId",
-					"cartStoreId"
-				],
-				"type": "object",
-				"description": "Cart"
-			},
-			"UserAddressModelType": {
-				"properties": {
-					"userId": {
-						"type": "string"
-					},
-					"addressContactPhone": {
-						"type": "string"
-					},
-					"addressContactName": {
-						"type": "string"
-					},
-					"addressLandmark": {
-						"type": "string"
-					},
-					"addressAddressType": {
-						"type": "string"
-					},
-					"addressLongitude": {
-						"type": "number",
-						"format": "double"
-					},
-					"addressLatitude": {
-						"type": "number",
-						"format": "double"
-					},
-					"addressPostalCode": {
-						"type": "number",
-						"format": "double"
-					},
-					"addressCountry": {
-						"type": "string"
-					},
-					"addressState": {
-						"type": "string"
-					},
-					"addressCity": {
-						"type": "string"
-					},
-					"addressStreet": {
-						"type": "string"
-					},
-					"addressLine2": {
-						"type": "string"
-					},
-					"addressLine1": {
-						"type": "string"
-					},
-					"id": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"userId",
-					"addressContactPhone",
-					"addressContactName",
-					"addressLandmark",
-					"addressAddressType",
-					"addressLongitude",
-					"addressLatitude",
-					"addressPostalCode",
-					"addressCountry",
-					"addressState",
-					"addressCity",
-					"addressStreet",
-					"addressLine2",
-					"addressLine1"
-				],
-				"type": "object",
-				"description": "User Address"
-			},
-			"OrderResponse": {
-				"properties": {
-					"userId": {
-						"type": "string"
-					},
-					"orderDeliveryStatus": {
-						"type": "string"
-					},
-					"orderStatus": {
-						"type": "string"
-					},
-					"address": {
-						"$ref": "#/components/schemas/UserAddressModelType"
-					},
-					"cart": {
-						"$ref": "#/components/schemas/CartModelType"
-					},
-					"id": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"userId",
-					"orderDeliveryStatus",
-					"orderStatus",
-					"address",
-					"cart",
-					"id"
-				],
-				"type": "object"
-			},
-			"VerifyPaymentRequest": {
-				"properties": {
-					"order_id": {
-						"type": "string"
-					},
-					"payment_id": {
-						"type": "string"
-					},
-					"signature": {
-						"type": "string"
-					},
-					"cart_id": {
-						"type": "string"
-					},
-					"address_id": {
-						"type": "string"
-					},
-					"userId": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"order_id",
-					"payment_id",
-					"signature",
-					"cart_id",
-					"address_id",
-					"userId"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"_CartReponseItem": {
 				"properties": {
 					"itemWeightUnit": {
@@ -739,6 +458,38 @@
 					"id"
 				],
 				"type": "object"
+			},
+			"VerifyPaymentRequest": {
+				"properties": {
+					"order_id": {
+						"type": "string"
+					},
+					"payment_id": {
+						"type": "string"
+					},
+					"signature": {
+						"type": "string"
+					},
+					"cart_id": {
+						"type": "string"
+					},
+					"address_id": {
+						"type": "string"
+					},
+					"userId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"order_id",
+					"payment_id",
+					"signature",
+					"cart_id",
+					"address_id",
+					"userId"
+				],
+				"type": "object",
+				"additionalProperties": false
 			},
 			"Notification": {
 				"properties": {
@@ -1485,6 +1236,66 @@
 				],
 				"type": "object"
 			},
+			"CartItemsModelType": {
+				"properties": {
+					"itemExternalId": {
+						"type": "string",
+						"nullable": true
+					},
+					"itemRecommended": {
+						"type": "boolean"
+					},
+					"itemWeightUnit": {
+						"type": "string"
+					},
+					"itemWeight": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemStockStatus": {
+						"type": "string"
+					},
+					"itemDiscountedPrice": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemOriginalPrice": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemQuantity": {
+						"type": "number",
+						"format": "double"
+					},
+					"itemImageUrl": {
+						"type": "string"
+					},
+					"itemDescription": {
+						"type": "string"
+					},
+					"itemName": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"itemExternalId",
+					"itemRecommended",
+					"itemWeightUnit",
+					"itemWeight",
+					"itemStockStatus",
+					"itemDiscountedPrice",
+					"itemOriginalPrice",
+					"itemQuantity",
+					"itemImageUrl",
+					"itemDescription",
+					"itemName"
+				],
+				"type": "object",
+				"description": "Cart Items"
+			},
 			"JWTAuthResponse": {
 				"properties": {
 					"access_token": {
@@ -2147,7 +1958,7 @@
 								"schema": {
 									"properties": {
 										"order": {
-											"$ref": "#/components/schemas/OrderResponse"
+											"$ref": "#/components/schemas/_OrderResponse"
 										},
 										"message": {
 											"type": "string"
