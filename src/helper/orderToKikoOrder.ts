@@ -2,7 +2,7 @@ import { CartItemsModel, CartModel, UserAddressModel } from "@prisma/client";
 import prisma from "../config/prisma.config";
 import KikoOrder from "../types/kikoOrder.types";
 import { deliveryCharges } from "../constants";
-import { OrderResponse } from "../types/database.types";
+import { CartItemsModelType, OrderResponse } from "../types/database.types";
 
 export function mapIncomingToOutgoing(orderId: string, cart: CartModel, cartItems: CartItemsModel[], address: UserAddressModel): KikoOrder {
   
@@ -117,15 +117,17 @@ export default async function orderToKikoOrder(cartId: string, userId: string, a
             }
           }
       });
-    
-    if(!order.address){
-      throw new Error(`Address not found while creating order!`)
-    }
 
-    if(order.cart.cartItems.length === 0 || !order.cart){
-      throw new Error(`Cart not found while creating order!`)
-    }
-
+      
+      if(!order.address){
+        throw new Error(`Address not found while creating order!`)
+      }
+      
+      if(order.cart.cartItems.length === 0 || !order.cart){
+        throw new Error(`Cart not found while creating order!`)
+      }
+      
+    order.cart.cartItems = order.cart.cartItems.filter((item: CartItemsModelType) => item.itemRecommended === true);
     const kikoOrder = mapIncomingToOutgoing(order.id, order.cart, order.cart.cartItems, order.address)
     return { kikoOrder, order};
   } catch(error: any){
