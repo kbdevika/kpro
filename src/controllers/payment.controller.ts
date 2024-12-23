@@ -3,7 +3,8 @@ import RazorPay from "razorpay";
 import crypto from "crypto";
 import orderToKikoOrder from "../helper/orderToKikoOrder";
 import kikoUrl, { disabledActualOrder } from "../constants";
-import { OrderResponse } from "../types/database.types";
+import { _OrderResponse } from "../types/backwardCompatibility.types";
+import { orderMapper } from "../helper/backwardMapper";
 
 interface VerifyPaymentRequest {
   order_id: string;
@@ -71,7 +72,7 @@ export class PaymentsController extends Controller {
   public async verifyPayment(
     @Request() req: any, 
     @Body() body: VerifyPaymentRequest
-  ): Promise<{ success: boolean; message: string; order?: OrderResponse }> {
+  ): Promise<{ success: boolean; message: string; order?: _OrderResponse }> {
     const { order_id, payment_id, signature, cart_id, address_id } = body;
 
     if (!order_id || !payment_id || !signature || !cart_id || !address_id) {
@@ -96,12 +97,17 @@ export class PaymentsController extends Controller {
     }
 
     const { kikoOrder, order } = await orderToKikoOrder(cart_id, req.user.id, address_id);
+    const _ = orderMapper(order)
+    
+    if(_ == null){
+      throw new Error('Order not found')
+    }
 
     if (disabledActualOrder) {
       return {
         success: true,
         message: "Order to Kiko is disabled in development mode",
-        order,
+        order: _,
       };
     }
 
@@ -126,7 +132,7 @@ export class PaymentsController extends Controller {
     }
 
     if (data.Status === true || data.Success === true) {
-      return { success: true, message: "order-success", order };
+      return { success: true, message: "order-success", order: _ };
     }
 
     return { success: false, message: "order-failed", ...data };
