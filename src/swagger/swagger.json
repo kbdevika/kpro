@@ -544,119 +544,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"Notification": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"notificationMessage": {
-						"type": "string"
-					},
-					"notificationMediaUrl": {
-						"type": "string",
-						"nullable": true
-					},
-					"userId": {
-						"type": "string"
-					},
-					"notificationCreatedDate": {
-						"type": "string",
-						"format": "date-time"
-					}
-				},
-				"required": [
-					"id",
-					"notificationMessage",
-					"notificationMediaUrl",
-					"userId",
-					"notificationCreatedDate"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"CreateNotificationResponse": {
-				"properties": {
-					"message": {
-						"type": "string"
-					},
-					"notification": {
-						"$ref": "#/components/schemas/Notification"
-					}
-				},
-				"required": [
-					"message",
-					"notification"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"CreateNotificationRequest": {
-				"properties": {
-					"message": {
-						"type": "string"
-					},
-					"media_url": {
-						"type": "string"
-					},
-					"userId": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"message",
-					"userId"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"UpdateOrderResponse": {
-				"properties": {
-					"message": {
-						"type": "string"
-					},
-					"orderId": {
-						"type": "string"
-					},
-					"orderStatus": {
-						"type": "string"
-					},
-					"deliveryStatus": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"message",
-					"orderId",
-					"orderStatus",
-					"deliveryStatus"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"UpdateOrderRequest": {
-				"properties": {
-					"apiKey": {
-						"type": "string"
-					},
-					"orderId": {
-						"type": "string"
-					},
-					"orderStatus": {
-						"type": "string"
-					},
-					"deliveryStatus": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"apiKey",
-					"orderId",
-					"orderStatus",
-					"deliveryStatus"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"_CartReponseItem": {
 				"properties": {
 					"itemWeightUnit": {
@@ -821,6 +708,150 @@
 				],
 				"type": "object",
 				"description": "For Backward compactability,\r\nOutgoing response mapped from service is to be in specific Types,\r\nwhich are specified here"
+			},
+			"_OrderResponse": {
+				"properties": {
+					"userId": {
+						"type": "string"
+					},
+					"orderDeliveryStatus": {
+						"type": "string"
+					},
+					"orderStatus": {
+						"type": "string"
+					},
+					"address": {
+						"$ref": "#/components/schemas/_AddressType"
+					},
+					"cart": {
+						"$ref": "#/components/schemas/_CartResponseType"
+					},
+					"id": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"userId",
+					"orderDeliveryStatus",
+					"orderStatus",
+					"address",
+					"cart",
+					"id"
+				],
+				"type": "object"
+			},
+			"Notification": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"notificationMessage": {
+						"type": "string"
+					},
+					"notificationMediaUrl": {
+						"type": "string",
+						"nullable": true
+					},
+					"userId": {
+						"type": "string"
+					},
+					"notificationCreatedDate": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"notificationMessage",
+					"notificationMediaUrl",
+					"userId",
+					"notificationCreatedDate"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateNotificationResponse": {
+				"properties": {
+					"message": {
+						"type": "string"
+					},
+					"notification": {
+						"$ref": "#/components/schemas/Notification"
+					}
+				},
+				"required": [
+					"message",
+					"notification"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateNotificationRequest": {
+				"properties": {
+					"message": {
+						"type": "string"
+					},
+					"media_url": {
+						"type": "string"
+					},
+					"userId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"message",
+					"userId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateOrderResponse": {
+				"properties": {
+					"message": {
+						"type": "string"
+					},
+					"orderId": {
+						"type": "string"
+					},
+					"orderStatus": {
+						"type": "string"
+					},
+					"deliveryStatus": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"message",
+					"orderId",
+					"orderStatus",
+					"deliveryStatus"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateOrderRequest": {
+				"properties": {
+					"apiKey": {
+						"type": "string"
+					},
+					"orderId": {
+						"type": "string"
+					},
+					"orderStatus": {
+						"type": "string"
+					},
+					"deliveryStatus": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"apiKey",
+					"orderId",
+					"orderStatus",
+					"deliveryStatus"
+				],
+				"type": "object",
+				"additionalProperties": false
 			},
 			"_CartItemsModelType": {
 				"properties": {
@@ -2174,7 +2205,7 @@
 									"properties": {
 										"orders": {
 											"items": {
-												"$ref": "#/components/schemas/OrderResponse"
+												"$ref": "#/components/schemas/_OrderResponse"
 											},
 											"type": "array"
 										}
@@ -2209,7 +2240,7 @@
 								"schema": {
 									"properties": {
 										"order": {
-											"$ref": "#/components/schemas/OrderResponse"
+											"$ref": "#/components/schemas/_OrderResponse"
 										},
 										"message": {
 											"type": "string"
@@ -2273,7 +2304,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/OrderResponse"
+									"$ref": "#/components/schemas/_OrderResponse"
 								}
 							}
 						}
