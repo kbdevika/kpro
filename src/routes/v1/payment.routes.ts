@@ -71,12 +71,18 @@ paymentRouter.post('/', async (req: any, res: any) => {
         return res.status(400).json({ error: 'Missing or invalid inputs!' });
       } 
 
+      if(typeof amount == 'number'){
+        amount = parseFloat(amount.toFixed(2));
+      }
+
       // Validate if the amount is an integer-convertible string
-      amount = parseFloat(parseFloat(amount).toFixed(2));
+      if(typeof amount == 'string'){
+        amount = parseFloat(parseFloat(amount).toFixed(2));
+      }
 
       // Validate if the amount is now a positive number
-      if (isNaN(amount) || amount <= 0) {
-          return res.status(400).json({ error: 'Amount must be a positive number!' });
+      if (typeof amount != 'number' || isNaN(amount) || amount <= 0) {
+          return res.status(400).json({ error: 'Amount must be a valid number!' });
       }
  
       // Convert the amount to paisa (if not already in paisa)
