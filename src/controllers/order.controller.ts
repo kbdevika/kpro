@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Path, Body, Route, Tags, Response, Security, Request } from "tsoa";
 import prisma from "../config/prisma.config";
 import orderToKikoOrder from "../helper/orderToKikoOrder";
-import kikoUrl, { activateActualOrder } from "../constants";
+import kikoUrl, { disabledActualOrder } from "../constants";
 
 interface OrderResponse {
   id: string;
@@ -57,7 +57,7 @@ export class OrdersController extends Controller {
 
     const { kikoOrder, order } = await orderToKikoOrder(cartId, req.user.id, addressId);
 
-    if (activateActualOrder) {
+    if (disabledActualOrder) {
       return { message: "Order to Kiko is disabled in development mode", order };
     }
 

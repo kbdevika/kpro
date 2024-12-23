@@ -2,7 +2,7 @@ import { Controller, Post, Route, Tags, Body, Response, Security, Request } from
 import RazorPay from "razorpay";
 import crypto from "crypto";
 import orderToKikoOrder from "../helper/orderToKikoOrder";
-import kikoUrl, { activateActualOrder } from "../constants";
+import kikoUrl, { disabledActualOrder } from "../constants";
 
 interface VerifyPaymentRequest {
   order_id: string;
@@ -93,7 +93,7 @@ export class PaymentsController extends Controller {
 
     const { kikoOrder, order } = await orderToKikoOrder(cart_id, req.user.id, address_id);
 
-    if (activateActualOrder) {
+    if (disabledActualOrder) {
       return {
         success: true,
         message: "Order to Kiko is disabled in development mode",

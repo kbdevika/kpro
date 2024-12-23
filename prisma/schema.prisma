@@ -175,7 +175,7 @@ model CartModel {
   cartSaved                 Float
   cartSavingsMessage        String
   cartNote                  String
-  order                     OrderModel?
+  orders                    OrderModel[]     @relation("CartToOrders")
   task                      TaskModel?
   userId                    String
   user                      UserModel        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -277,10 +277,10 @@ model OrderModel {
   orderStatus         String
   orderDeliveryStatus String
   addressId           String
-  cartId              String           @unique
+  cartId              String
   userId              String
   address             UserAddressModel @relation(fields: [addressId], references: [id])
-  cart                CartModel        @relation(fields: [cartId], references: [id])
+  cart                CartModel        @relation(fields: [cartId], references: [id], name: "CartToOrders")
   user                UserModel        @relation(fields: [userId], references: [id])
 
   @@index([id])

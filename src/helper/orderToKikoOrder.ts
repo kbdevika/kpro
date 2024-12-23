@@ -85,25 +85,25 @@ export default async function orderToKikoOrder(cartId: string, userId: string, a
       }
 
       const order = await prisma.orderModel.create({
-        data: {
-          cartId: cartId,
-          orderStatus: 'created',
-          orderDeliveryStatus: 'not-initiated',
-          userId: userId,
-          addressId: addressId
-        },
-        include: {
-          user: {
-            include: {
-              addresses: true
-            }
+          data: {
+            cartId: cartId,
+            orderStatus: 'created',
+            orderDeliveryStatus: 'not-initiated',
+            userId: userId,
+            addressId: addressId
           },
-          cart: {
-            include: {
-              cartItems: true
+          include: {
+            user: {
+              include: {
+                addresses: true
+              }
+            },
+            cart: {
+              include: {
+                cartItems: true
+              }
             }
           }
-        }
       });
 
     const address = order.user.addresses.find(address => address.id === order.addressId);
