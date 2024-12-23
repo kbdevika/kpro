@@ -95,7 +95,11 @@ export default async function orderToKikoOrder(cartId: string, userId: string, a
           include: {
             user: {
               include: {
-                addresses: true
+                addresses: {
+                  where: {
+                    id: addressId
+                  }
+                }
               }
             },
             cart: {
