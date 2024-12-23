@@ -1,5 +1,5 @@
-import { CartItemsModelType, CartModelType, UserAddressModelType } from "../types/database.types"
-import { _AddressType, _CartReponseItem, _CartResponseType } from "../types/backwardCompatibility.types"
+import { CartItemsModelType, CartModelType, OrderResponse, UserAddressModelType } from "../types/database.types"
+import { _AddressType, _CartReponseItem, _CartResponseType, _OrderResponse } from "../types/backwardCompatibility.types"
 
 const cartItemMapper = (cartItems: CartItemsModelType[]): _CartReponseItem[] => {
     const data = cartItems.map((items: CartItemsModelType) => {
@@ -78,4 +78,21 @@ export const addressResponseMapper = (userId: string, address: _AddressType, nam
         addressContactPhone: phone,
         userId: userId
     }
+}
+
+export const orderMapper = (order: OrderResponse): _OrderResponse| null => {
+
+    if(order.cart.id){
+        const cart = cartMapper(order.cart.id, order.cart)
+        const address = addressMapper(order.address);
+        return {
+            address: address,
+            cart: cart,
+            id: order.id,
+            orderDeliveryStatus: order.orderDeliveryStatus,
+            orderStatus: order.orderStatus,
+            userId: order.userId
+        }
+    }
+    return null
 }

@@ -127,7 +127,7 @@ export default async function orderToKikoOrder(cartId: string, userId: string, a
         throw new Error(`Cart not found while creating order!`)
       }
       
-    order.cart.cartItems = order.cart.cartItems.filter((item: CartItemsModelType) => item.itemRecommended === true);
+    order.cart.cartItems = order.cart.cartItems.filter((item: CartItemsModelType) => item.itemRecommended === false);
     const kikoOrder = mapIncomingToOutgoing(order.id, order.cart, order.cart.cartItems, order.address)
     return { kikoOrder, order};
   } catch(error: any){

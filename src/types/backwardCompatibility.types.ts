@@ -59,6 +59,15 @@ export type _CartItemsModelType = {
   itemExternalId: string | null;
 }
 
+export type _OrderResponse = {
+  id: string;
+  cart: _CartResponseType;
+  address: _AddressType;
+  orderStatus: string;
+  orderDeliveryStatus: string;
+  userId: string;
+}
+
 export type _AddressType = {
   id: string;
   address_line1: string;

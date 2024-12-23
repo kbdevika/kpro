@@ -2,8 +2,9 @@ import { Controller, Get, Post, Path, Body, Route, Tags, Response, Security, Req
 import prisma from "../config/prisma.config";
 import orderToKikoOrder from "../helper/orderToKikoOrder";
 import kikoUrl, { disabledActualOrder } from "../constants";
-import { OrderModel } from "@prisma/client";
-import { CartModelType, OrderResponse, UserAddressModelType } from "../types/database.types";
+import { _OrderResponse } from "../types/backwardCompatibility.types";
+import { orderMapper } from "../helper/backwardMapper";
+import { OrderResponse } from "../types/database.types";
 
 @Route("order")
 @Tags("Orders")
@@ -14,8 +15,8 @@ export class OrdersController extends Controller {
    * @returns A list of orders.
    */
   @Get("/")
-  public async getOrders(@Request() req: any): Promise<{ orders: OrderResponse[] }> {
-    const orders = await prisma.orderModel.findMany({
+  public async getOrders(@Request() req: any): Promise<{ orders: _OrderResponse[] }> {
+    const _orders = await prisma.orderModel.findMany({
       where: { userId: req.user.id },
       include: {
         cart: {
@@ -27,7 +28,15 @@ export class OrdersController extends Controller {
       },
     });
 
-    return { orders };
+    const orders = _orders
+      .map((order: OrderResponse) => orderMapper(order))
+      .filter((order) => order !== null);
+
+    if (orders && orders.length > 0) {
+      return { orders };
+    }
+
+    throw new Error('Orders not found');
   }
 
   /**
@@ -40,7 +49,7 @@ export class OrdersController extends Controller {
   public async createOrder(
     @Request() req: any,
     @Body() body: { cartId: string; addressId: string }
-  ): Promise<{ message: string; order: OrderResponse }> {
+  ): Promise<{ message: string; order: _OrderResponse }> {
     const { cartId, addressId } = body;
 
     if (!cartId || !addressId) {
@@ -50,8 +59,14 @@ export class OrdersController extends Controller {
 
     const { kikoOrder, order } = await orderToKikoOrder(cartId, req.user.id, addressId);
 
+    const _ = orderMapper(order)
+
+    if(_ == null){
+      throw new Error('Order not found')
+    }
+
     if (disabledActualOrder) {
-      return { message: "Order to Kiko is disabled in development mode", order };
+      return { message: "Order to Kiko is disabled in development mode", order: _ };
     }
 
     const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
@@ -69,11 +84,11 @@ export class OrdersController extends Controller {
     const data = await response.json();
 
     if (data.Status === false && data.outOfStock === true) {
-      return { message: "out-of-stock", order };
+      return { message: "out-of-stock", order: _ };
     }
 
     if (data.Status === true) {
-      return { message: "created", order };
+      return { message: "created", order: _ };
     }
 
     return { message: "failed", ...data };
@@ -85,10 +100,14 @@ export class OrdersController extends Controller {
    * @returns The order details.
    */
   @Get("/{id}")
-  public async getOrder(@Request() req: any, @Path() id: string): Promise<OrderResponse> {
-    const order = await prisma.orderModel.findFirst({
+  public async getOrder(@Request() req: any, @Path() id: string): Promise<_OrderResponse> {
+    const order = await prisma.orderModel.findUnique({
       where: { id },
-      include: { cart: true, address: true },
+      include: { cart: {
+        include: {
+          cartItems: true
+        }
+      }, address: true },
     });
 
     if (!order) {
@@ -101,7 +120,13 @@ export class OrdersController extends Controller {
       throw new Error("Unauthorized user");
     }
 
-    return order;
+    const _ = orderMapper(order)
+
+    if(_ == null){
+      throw new Error('Order not found')
+    }
+
+    return _;
   }
 
   /**
@@ -113,7 +138,11 @@ export class OrdersController extends Controller {
   public async trackOrder(@Request() req: any, @Path() id: string): Promise<{ orderStatus: string; deliveryStatus: string }> {
     const order = await prisma.orderModel.findUnique({
       where: { id },
-      include: { cart: true },
+      include: { cart: {
+        include: {
+          cartItems: true
+        }
+      } },
     });
 
     if (!order) {
