@@ -1,4 +1,4 @@
-import { Controller, Post, Route, Tags, Body, Response, Security } from "tsoa";
+import { Controller, Post, Route, Tags, Body, Response, Security, Request } from "tsoa";
 import RazorPay from "razorpay";
 import crypto from "crypto";
 import orderToKikoOrder from "../helper/orderToKikoOrder";
@@ -67,8 +67,8 @@ export class PaymentsController extends Controller {
    */
   @Post("/verify")
   @Response(400, "Missing or invalid inputs")
-  public async verifyPayment(@Body() body: VerifyPaymentRequest): Promise<{ success: boolean; message: string; order?: any }> {
-    const { order_id, payment_id, signature, cart_id, address_id, userId } = body;
+  public async verifyPayment(@Request() req: any, @Body() body: VerifyPaymentRequest): Promise<{ success: boolean; message: string; order?: any }> {
+    const { order_id, payment_id, signature, cart_id, address_id } = body;
 
     if (!order_id || !payment_id || !signature || !cart_id || !address_id) {
       this.setStatus(400);
@@ -91,7 +91,7 @@ export class PaymentsController extends Controller {
       };
     }
 
-    const { kikoOrder, order } = await orderToKikoOrder(cart_id, userId, address_id);
+    const { kikoOrder, order } = await orderToKikoOrder(cart_id, req.user.id, address_id);
 
     if (activateActualOrder) {
       return {
@@ -121,7 +121,7 @@ export class PaymentsController extends Controller {
       return { success: true, message: "out-of-stock" };
     }
 
-    if (data.Status === true) {
+    if (data.Status === true || data.Success === true) {
       return { success: true, message: "order-success", order };
     }
 

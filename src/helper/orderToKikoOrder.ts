@@ -79,7 +79,7 @@ export function mapIncomingToOutgoing(orderId: string, cart: CartModel, cartItem
 
 export default async function orderToKikoOrder(cartId: string, userId: string, addressId: string): 
   Promise<{kikoOrder: KikoOrder, order: OrderModel}> {
-
+    try {
       if(!cartId || !userId || !addressId){
         throw new Error(`Missing or invalid inputs!`)
       }
@@ -119,4 +119,7 @@ export default async function orderToKikoOrder(cartId: string, userId: string, a
 
     const kikoOrder = mapIncomingToOutgoing(order.id, order.cart, cartItems, address)
     return { kikoOrder, order};
+  } catch(error: any){
+    throw new Error(`Order creation failed: ${error.message}`)
+  }
 }

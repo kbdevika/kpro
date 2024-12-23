@@ -227,7 +227,7 @@ export class V1Router {
 
   private verifyPayment = async (req: any, res: any) => {
     try {
-      const data = await this.paymentsController.verifyPayment({ ...req.body, userId: req.user.id });
+      const data = await this.paymentsController.verifyPayment(req, req.body);
       res.json(data);
     } catch (error) {
       handleError(error, res);
