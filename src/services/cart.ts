@@ -193,6 +193,11 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
         throw new Error('Cart was not updated! Try again')
     }
 
+    // Reorder the cart items to match the order of updatedItems
+    updateCart.cartItems = updatedItems
+        .map((item) => updateCart.cartItems.find((cartItem) => cartItem.itemExternalId === item.itemExternalId))
+        .filter((item): item is NonNullable<typeof item> => item !== undefined);
+        
     return updateCart;
 }
 

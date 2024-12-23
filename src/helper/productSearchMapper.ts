@@ -9,13 +9,13 @@ export const searchProductMapper = (data: ProductSearchResponse): CartItemsModel
             itemExternalId: item.metadata._id,
             itemDescription: item.metadata.description,
             itemDiscountedPrice: parseFloat(item.metadata.discountedPrice),
-            itemImageUrl: Array.isArray(item.metadata.productImages) ? item.metadata.productImages[0]  : item.metadata.productImages,
+            itemImageUrl: Array.isArray(item.metadata.productImages) ? item.metadata.productImages[0] : item.metadata.productImages,
             itemName: item.metadata.productName,
             itemOriginalPrice: parseFloat(item.metadata.price),
             itemStockStatus: getStockStatus(parseInt(item.metadata.availableQuantity, 10) || 0),
             itemWeight: item.metadata.weight,
             itemWeightUnit: item.metadata.weightUnit,
-            itemQuantity: 1,
+            itemQuantity: 0,
             itemRecommended: false
         };
     });
