@@ -1,176 +1,48 @@
-import prisma from "../config/prisma.config";
-import TaskResult, { Items } from "../types/ai.type";
-import { CartReponseItem, CartResponse } from "../types/cart.type";
+import { deliveryCharges } from "../constants";
+import TaskResult from "../types/ai.types";
+import mapCartItems from "./aiToCartMapper";
+import createCart, { createCartItems, fetchCartbyId } from "../services/cart";
+import { createTask } from "../services/task";
+import { createNotification } from "../services/notification";
+import { _CartResponseType } from "../types/backwardCompatibility.types";
+import { cartMapper } from "./backwardMapper";
 
-export default async function convertToCart(
-  userId: string,
-  data: TaskResult
-): Promise<CartResponse> {
+// Modify mapCartItems to return items only
+export default async function convertToCart(data: TaskResult, taskId: string, userId: string): Promise<_CartResponseType | null> {
+  try {
+    // Process items and recommendations
+    let combinedSubTotal = 0;
+    let combinedTotalSavedAmount = 0;
 
-  let subTotal = 0;
-  let totalSavedAmount = 0;
-  let shipping = 0;
-  let total = 0;
-
-  const newCart = await prisma.cart.create({
-    data: {
-      userId: userId,
-      vendorId: data.result.storeData._id,
-      storeName: data.result.storeData.storeName
-    },
-  });
-
-
-  let cartItems: CartReponseItem[] = data.result.items.map((item: Items) => {
-
-      const productMetadata = item?.metadata?.matching?.product?.metadata;
-
-      if (!productMetadata) {
-        return null;
-      }
-
-      const quantity = parseInt(productMetadata.availableQuantity, 10) || 0;
-      const requiredQuantity = 
-      item.quantity && item.quantity <= 10 
-        ? item.quantity 
-        : 1; // Default to 1 if undefined or greater than 10
-
-      const originalPrice = parseFloat(productMetadata.price) || 0;
-      const discountedPrice = parseFloat(productMetadata.discountedPrice) || 0;
-      const itemTotalPrice = requiredQuantity * discountedPrice;
+    // Mapping CartItems of Matching Items from AI Response
+    const { cartItems, subTotal, totalSavedAmount } = mapCartItems(data.result.items, false, (item) => [item.metadata?.matching]);
     
-      // Calculate the total saved amount for this item
-      const itemSavedAmount = (originalPrice - discountedPrice) * requiredQuantity;
-      totalSavedAmount += itemSavedAmount; // Increment total saved amount
-    
-      // Increment subTotal with the item's total price
-      subTotal += itemTotalPrice;
+    // Mapping CartItems of Recommended Items from AI Response
+    const { cartItems: recommendedItems, subTotal: recommendedSubTotal, totalSavedAmount: recommendedSaved } = mapCartItems(data.result.items, true, (item) => item.metadata?.recommendations || []);
 
-      return {
-        itemId: productMetadata._id,
-        itemName: productMetadata.productName,
-        itemDescription: productMetadata.description,
-        itemImageUrl: productMetadata.productImages,
-        itemQuantity: requiredQuantity,
-        itemOriginalPrice: parseFloat(productMetadata.price),
-        itemDiscountedPrice: parseFloat(productMetadata.discountedPrice),
-        itemStockStatus:
-          quantity === 0
-            ? "Out of Stock"
-            : quantity < 30
-            ? "Very Limited Stock"
-            : "In Stock",
-        itemWeight: productMetadata.weight,
-        itemWeightUnit: productMetadata.weightUnit,
-      }
-  }).filter((item) => item !== null);
+    // Calculating subTotal of Original Items only
+    combinedSubTotal += subTotal;
+    combinedTotalSavedAmount += totalSavedAmount;
 
-  let recommendedCartItems: CartReponseItem[] = data.result.items.flatMap((item: Items) => {
-    const recommendations = item?.metadata?.recommendations;
-  
-    if (!recommendations || !Array.isArray(recommendations)) {
-      return []; // Return an empty array if recommendations are missing or not an array
+    // Combining both Matching and Recommended CartItems
+    const combinedCartItems = [...cartItems, ...recommendedItems];
+    const total = combinedSubTotal + deliveryCharges;
+
+    // Creating a cart with details 
+    const cart = await createCart(userId, data, combinedTotalSavedAmount, combinedSubTotal, total);
+    if(!cart || !cart.id){
+      throw new Error('Cart is not created in process! Try again!')
     }
-  
-    return recommendations.flatMap((recommendation) => {
-      const productMetadata = recommendation?.product?.metadata;
-  
-      if (!productMetadata) {
-        return []; // Skip this recommendation if product metadata is missing
-      }
-  
-      const quantity = parseInt(productMetadata.availableQuantity, 10) || 0;
-      const requiredQuantity =
-        item.quantity && item.quantity <= 10 ? item.quantity : 1; // Default to 1 if undefined or greater than 10
-  
-      return {
-        itemId: productMetadata._id,
-        itemName: productMetadata.productName,
-        itemDescription: productMetadata.description,
-        itemImageUrl: productMetadata.productImages,
-        itemQuantity: requiredQuantity,
-        itemOriginalPrice: parseFloat(productMetadata.price),
-        itemDiscountedPrice: parseFloat(productMetadata.discountedPrice),
-        itemStockStatus:
-          quantity === 0
-            ? "Out of Stock"
-            : quantity < 30
-            ? "Very Limited Stock"
-            : "In Stock",
-        itemWeight: productMetadata.weight,
-        itemWeightUnit: productMetadata.weightUnit,
-      };
-    });
-  });
-  
-  await Promise.all(
-    cartItems.map(async (item: CartReponseItem) => {
-      if(item){
-        return await prisma.cartItem.create({
-          data: {
-            cartId: newCart.id,
-            externalProductId: item.itemId,
-            name: item.itemName,
-            description: item.itemDescription,
-            quantity: item.itemQuantity,
-            units: `${item.itemWeight} ${item.itemWeightUnit}`,
-            price: item.itemDiscountedPrice,
-            image: item.itemImageUrl[0],
-          },
-        });
-      }
-    })
-  );
-
-  await Promise.all(
-    recommendedCartItems.map(async (item: CartReponseItem) => {
-      if(item){
-        return await prisma.cartItem.create({
-          data: {
-            cartId: newCart.id,
-            externalProductId: item.itemId,
-            name: item.itemName,
-            description: item.itemDescription,
-            quantity: item.itemQuantity,
-            units: `${item.itemWeight} ${item.itemWeightUnit}`,
-            price: item.itemDiscountedPrice,
-            image: item.itemImageUrl[0],
-            recommended: true
-          },
-        });
-      }
-    })
-  );
-
-  shipping = 35;
-  total = subTotal + shipping;
-
-  // Construct the CartResponse
-  const cartResponse: CartResponse = {
-    aiStoreId: data.result.storeId, 
-    cartId: newCart.id,
-    items: cartItems,
-    recommendedItems: recommendedCartItems,
-    orderSummary: {
-      subTotal: subTotal,
-      total: total,
-      deliverytime: `25 minutes`,
-      freeDeliveryThreshold: 199,
-      deliveryCharges: shipping,
-      saved: totalSavedAmount == 0 ? '' : `You saved ₹${totalSavedAmount.toFixed(2)}!`,
-      discount: totalSavedAmount,
-    },
-    storeInfo: {
-      storeName: data.result.storeData.storeName,
-      storePhone: data.result.storeData.storeAddress.contactPersonMobile || '',
-      storeContactPerson: data.result.storeData.storeAddress.contactPersonName || '',
-      storeAddress: `${data.result.storeData.storeAddress.address1}, ${data.result.storeData.storeAddress.address2}, ${data.result.storeData.storeAddress.city}, ${data.result.storeData.storeAddress.state}, ${data.result.storeData.storeAddress.pincode}` || '',
-    },
-    additionalInfo: {
-      savingsMessage: ``,
-      cartNote: ``
+    await createCartItems(combinedCartItems, cart.id);
+    await createTask(taskId, cart.id, userId);
+    await createNotification(userId);
+    const responseCart = await fetchCartbyId(cart.id);
+    if(!responseCart.id){
+      throw new Error('Cart not found')
     }
-  };
+    return cartMapper(responseCart.id, responseCart)
 
-  return cartResponse;
+  } catch(error: any){
+    throw new Error(`Something went wrong in creating cart! ${error.message}`)
+  }
 }

@@ -1,6 +1,6 @@
 
 // Helper function to validate User and User-Agent header
-const validateHeaders = (userAgent: string | undefined): { latitude: number; longitude: number } | null => {
+const validateHeaders = (userAgent: string): { latitude: number; longitude: number } | null => {
     /**
      * Check for UserAgent in incoming Request with latitude and 
      * longitude of current location of user
@@ -13,7 +13,7 @@ const validateHeaders = (userAgent: string | undefined): { latitude: number; lon
      * REGEX pattern to compare with -
      * <CustomAgent/x.0 (lat: xx.xxxxx; lon: xx.xxxxx)>
      */
-    const latLonRegex = /lat:\s*([\d.-]+);\s*lon:\s*([\d.-]+)/;
+    const latLonRegex = /lat:\s*([\d.-]+)\s*;\s*lon:\s*([\d.-]+)/;
     const match = userAgent.match(latLonRegex);
     if (!match) return null;
   

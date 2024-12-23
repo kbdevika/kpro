@@ -21,23 +21,23 @@ class Middleware{
             const decodedToken = await admin.auth().verifyIdToken(token);
 
             if(decodedToken) {
-                let user = await prisma.user.findUnique({
+                let user = await prisma.userModel.findUnique({
                     where: { id: decodedToken.uid }
                   });
               
                 if (!user) {
-                    user = await prisma.user.create({
+                    user = await prisma.userModel.create({
                         data: { 
                             id: decodedToken.uid
                         }
                   });
     
                 if(decodedToken.phone_number){
-                    await prisma.userSetting.create({
+                    await prisma.userSettingsModel.create({
                         data: {
                           userId: decodedToken.uid,
-                          key: "phone",
-                          value: decodedToken.phone_number
+                          settingsKey: "phone",
+                          settingsValue: decodedToken.phone_number
                         }
                     });
                 }}
@@ -64,7 +64,7 @@ class Middleware{
         
             try {
             const payload = jwt.verify(token, SECRET_KEY) as any;
-            const user = await prisma.user.findUnique({
+            const user = await prisma.userModel.findUnique({
                 where: { id: payload.sub }
             });
         
@@ -103,11 +103,11 @@ class Middleware{
 
         try {
             // Find user from the database
-            const user = await prisma.admin.findUnique({
-                where: { email }
+            const admin = await prisma.adminModel.findUnique({
+                where: { adminEmail: email }
             });
     
-            if (!user) {
+            if (!admin) {
                 return res.status(401).json({ error: 'User not found!' });
             }
     
@@ -117,7 +117,7 @@ class Middleware{
                 .update(password)
                 .digest('hex');
     
-            if (hashedPassword !== user.password) {
+            if (hashedPassword !== admin.adminPassword) {
                 return res.status(401).json({ error: 'Invalid password' });
             }
             

@@ -56,13 +56,13 @@ model Address {
 }
 
 model Cart {
-  id       String     @id @default(uuid())
-  userId   String
-  vendorId String     @default("null")
-  items    CartItem[]
+  id        String     @id @default(uuid())
+  userId    String
+  vendorId  String     @default("null")
+  items     CartItem[]
   storeName String?
-  user     User       @relation(fields: [userId], references: [id])
-  Order    Order[]
+  user      User       @relation(fields: [userId], references: [id])
+  Order     Order[]
 
   @@index([userId])
 }
@@ -100,13 +100,13 @@ model Order {
 }
 
 model Task {
-  id        String     @id @default(uuid())
-  status    String
-  cartId    String
-  taskId    String
-  userId    String
+  id          String   @id @default(uuid())
+  status      String
+  cartId      String
+  taskId      String
+  userId      String
   createdDate DateTime @default(now())
-  user      User       @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
@@ -127,9 +127,164 @@ model Catalogue {
 }
 
 model Admin {
-  id        String   @id @default(uuid()) @unique
+  id        String   @id @unique @default(uuid())
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ----------------------------------------------------- v2 ----------------------------------------------------- //
+
+model CartItemsModel {
+  id                  String    @id @default(cuid())
+  itemName            String
+  itemDescription     String
+  itemImageUrl        String
+  itemQuantity        Int
+  itemOriginalPrice   Float
+  itemDiscountedPrice Float
+  itemStockStatus     String
+  itemWeight          Float
+  itemWeightUnit      String
+  itemRecommended     Boolean
+  itemExternalId      String?
+  cartId              String
+  cart                CartModel @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  @@index([id])
+  @@index([itemRecommended])
+  @@index([itemStockStatus])
+}
+
+model CartModel {
+  id                        String           @id @default(cuid())
+  cartStoreId               String
+  cartaiStoreId             String           @default("")
+  cartStoreName             String
+  cartStorePhone            String
+  cartStoreContact          String
+  cartStoreAddress          String
+  cartItems                 CartItemsModel[]
+  cartSubTotal              Float
+  cartTotal                 Float
+  cartDeliverytime          Float
+  cartFreeDeliveryThreshold Float
+  cartDeliveryCharges       Float
+  cartDiscount              Float
+  cartSaved                 Float
+  cartSavingsMessage        String
+  cartNote                  String
+  order                     OrderModel?
+  task                      TaskModel?
+  userId                    String
+  user                      UserModel        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([id])
+  @@index([cartStoreId])
+}
+
+model AdminModel {
+  id             String   @id @default(cuid())
+  adminEmail     String   @unique
+  adminPassword  String
+  adminCreatedAt DateTime @default(now())
+  adminUpdatedAt DateTime @updatedAt
+
+  @@index([id])
+}
+
+model NotificationModel {
+  id                      String    @id @default(cuid())
+  notificationMessage     String
+  notificationMediaUrl    String?
+  notificationCreatedDate DateTime  @default(now())
+  userId                  String
+  user                    UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([id])
+  @@index([userId])
+}
+
+model UserAddressModel {
+  id                  String       @id @default(cuid())
+  addressLine1        String
+  addressLine2        String
+  addressStreet       String
+  addressCity         String
+  addressState        String
+  addressCountry      String
+  addressPostalCode   Int
+  addressLatitude     Float
+  addressLongitude    Float
+  addressAddressType  String
+  addressLandmark     String
+  addressContactName  String
+  addressContactPhone String
+  userId              String
+  user                UserModel    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  OrderModel          OrderModel[]
+
+  @@index([id])
+  @@index([userId])
+  @@index([addressPostalCode])
+}
+
+model UserSettingsModel {
+  id            String    @id @default(cuid())
+  settingsKey   String
+  settingsValue String
+  userId        String
+  user          UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, settingsKey])
+  @@index([settingsKey])
+  @@index([id])
+  @@index([userId])
+}
+
+model UserModel {
+  id            String              @id @default(cuid())
+  userArchived  Boolean             @default(false)
+  settings      UserSettingsModel[]
+  addresses     UserAddressModel[]
+  notifications NotificationModel[]
+  order         OrderModel[]
+  TaskModel     TaskModel[]
+  CartModel     CartModel[]
+
+  @@index([id])
+}
+
+model TaskModel {
+  id              String    @id @default(cuid())
+  taskStatus      String
+  taskExternalId  String    @unique
+  taskCreatedDate DateTime  @default(now())
+  cartId          String    @unique
+  cart            CartModel @relation(fields: [cartId], references: [id])
+  userId          String
+  user            UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([id])
+  @@index([userId])
+  @@index([cartId])
+  @@index([taskExternalId])
+}
+
+model OrderModel {
+  id                  String           @id @default(cuid())
+  orderStatus         String
+  orderDeliveryStatus String
+  addressId           String
+  cartId              String           @unique
+  userId              String
+  address             UserAddressModel @relation(fields: [addressId], references: [id])
+  cart                CartModel        @relation(fields: [cartId], references: [id])
+  user                UserModel        @relation(fields: [userId], references: [id])
+
+  @@index([id])
+  @@index([userId])
+  @@index([cartId])
+  @@index([addressId])
 }
