@@ -2,6 +2,7 @@ import { Controller, Get, Post, Path, Body, Route, Tags, Response, Security, Req
 import prisma from "../config/prisma.config";
 import orderToKikoOrder from "../helper/orderToKikoOrder";
 import kikoUrl, { disabledActualOrder } from "../constants";
+import { OrderModel } from "@prisma/client";
 
 interface OrderResponse {
   id: string;
@@ -47,7 +48,7 @@ export class OrdersController extends Controller {
   public async createOrder(
     @Request() req: any,
     @Body() body: { cartId: string; addressId: string }
-  ): Promise<{ message: string; order: any }> {
+  ): Promise<{ message: string; order: OrderModel }> {
     const { cartId, addressId } = body;
 
     if (!cartId || !addressId) {

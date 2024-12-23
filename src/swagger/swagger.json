@@ -263,6 +263,41 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"DefaultSelection_Prisma._36_OrderModelPayload_": {
+				"properties": {
+					"userId": {
+						"type": "string"
+					},
+					"cartId": {
+						"type": "string"
+					},
+					"addressId": {
+						"type": "string"
+					},
+					"orderDeliveryStatus": {
+						"type": "string"
+					},
+					"orderStatus": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"userId",
+					"cartId",
+					"addressId",
+					"orderDeliveryStatus",
+					"orderStatus",
+					"id"
+				],
+				"type": "object"
+			},
+			"OrderModel": {
+				"$ref": "#/components/schemas/DefaultSelection_Prisma._36_OrderModelPayload_",
+				"description": "Model OrderModel"
+			},
 			"VerifyPaymentRequest": {
 				"properties": {
 					"order_id": {
@@ -1954,7 +1989,9 @@
 							"application/json": {
 								"schema": {
 									"properties": {
-										"order": {},
+										"order": {
+											"$ref": "#/components/schemas/OrderModel"
+										},
 										"message": {
 											"type": "string"
 										},
@@ -2045,7 +2082,9 @@
 							"application/json": {
 								"schema": {
 									"properties": {
-										"order": {},
+										"order": {
+											"$ref": "#/components/schemas/OrderModel"
+										},
 										"message": {
 											"type": "string"
 										}
@@ -2228,21 +2267,6 @@
 						}
 					}
 				]
-			}
-		},
-		"/ondc": {
-			"get": {
-				"operationId": "OnSearch",
-				"responses": {
-					"204": {
-						"description": "No content"
-					}
-				},
-				"tags": [
-					"ONDC"
-				],
-				"security": [],
-				"parameters": []
 			}
 		},
 		"/notifications": {

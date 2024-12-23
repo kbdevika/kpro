@@ -84,6 +84,22 @@ export default async function orderToKikoOrder(cartId: string, userId: string, a
         throw new Error(`Missing or invalid inputs!`)
       }
 
+      const existingCart = await prisma.cartModel.findUnique({
+        where: { id: cartId },
+      });
+
+      const existingaddress = await prisma.userAddressModel.findUnique({
+        where: { id: addressId },
+      });
+      
+      if (!existingCart) {
+        throw new Error('Cart with the given cartId does not exist.');
+      }
+
+      if (!existingaddress) {
+        throw new Error('Address with the given address_id does not exist.');
+      }
+
       const order = await prisma.orderModel.create({
           data: {
             cartId: cartId,
