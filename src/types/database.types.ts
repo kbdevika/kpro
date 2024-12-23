@@ -49,8 +49,17 @@ export type OrderModelType = {
   cartId: string;
   userId: string;
   address: UserAddressModelType;
+  cart?: CartModelType 
 };
 
+export type OrderResponse = {
+  id: string;
+  cart: CartModelType;
+  address: UserAddressModelType;
+  orderStatus: string;
+  orderDeliveryStatus: string;
+  userId: string;
+}
 
 /** User Address */
 export type UserAddressModelType = {

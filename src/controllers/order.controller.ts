@@ -3,15 +3,7 @@ import prisma from "../config/prisma.config";
 import orderToKikoOrder from "../helper/orderToKikoOrder";
 import kikoUrl, { disabledActualOrder } from "../constants";
 import { OrderModel } from "@prisma/client";
-
-interface OrderResponse {
-  id: string;
-  cart: any;
-  address: any;
-  orderStatus: string;
-  orderDeliveryStatus: string;
-  userId: string;
-}
+import { CartModelType, OrderResponse, UserAddressModelType } from "../types/database.types";
 
 @Route("order")
 @Tags("Orders")
@@ -48,7 +40,7 @@ export class OrdersController extends Controller {
   public async createOrder(
     @Request() req: any,
     @Body() body: { cartId: string; addressId: string }
-  ): Promise<{ message: string; order: OrderModel }> {
+  ): Promise<{ message: string; order: OrderResponse }> {
     const { cartId, addressId } = body;
 
     if (!cartId || !addressId) {

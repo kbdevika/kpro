@@ -3,7 +3,7 @@ import RazorPay from "razorpay";
 import crypto from "crypto";
 import orderToKikoOrder from "../helper/orderToKikoOrder";
 import kikoUrl, { disabledActualOrder } from "../constants";
-import { OrderModel } from "@prisma/client";
+import { OrderResponse } from "../types/database.types";
 
 interface VerifyPaymentRequest {
   order_id: string;
@@ -68,7 +68,10 @@ export class PaymentsController extends Controller {
    */
   @Post("/verify")
   @Response(400, "Missing or invalid inputs")
-  public async verifyPayment(@Request() req: any, @Body() body: VerifyPaymentRequest): Promise<{ success: boolean; message: string; order?: OrderModel }> {
+  public async verifyPayment(
+    @Request() req: any, 
+    @Body() body: VerifyPaymentRequest
+  ): Promise<{ success: boolean; message: string; order?: OrderResponse }> {
     const { order_id, payment_id, signature, cart_id, address_id } = body;
 
     if (!order_id || !payment_id || !signature || !cart_id || !address_id) {

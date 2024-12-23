@@ -1,7 +1,8 @@
-import { CartItemsModel, CartModel, OrderModel, UserAddressModel } from "@prisma/client";
+import { CartItemsModel, CartModel, UserAddressModel } from "@prisma/client";
 import prisma from "../config/prisma.config";
 import KikoOrder from "../types/kikoOrder.types";
 import { deliveryCharges } from "../constants";
+import { OrderResponse } from "../types/database.types";
 
 export function mapIncomingToOutgoing(orderId: string, cart: CartModel, cartItems: CartItemsModel[], address: UserAddressModel): KikoOrder {
   
@@ -76,9 +77,8 @@ export function mapIncomingToOutgoing(orderId: string, cart: CartModel, cartItem
   };
 }
 
-
 export default async function orderToKikoOrder(cartId: string, userId: string, addressId: string): 
-  Promise<{kikoOrder: KikoOrder, order: OrderModel}> {
+  Promise<{kikoOrder: KikoOrder, order: OrderResponse}> {
     try {
       if(!cartId || !userId || !addressId){
         throw new Error(`Missing or invalid inputs!`)
@@ -109,15 +109,7 @@ export default async function orderToKikoOrder(cartId: string, userId: string, a
             addressId: addressId
           },
           include: {
-            user: {
-              include: {
-                addresses: {
-                  where: {
-                    id: addressId
-                  }
-                }
-              }
-            },
+            address: true,
             cart: {
               include: {
                 cartItems: true
@@ -125,19 +117,16 @@ export default async function orderToKikoOrder(cartId: string, userId: string, a
             }
           }
       });
-
-    const address = order.user.addresses.find(address => address.id === order.addressId);
-    const cartItems = order.cart.cartItems
     
-    if(!address){
+    if(!order.address){
       throw new Error(`Address not found while creating order!`)
     }
 
-    if(cartItems.length === 0 || !order.cart){
+    if(order.cart.cartItems.length === 0 || !order.cart){
       throw new Error(`Cart not found while creating order!`)
     }
 
-    const kikoOrder = mapIncomingToOutgoing(order.id, order.cart, cartItems, address)
+    const kikoOrder = mapIncomingToOutgoing(order.id, order.cart, order.cart.cartItems, order.address)
     return { kikoOrder, order};
   } catch(error: any){
     throw new Error(`Order creation failed: ${error.message}`)
