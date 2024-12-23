@@ -2230,6 +2230,21 @@
 				]
 			}
 		},
+		"/ondc": {
+			"get": {
+				"operationId": "OnSearch",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"tags": [
+					"ONDC"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
 		"/notifications": {
 			"get": {
 				"operationId": "GetNotifications",
