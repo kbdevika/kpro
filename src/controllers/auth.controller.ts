@@ -1,4 +1,4 @@
-import { Route, Tags, Post, Get, Body, Path, Request, Security } from 'tsoa';
+import { Route, Tags, Post, Get, Body, Path, Request, Security, Controller } from 'tsoa';
 import jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
 import prisma from '../config/prisma.config';
@@ -27,7 +27,7 @@ interface FirebaseAuthResponse {
 @Route('auth')
 @Tags('Auth')
 @Security("jwt")
-export class AuthController {
+export class AuthController extends Controller {
   /**
    * Generate a JWT for the user
    * @param token Truecaller token to validate and generate a JWT

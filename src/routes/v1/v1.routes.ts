@@ -68,7 +68,7 @@ export class V1Router {
     this.router.post("/payment/verify", this.verifyPayment);
     this.router.post("/task", this.createTask);
     this.router.get("/task/:taskId", this.getTask);
-    this.router.post("/user", this.updateProfile);
+    this.router.put("/user", this.updateProfile);
     this.router.get("/user", this.getProfile);
     this.router.get("/user/settings", this.getUserSettings);
     this.router.post("/user/settings", this.createUserSetting);

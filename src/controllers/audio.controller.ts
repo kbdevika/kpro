@@ -1,4 +1,4 @@
-import { Route, Tags, Post, UploadedFile, Header, Security } from 'tsoa';
+import { Route, Tags, Post, UploadedFile, Header, Security, Controller } from 'tsoa';
 import validateHeaders from '../helper/validateHeader';
 import getPincodeFromCoordinates from '../helper/convertLatLongToPincode';
 import fetchJwtToken from '../helper/fetchAiJwtToken';
@@ -10,7 +10,7 @@ interface AudioProcessResponse {
 @Route('audio')
 @Tags('Audio')
 @Security("jwt")
-export class AudioController {
+export class AudioController extends Controller {
   /**
    * Process an uploaded audio file and return a task ID.
    * @param userAgent The User-Agent header for device identification. Eg: `CustomAgent/1.0 (lat: <latitude>; lon: <longitude>)`
