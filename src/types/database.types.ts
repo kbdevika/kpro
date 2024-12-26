@@ -56,6 +56,7 @@ export type OrderResponse = {
   id: string;
   cart: CartModelType;
   address: UserAddressModelType;
+  createdDate: Date;
   orderStatus: string;
   orderDeliveryStatus: string;
   userId: string;

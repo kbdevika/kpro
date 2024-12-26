@@ -59,12 +59,15 @@ export type _CartItemsModelType = {
   itemExternalId: string | null;
 }
 
+// add user profile
 export type _OrderResponse = {
   id: string;
   cart: _CartResponseType;
   address: _AddressType;
   orderStatus: string;
   orderDeliveryStatus: string;
+  createdDate: string;
+  phone: string;
   userId: string;
 }
 

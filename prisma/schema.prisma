@@ -276,6 +276,7 @@ model OrderModel {
   id                  String           @id @default(cuid())
   orderStatus         String
   orderDeliveryStatus String
+  createdDate         DateTime         @default(now())
   addressId           String
   cartId              String
   userId              String

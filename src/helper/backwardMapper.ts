@@ -89,6 +89,8 @@ export const orderMapper = (order: OrderResponse): _OrderResponse| null => {
             address: address,
             cart: cart,
             id: order.id,
+            phone: order.address.addressContactPhone,
+            createdDate: order.createdDate.toISOString(),
             orderDeliveryStatus: order.orderDeliveryStatus,
             orderStatus: order.orderStatus,
             userId: order.userId

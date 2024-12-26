@@ -18,6 +18,9 @@ export class OrdersController extends Controller {
   public async getOrders(@Request() req: any): Promise<{ orders: _OrderResponse[] }> {
     const _orders = await prisma.orderModel.findMany({
       where: { userId: req.user.id },
+      orderBy: {
+        createdDate: 'desc',
+      },
       include: {
         cart: {
           include: {
@@ -30,7 +33,7 @@ export class OrdersController extends Controller {
 
     const orders = _orders
       .map((order: OrderResponse) => orderMapper(order))
-      .filter((order) => order !== null);
+      .filter((order) => order !== null)
 
     if (orders && orders.length > 0) {
       return { orders };
