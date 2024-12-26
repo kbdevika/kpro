@@ -8,7 +8,7 @@ export const kikoUrl = prod()
   ? "https://ondc.kiko.live/ondc-seller"   
   : "https://ondc-api.kiko.live/ondc-seller-v2";
 
-export const disabledActualOrder = false;
+export const disabledActualOrder = true;
 
 export function prod(): boolean{
     return process.env.NODE_ENV === 'production'
