@@ -433,6 +433,12 @@
 					"userId": {
 						"type": "string"
 					},
+					"phone": {
+						"type": "string"
+					},
+					"createdDate": {
+						"type": "string"
+					},
 					"orderDeliveryStatus": {
 						"type": "string"
 					},
@@ -451,6 +457,8 @@
 				},
 				"required": [
 					"userId",
+					"phone",
+					"createdDate",
 					"orderDeliveryStatus",
 					"orderStatus",
 					"address",
@@ -2235,6 +2243,30 @@
 						}
 					}
 				]
+			}
+		},
+		"/ondc": {
+			"get": {
+				"operationId": "Search",
+				"responses": {
+					"200": {
+						"description": "Home page details",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {},
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "Retrieves home page data, including welcome text, banners, and carousels.",
+				"tags": [
+					"ONDC"
+				],
+				"security": [],
+				"parameters": []
 			}
 		},
 		"/notifications": {

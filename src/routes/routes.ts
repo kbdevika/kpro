@@ -12,6 +12,8 @@ import { PaymentsController } from './../controllers/payment.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { OrdersController } from './../controllers/order.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { ONDCController } from './../controllers/ondc.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { NotificationController } from './../controllers/notification.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { KikoController } from './../controllers/kiko.controller';
@@ -143,7 +145,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "_OrderResponse": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"userId":{"dataType":"string","required":true},"orderDeliveryStatus":{"dataType":"string","required":true},"orderStatus":{"dataType":"string","required":true},"address":{"ref":"_AddressType","required":true},"cart":{"ref":"_CartResponseType","required":true},"id":{"dataType":"string","required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"userId":{"dataType":"string","required":true},"phone":{"dataType":"string","required":true},"createdDate":{"dataType":"string","required":true},"orderDeliveryStatus":{"dataType":"string","required":true},"orderStatus":{"dataType":"string","required":true},"address":{"ref":"_AddressType","required":true},"cart":{"ref":"_CartResponseType","required":true},"id":{"dataType":"string","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "VerifyPaymentRequest": {
@@ -916,6 +918,36 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
 
               await templateService.apiHandler({
                 methodName: 'cancelOrder',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsONDCController_search: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+        };
+        app.get('/ondc',
+            ...(fetchMiddlewares<RequestHandler>(ONDCController)),
+            ...(fetchMiddlewares<RequestHandler>(ONDCController.prototype.search)),
+
+            async function ONDCController_search(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsONDCController_search, request, response });
+
+                const controller = new ONDCController();
+
+              await templateService.apiHandler({
+                methodName: 'search',
                 controller,
                 response,
                 next,
