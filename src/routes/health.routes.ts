@@ -11,7 +11,7 @@ const healthCheckRouter = express.Router();
 healthCheckRouter.get('/health', (req: any, res: any) => { res.status(200).json({ health: "OK" }) });
 
 /** Add new admins */
-healthCheckRouter.post('/admin', middleware.authenticateAdminToken, async (req: Request, res: any) => {
+healthCheckRouter.post('/admin', async (req: Request, res: any) => {
     const { email, password } = req.body;
 
     // Ensure password is provided
@@ -21,8 +21,8 @@ healthCheckRouter.post('/admin', middleware.authenticateAdminToken, async (req: 
 
     try {
         // Check if email already exists
-        const existingAdmin = await prisma.admin.findUnique({
-            where: { email },
+        const existingAdmin = await prisma.adminModel.findUnique({
+            where: { adminEmail: email },
         });
 
         if (existingAdmin) {
@@ -36,10 +36,10 @@ healthCheckRouter.post('/admin', middleware.authenticateAdminToken, async (req: 
             .digest('hex');
 
         // Create a new admin with the hashed password
-        const data = await prisma.admin.create({
+        const data = await prisma.adminModel.create({
             data: { 
-                email, 
-                password: hashedPassword,
+                adminEmail: email, 
+                adminPassword: hashedPassword,
             },
         });
 
@@ -99,6 +99,31 @@ healthCheckRouter.get('/database', middleware.authenticateAdminToken, async (req
             processedAudioCount,
             adminCount,
             dbHealthStatus,
+        };
+
+        // Respond with the stats
+        return res.json(stats);
+    } catch (error) {
+        handleError(error, res);
+    }
+});
+
+healthCheckRouter.get('/admin/orders', middleware.authenticateAdminToken, async (req: any, res: any) => {
+    try {
+        // Get the total number of orders
+        const orderCount = await prisma.orderModel.count();
+
+        // Fetch orders created today
+        const latestOrderPerDay = await prisma.orderModel.findMany({
+            orderBy: {
+                createdDate: 'desc',
+            }
+        });
+
+        // Prepare response data
+        const stats = {
+            orderCount,              // Total number of orders
+            latestOrderPerDay,       // Orders created today
         };
 
         // Respond with the stats
