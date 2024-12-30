@@ -534,7 +534,4 @@ ondcRouter.post('/on_search', async (req: any, res: any) => {
 //   }
 // });
 
-
-
-
 export default ondcRouter;
