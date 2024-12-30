@@ -2,6 +2,7 @@ import express from 'express';
 import _sodium from 'libsodium-wrappers';
 import crypto from 'crypto';
 import * as dotenv from 'dotenv';
+import { createAuthorizationHeader } from "ondc-crypto-sdk-nodejs";
 import { ONDC_BPP_ID, ONDC_BPP_URI, ONDC_CORE_VERSION, ONDC_DOMAIN, ONDC_GATEWAY_URL } from '../constants';
 import { ConfirmRequest, OnConfirmRequest, OnInitRequest, OnSearchRequest, OnSelectRequest, Order, SearchRequest } from '../types/ondc.types';
 import { v4 as uuidv4 } from 'uuid';
@@ -72,21 +73,6 @@ async function signMessage(signingString: any, privateKey: any) {
     _sodium.base64_variants.ORIGINAL
   );
   return signature;
-}
-
-async function signRequest(body: string, privateKey: string, subscriberId: string): Promise<string> {
-  const created = Math.floor(Date.now() / 1000); // Seconds since epoch
-  const expires = created + 300; // Valid for 5 minutes
-  const digest = crypto.createHash('sha256').update(body).digest('base64');
-  const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: SHA-256=${digest}`;
-
-  const signature = crypto.sign(
-    null, // No specific algorithm for Ed25519
-    Buffer.from(signingString),
-    { key: privateKey, dsaEncoding: 'ieee-p1363' }
-  );
-
-  return `Signature keyId="${subscriberId}",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature.toString('base64')}"`;
 }
 
 /**
@@ -215,19 +201,22 @@ ondcRouter.post('/search', async (req: any, res: any) => {
       },
     };
 
-    const payloadString = JSON.stringify(payload);
-
     // Generate the signed Authorization header
-    const authHeader = await signRequest(payloadString, process.env.SIGNING_PRIVATE_KEY!, ONDC_BPP_ID);
+    const header = await createAuthorizationHeader({
+      body: payload.toString(),
+      privateKey: process.env.SIGNING_PRIVATE_KEY!,
+      subscriberId: ONDC_BPP_ID, // Subscriber ID that you get after registering to ONDC Network
+      subscriberUniqueKeyId: "ae7686be-f644-47fb-a20e-da180cb6ec62", // Unique Key Id or uKid that you get after registering to ONDC Network
+    });
 
     // Send the request to ONDC Gateway
     const response = await fetch(`${ONDC_GATEWAY_URL}/search`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: authHeader,
+        Authorization: header,
       },
-      body: payloadString,
+      body: payload.toString(),
     });
 
     if (!response.ok) {
