@@ -203,7 +203,7 @@ ondcRouter.post('/search', async (req: any, res: any) => {
 
     // Generate the signed Authorization header
     const header = await createAuthorizationHeader({
-      body: payload.toString(),
+      body: JSON.stringify(payload),
       privateKey: process.env.SIGNING_PRIVATE_KEY!,
       subscriberId: ONDC_BPP_ID, // Subscriber ID that you get after registering to ONDC Network
       subscriberUniqueKeyId: "ae7686be-f644-47fb-a20e-da180cb6ec62", // Unique Key Id or uKid that you get after registering to ONDC Network
@@ -216,7 +216,7 @@ ondcRouter.post('/search', async (req: any, res: any) => {
         'Content-Type': 'application/json',
         Authorization: header,
       },
-      body: payload.toString(),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
