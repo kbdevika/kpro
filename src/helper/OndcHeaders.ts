@@ -26,7 +26,7 @@ export async function validateHeaders(header: string, body: string): Promise<boo
 export const generateContext = (action: string, city: string) => {
     return {
         domain: ONDC_DOMAIN,
-        action: 'search',
+        action: action,
         city,
         country: 'IND',
         core_version: ONDC_CORE_VERSION,
