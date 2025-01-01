@@ -2,10 +2,12 @@ import express from 'express';
 import _sodium from 'libsodium-wrappers';
 import crypto from 'crypto';
 import * as dotenv from 'dotenv';
+import { v4 as uuidv4 } from 'uuid';
 import { ONDC_BPP_ID, ONDC_BPP_URI, ONDC_CORE_VERSION, ONDC_DOMAIN, ONDC_GATEWAY_URL } from '../constants';
 import { ConfirmRequest, OnConfirmRequest, OnInitRequest, OnSearchRequest, OnSelectRequest, Order, SearchRequest } from '../types/ondc.types';
-import { v4 as uuidv4 } from 'uuid';
-import { generateHeaders } from '../helper/OndcHeaders';
+
+import { generateContext, generateHeaders, validateHeaders } from '../helper/OndcHeaders';
+import prisma from '../config/prisma.config';
 
 dotenv.config()
 
@@ -160,7 +162,7 @@ ondcRouter.post('/search', async (req: any, res: any) => {
   try {
     const { query, location }: { query?: string; location?: { city?: string } } = req.body;
 
-    // Validate query
+    // Validate query and location
     if (!query || typeof query !== 'string') {
       return res.status(200).json({
         message: {
@@ -174,33 +176,39 @@ ondcRouter.post('/search', async (req: any, res: any) => {
       });
     }
 
+    if (!location?.city || typeof location.city !== 'string') {
+      return res.status(200).json({
+        message: {
+          ack: { status: 'NACK' },
+        },
+        error: {
+          type: 'DOMAIN-ERROR',
+          code: 'INVALID_LOCATION',
+          message: 'Invalid or missing location parameter.',
+        },
+      });
+    }
+
     // Build the payload
     const payload: SearchRequest = {
-      context: {
-        domain: ONDC_DOMAIN,
-        action: 'search',
-        city: location?.city || 'std:080', // Default city Bangalore
-        country: 'IND',
-        core_version: ONDC_CORE_VERSION,
-        timestamp: new Date().toISOString(),
-        ttl: 'PT30S', // Time-to-live: 30 seconds
-        transaction_id: uuidv4(), // Unique transaction ID
-        message_id: uuidv4(), // Unique message ID
-        bap_id: ONDC_BPP_ID,
-        bap_uri: ONDC_BPP_URI,
-      },
+      context: generateContext('search', location?.city),
       message: {
         intent: {
-          item: {
-            descriptor: {
-              name: query, // Search query
+          fulfillment: {
+            end: {
+              location: {
+                city: {
+                  code: location?.city || 'std:080',
+                },
+              },
             },
           },
         },
       },
     };
 
-    const header = await generateHeaders(JSON.stringify(payload))
+    // Generate the signed Authorization header
+    const header = await generateHeaders(JSON.stringify(payload));
 
     // Send the request to ONDC Gateway
     const response = await fetch(`${ONDC_GATEWAY_URL}/search`, {
@@ -249,66 +257,99 @@ ondcRouter.post('/search', async (req: any, res: any) => {
   }
 });
 
-// ondcRouter.post('/on_search', async (req: any, res: any) => {
-//   try {
-//     const { context, message }: OnSearchRequest = req.body;
+ondcRouter.post('/on_search', async (req: any, res: any) => {
+  try {
+    const authorizationHeader = req.headers['authorization'];
+    const { context, message }: OnSearchRequest = req.body;
 
-//     // Validate the context object
-//     if (!context) {
-//       return res.status(200).json({
-//         message: {
-//           ack: { status: 'NACK' },
-//         },
-//         error: {
-//           type: 'CONTEXT-ERROR',
-//           code: 'INVALID_CONTEXT',
-//           message: 'Invalid or missing context in on_search callback.',
-//         },
-//       });
-//     }
+    // Step 1: Validate Authorization Header
+    if (!authorizationHeader) {
+      return res.status(200).json({
+        message: {
+          ack: { status: 'NACK' },
+        },
+        error: {
+          type: 'CONTEXT-ERROR',
+          code: 'MISSING_AUTHORIZATION_HEADER',
+          message: 'Authorization header is missing.',
+        },
+      });
+    }
+    // Step 2: Verify Signature
+    const isValidSignature = await validateHeaders(
+      authorizationHeader,
+      req.body,
+    );
 
-//     // Validate the catalog data in the message
-//     if (!message?.catalog) {
-//       return res.status(200).json({
-//         message: {
-//           ack: { status: 'NACK' },
-//         },
-//         error: {
-//           type: 'DOMAIN-ERROR',
-//           code: 'INVALID_CATALOG',
-//           message: 'Missing or invalid catalog in on_search callback data.',
-//         },
-//       });
-//     }
+    if (!isValidSignature) {
+      return res.status(401).json({
+        message: {
+          ack: { status: 'NACK' },
+        },
+        error: {
+          type: 'CONTEXT-ERROR',
+          code: 'INVALID_SIGNATURE',
+          message: 'Signature verification failed.',
+        },
+      });
+    }
 
-//     // Save catalog data to the database
-//     await prisma.catalogue.create({
-//       data: {
-//         jsonData: JSON.stringify(message.catalog), // Ensure data is serialized
-//         pincode: '0000001', // Example pincode, customize as needed
-//       },
-//     });
+    // Validate the context object
+    if (!context) {
+      return res.status(200).json({
+        message: {
+          ack: { status: 'NACK' },
+        },
+        error: {
+          type: 'CONTEXT-ERROR',
+          code: 'INVALID_CONTEXT',
+          message: 'Invalid or missing context in on_search callback.',
+        },
+      });
+    }
 
-//     // Acknowledge the callback
-//     res.status(200).json({
-//       message: {
-//         ack: { status: 'ACK' },
-//       },
-//     });
-//   } catch (error: any) {
-//     // Return an error response with the appropriate error details
-//     res.status(200).json({
-//       message: {
-//         ack: { status: 'NACK' },
-//       },
-//       error: {
-//         type: 'CORE-ERROR',
-//         code: 'INTERNAL_SERVER_ERROR',
-//         message: error.message || 'An unexpected error occurred while handling on_search callback.',
-//       },
-//     });
-//   }
-// });
+    // Validate the catalog data in the message
+    if (!message?.catalog) {
+      return res.status(200).json({
+        message: {
+          ack: { status: 'NACK' },
+        },
+        error: {
+          type: 'DOMAIN-ERROR',
+          code: 'INVALID_CATALOG',
+          message: 'Missing or invalid catalog in on_search callback data.',
+        },
+      });
+    }
+
+    // Save catalog data to the database
+    await prisma.catalogue.create({
+      data: {
+        jsonData: JSON.stringify(message.catalog), // Ensure data is serialized
+        pincode: uuidv4(), // Example pincode, customize as needed
+      },
+    });
+
+    // Acknowledge the callback
+    res.status(200).json({
+      message: {
+        ack: { status: 'ACK' },
+      },
+    });
+  } catch (error: any) {
+    // Return an error response with the appropriate error details
+    res.status(200).json({
+      message: {
+        ack: { status: 'NACK' },
+      },
+      error: {
+        type: 'CORE-ERROR',
+        code: 'INTERNAL_SERVER_ERROR',
+        message: error.message || 'An unexpected error occurred while handling on_search callback.',
+      },
+    });
+  }
+});
 
 // ondcRouter.post('/select', async (req: any, res: any) => {
 //   try {
