@@ -230,7 +230,7 @@ ondcRouter.post('/search', async (req: any, res: any) => {
         error: {
           type: 'CORE-ERROR',
           code: 'GATEWAY_ERROR',
-          message: `Failed to send search request to ONDC Gateway. ${errorText}`,
+          message: `Failed to send search request to ONDC Gateway. ${errorText} ${response.status}`,
         },
       });
     }

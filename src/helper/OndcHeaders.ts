@@ -1,6 +1,8 @@
 import { createAuthorizationHeader, isHeaderValid } from "ondc-crypto-sdk-nodejs";
 import { ONDC_BPP_ID, ONDC_BPP_URI, ONDC_CORE_VERSION, ONDC_DOMAIN } from "../constants";
 import { v4 as uuidv4 } from 'uuid';
+import dotnev from 'dotenv';
+dotnev.config()
 
 export async function generateHeaders(payload: string): Promise<string> {
     // Generate the signed Authorization header
