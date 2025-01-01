@@ -2,11 +2,10 @@ import express from 'express';
 import _sodium from 'libsodium-wrappers';
 import crypto from 'crypto';
 import * as dotenv from 'dotenv';
-import { createAuthorizationHeader } from "ondc-crypto-sdk-nodejs";
 import { ONDC_BPP_ID, ONDC_BPP_URI, ONDC_CORE_VERSION, ONDC_DOMAIN, ONDC_GATEWAY_URL } from '../constants';
 import { ConfirmRequest, OnConfirmRequest, OnInitRequest, OnSearchRequest, OnSelectRequest, Order, SearchRequest } from '../types/ondc.types';
 import { v4 as uuidv4 } from 'uuid';
-import prisma from '../config/prisma.config';
+import { generateHeaders } from '../helper/OndcHeaders';
 
 dotenv.config()
 
@@ -201,13 +200,7 @@ ondcRouter.post('/search', async (req: any, res: any) => {
       },
     };
 
-    // Generate the signed Authorization header
-    const header = await createAuthorizationHeader({
-      body: JSON.stringify(payload),
-      privateKey: process.env.SIGNING_PRIVATE_KEY!,
-      subscriberId: ONDC_BPP_ID, // Subscriber ID that you get after registering to ONDC Network
-      subscriberUniqueKeyId: "ae7686be-f644-47fb-a20e-da180cb6ec62", // Unique Key Id or uKid that you get after registering to ONDC Network
-    });
+    const header = await generateHeaders(JSON.stringify(payload))
 
     // Send the request to ONDC Gateway
     const response = await fetch(`${ONDC_GATEWAY_URL}/search`, {
@@ -256,211 +249,211 @@ ondcRouter.post('/search', async (req: any, res: any) => {
   }
 });
 
-ondcRouter.post('/on_search', async (req: any, res: any) => {
-  try {
-    const { context, message }: OnSearchRequest = req.body;
+// ondcRouter.post('/on_search', async (req: any, res: any) => {
+//   try {
+//     const { context, message }: OnSearchRequest = req.body;
 
-    // Validate the context object
-    if (!context) {
-      return res.status(200).json({
-        message: {
-          ack: { status: 'NACK' },
-        },
-        error: {
-          type: 'CONTEXT-ERROR',
-          code: 'INVALID_CONTEXT',
-          message: 'Invalid or missing context in on_search callback.',
-        },
-      });
-    }
+//     // Validate the context object
+//     if (!context) {
+//       return res.status(200).json({
+//         message: {
+//           ack: { status: 'NACK' },
+//         },
+//         error: {
+//           type: 'CONTEXT-ERROR',
+//           code: 'INVALID_CONTEXT',
+//           message: 'Invalid or missing context in on_search callback.',
+//         },
+//       });
+//     }
 
-    // Validate the catalog data in the message
-    if (!message?.catalog) {
-      return res.status(200).json({
-        message: {
-          ack: { status: 'NACK' },
-        },
-        error: {
-          type: 'DOMAIN-ERROR',
-          code: 'INVALID_CATALOG',
-          message: 'Missing or invalid catalog in on_search callback data.',
-        },
-      });
-    }
+//     // Validate the catalog data in the message
+//     if (!message?.catalog) {
+//       return res.status(200).json({
+//         message: {
+//           ack: { status: 'NACK' },
+//         },
+//         error: {
+//           type: 'DOMAIN-ERROR',
+//           code: 'INVALID_CATALOG',
+//           message: 'Missing or invalid catalog in on_search callback data.',
+//         },
+//       });
+//     }
 
-    // Save catalog data to the database
-    await prisma.catalogue.create({
-      data: {
-        jsonData: JSON.stringify(message.catalog), // Ensure data is serialized
-        pincode: '0000001', // Example pincode, customize as needed
-      },
-    });
+//     // Save catalog data to the database
+//     await prisma.catalogue.create({
+//       data: {
+//         jsonData: JSON.stringify(message.catalog), // Ensure data is serialized
+//         pincode: '0000001', // Example pincode, customize as needed
+//       },
+//     });
 
-    // Acknowledge the callback
-    res.status(200).json({
-      message: {
-        ack: { status: 'ACK' },
-      },
-    });
-  } catch (error: any) {
-    // Return an error response with the appropriate error details
-    res.status(200).json({
-      message: {
-        ack: { status: 'NACK' },
-      },
-      error: {
-        type: 'CORE-ERROR',
-        code: 'INTERNAL_SERVER_ERROR',
-        message: error.message || 'An unexpected error occurred while handling on_search callback.',
-      },
-    });
-  }
-});
+//     // Acknowledge the callback
+//     res.status(200).json({
+//       message: {
+//         ack: { status: 'ACK' },
+//       },
+//     });
+//   } catch (error: any) {
+//     // Return an error response with the appropriate error details
+//     res.status(200).json({
+//       message: {
+//         ack: { status: 'NACK' },
+//       },
+//       error: {
+//         type: 'CORE-ERROR',
+//         code: 'INTERNAL_SERVER_ERROR',
+//         message: error.message || 'An unexpected error occurred while handling on_search callback.',
+//       },
+//     });
+//   }
+// });
 
-ondcRouter.post('/select', async (req: any, res: any) => {
-  try {
-    const { order }: { order: Order } = req.body;
+// ondcRouter.post('/select', async (req: any, res: any) => {
+//   try {
+//     const { order }: { order: Order } = req.body;
 
-    // Validate order structure
-    if (!order || !order.provider?.id || !order.items || order.items.length === 0) {
-      return res.status(200).json({
-        message: {
-          ack: { status: 'NACK' },
-        },
-        error: {
-          type: 'DOMAIN-ERROR',
-          code: 'INVALID_ORDER',
-          message: 'Invalid order data. Ensure provider and items are specified.',
-        },
-      });
-    }
+//     // Validate order structure
+//     if (!order || !order.provider?.id || !order.items || order.items.length === 0) {
+//       return res.status(200).json({
+//         message: {
+//           ack: { status: 'NACK' },
+//         },
+//         error: {
+//           type: 'DOMAIN-ERROR',
+//           code: 'INVALID_ORDER',
+//           message: 'Invalid order data. Ensure provider and items are specified.',
+//         },
+//       });
+//     }
 
-    // Ensure all items have valid quantities
-    const invalidItems = order.items.filter(item => item.quantity.count < 1);
-    if (invalidItems.length > 0) {
-      return res.status(200).json({
-        message: {
-          ack: { status: 'NACK' },
-        },
-        error: {
-          type: 'DOMAIN-ERROR',
-          code: 'INVALID_ITEM_QUANTITY',
-          message: 'Invalid item quantities in the order. All items must have a count >= 1.',
-        },
-      });
-    }
+//     // Ensure all items have valid quantities
+//     const invalidItems = order.items.filter(item => item.quantity.count < 1);
+//     if (invalidItems.length > 0) {
+//       return res.status(200).json({
+//         message: {
+//           ack: { status: 'NACK' },
+//         },
+//         error: {
+//           type: 'DOMAIN-ERROR',
+//           code: 'INVALID_ITEM_QUANTITY',
+//           message: 'Invalid item quantities in the order. All items must have a count >= 1.',
+//         },
+//       });
+//     }
 
-    // Build the payload
-    const payload = {
-      context: {
-        domain: ONDC_DOMAIN,
-        action: 'select',
-        transaction_id: order.id || uuidv4(),
-        message_id: uuidv4(),
-        timestamp: new Date().toISOString(),
-        bap_id: ONDC_BPP_ID,
-        bap_uri: ONDC_BPP_URI,
-      },
-      message: { order },
-    };
+//     // Build the payload
+//     const payload = {
+//       context: {
+//         domain: ONDC_DOMAIN,
+//         action: 'select',
+//         transaction_id: order.id || uuidv4(),
+//         message_id: uuidv4(),
+//         timestamp: new Date().toISOString(),
+//         bap_id: ONDC_BPP_ID,
+//         bap_uri: ONDC_BPP_URI,
+//       },
+//       message: { order },
+//     };
 
-    const payloadString = JSON.stringify(payload);
+//     const payloadString = JSON.stringify(payload);
 
-    // Generate the signed Authorization header
-    const authHeader = await createAuthorizationHeader({
-      body: payloadString,
-      privateKey: process.env.SIGNING_PRIVATE_KEY!,
-      subscriberId: ONDC_BPP_ID,
-      subscriberUniqueKeyId: process.env.SUBSCRIBER_UNIQUE_KEY_ID!,
-    });
+//     // Generate the signed Authorization header
+//     const authHeader = await createAuthorizationHeader({
+//       body: payloadString,
+//       privateKey: process.env.SIGNING_PRIVATE_KEY!,
+//       subscriberId: ONDC_BPP_ID,
+//       subscriberUniqueKeyId: process.env.SUBSCRIBER_UNIQUE_KEY_ID!,
+//     });
 
-    // Send the request to ONDC Gateway
-    const response = await fetch(`${process.env.ONDC_GATEWAY_URL}/select`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: authHeader,
-      },
-      body: payloadString,
-    });
+//     // Send the request to ONDC Gateway
+//     const response = await fetch(`${process.env.ONDC_GATEWAY_URL}/select`, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//         Authorization: authHeader,
+//       },
+//       body: payloadString,
+//     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      return res.status(200).json({
-        message: {
-          ack: { status: 'NACK' },
-        },
-        error: {
-          type: 'CORE-ERROR',
-          code: 'GATEWAY_ERROR',
-          message: `Failed to send select request to ONDC Gateway. ${errorText}`,
-        },
-      });
-    }
+//     if (!response.ok) {
+//       const errorText = await response.text();
+//       return res.status(200).json({
+//         message: {
+//           ack: { status: 'NACK' },
+//         },
+//         error: {
+//           type: 'CORE-ERROR',
+//           code: 'GATEWAY_ERROR',
+//           message: `Failed to send select request to ONDC Gateway. ${errorText}`,
+//         },
+//       });
+//     }
 
-    // Parse and send back the response
-    const data = await response.json();
-    res.status(200).json({
-      message: {
-        ack: { status: 'ACK' },
-      },
-      response: data,
-    });
-  } catch (error: any) {
-    res.status(200).json({
-      message: {
-        ack: { status: 'NACK' },
-      },
-      error: {
-        type: 'CORE-ERROR',
-        code: 'INTERNAL_SERVER_ERROR',
-        message: error.message || 'An unexpected error occurred while performing select.',
-      },
-    });
-  }
-});
+//     // Parse and send back the response
+//     const data = await response.json();
+//     res.status(200).json({
+//       message: {
+//         ack: { status: 'ACK' },
+//       },
+//       response: data,
+//     });
+//   } catch (error: any) {
+//     res.status(200).json({
+//       message: {
+//         ack: { status: 'NACK' },
+//       },
+//       error: {
+//         type: 'CORE-ERROR',
+//         code: 'INTERNAL_SERVER_ERROR',
+//         message: error.message || 'An unexpected error occurred while performing select.',
+//       },
+//     });
+//   }
+// });
 
-ondcRouter.post('/on_select', async (req: any, res: any) => {
-  try {
-    const { context, message }: OnSelectRequest = req.body;
+// ondcRouter.post('/on_select', async (req: any, res: any) => {
+//   try {
+//     const { context, message }: OnSelectRequest = req.body;
 
-    // Validate message and order
-    if (!context || !message?.order) {
-      return res.status(200).json({
-        message: {
-          ack: { status: 'NACK' },
-        },
-        error: {
-          type: 'DOMAIN-ERROR',
-          code: 'INVALID_CALLBACK',
-          message: 'Invalid on_select callback data. Ensure context and order are specified.',
-        },
-      });
-    }
+//     // Validate message and order
+//     if (!context || !message?.order) {
+//       return res.status(200).json({
+//         message: {
+//           ack: { status: 'NACK' },
+//         },
+//         error: {
+//           type: 'DOMAIN-ERROR',
+//           code: 'INVALID_CALLBACK',
+//           message: 'Invalid on_select callback data. Ensure context and order are specified.',
+//         },
+//       });
+//     }
 
-    // Process the received order
-    console.log('Received on_select callback:', JSON.stringify(message.order, null, 2));
+//     // Process the received order
+//     console.log('Received on_select callback:', JSON.stringify(message.order, null, 2));
 
-    // Send ACK response
-    res.status(200).json({
-      message: {
-        ack: { status: 'ACK' },
-      },
-    });
-  } catch (error: any) {
-    console.error('Error in /on_select:', error.message);
-    res.status(200).json({
-      message: {
-        ack: { status: 'NACK' },
-      },
-      error: {
-        type: 'CORE-ERROR',
-        code: 'INTERNAL_SERVER_ERROR',
-        message: error.message || 'An unexpected error occurred while handling on_select callback.',
-      },
-    });
-  }
-});
+//     // Send ACK response
+//     res.status(200).json({
+//       message: {
+//         ack: { status: 'ACK' },
+//       },
+//     });
+//   } catch (error: any) {
+//     console.error('Error in /on_select:', error.message);
+//     res.status(200).json({
+//       message: {
+//         ack: { status: 'NACK' },
+//       },
+//       error: {
+//         type: 'CORE-ERROR',
+//         code: 'INTERNAL_SERVER_ERROR',
+//         message: error.message || 'An unexpected error occurred while handling on_select callback.',
+//       },
+//     });
+//   }
+// });
 
 // ondcRouter.post('/init', async (req: any, res: any) => {
 //   try {
