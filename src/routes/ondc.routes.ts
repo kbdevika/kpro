@@ -8,6 +8,7 @@ import { ConfirmRequest, OnConfirmRequest, OnInitRequest, OnSearchRequest, OnSel
 
 import { generateContext, generateHeaders, validateHeaders } from '../helper/OndcHeaders';
 import prisma from '../config/prisma.config';
+import { createAuthorizationHeader } from 'ondc-crypto-sdk-nodejs';
 
 dotenv.config()
 
@@ -351,286 +352,286 @@ ondcRouter.post('/on_search', async (req: any, res: any) => {
   }
 });
 
-// ondcRouter.post('/select', async (req: any, res: any) => {
-//   try {
-//     const { order }: { order: Order } = req.body;
+ondcRouter.post('/select', async (req: any, res: any) => {
+  try {
+    const { order }: { order: Order } = req.body;
 
-//     // Validate order structure
-//     if (!order || !order.provider?.id || !order.items || order.items.length === 0) {
-//       return res.status(200).json({
-//         message: {
-//           ack: { status: 'NACK' },
-//         },
-//         error: {
-//           type: 'DOMAIN-ERROR',
-//           code: 'INVALID_ORDER',
-//           message: 'Invalid order data. Ensure provider and items are specified.',
-//         },
-//       });
-//     }
+    // Validate order structure
+    if (!order || !order.provider?.id || !order.items || order.items.length === 0) {
+      return res.status(200).json({
+        message: {
+          ack: { status: 'NACK' },
+        },
+        error: {
+          type: 'DOMAIN-ERROR',
+          code: 'INVALID_ORDER',
+          message: 'Invalid order data. Ensure provider and items are specified.',
+        },
+      });
+    }
 
-//     // Ensure all items have valid quantities
-//     const invalidItems = order.items.filter(item => item.quantity.count < 1);
-//     if (invalidItems.length > 0) {
-//       return res.status(200).json({
-//         message: {
-//           ack: { status: 'NACK' },
-//         },
-//         error: {
-//           type: 'DOMAIN-ERROR',
-//           code: 'INVALID_ITEM_QUANTITY',
-//           message: 'Invalid item quantities in the order. All items must have a count >= 1.',
-//         },
-//       });
-//     }
+    // Ensure all items have valid quantities
+    const invalidItems = order.items.filter(item => item.quantity.count < 1);
+    if (invalidItems.length > 0) {
+      return res.status(200).json({
+        message: {
+          ack: { status: 'NACK' },
+        },
+        error: {
+          type: 'DOMAIN-ERROR',
+          code: 'INVALID_ITEM_QUANTITY',
+          message: 'Invalid item quantities in the order. All items must have a count >= 1.',
+        },
+      });
+    }
 
-//     // Build the payload
-//     const payload = {
-//       context: {
-//         domain: ONDC_DOMAIN,
-//         action: 'select',
-//         transaction_id: order.id || uuidv4(),
-//         message_id: uuidv4(),
-//         timestamp: new Date().toISOString(),
-//         bap_id: ONDC_BPP_ID,
-//         bap_uri: ONDC_BPP_URI,
-//       },
-//       message: { order },
-//     };
+    // Build the payload
+    const payload = {
+      context: {
+        domain: ONDC_DOMAIN,
+        action: 'select',
+        transaction_id: order.id || uuidv4(),
+        message_id: uuidv4(),
+        timestamp: new Date().toISOString(),
+        bap_id: ONDC_BPP_ID,
+        bap_uri: ONDC_BPP_URI,
+      },
+      message: { order },
+    };
 
-//     const payloadString = JSON.stringify(payload);
+    const payloadString = JSON.stringify(payload);
 
-//     // Generate the signed Authorization header
-//     const authHeader = await createAuthorizationHeader({
-//       body: payloadString,
-//       privateKey: process.env.SIGNING_PRIVATE_KEY!,
-//       subscriberId: ONDC_BPP_ID,
-//       subscriberUniqueKeyId: process.env.SUBSCRIBER_UNIQUE_KEY_ID!,
-//     });
+    // Generate the signed Authorization header
+    const authHeader = await createAuthorizationHeader({
+      body: payloadString,
+      privateKey: process.env.SIGNING_PRIVATE_KEY!,
+      subscriberId: ONDC_BPP_ID,
+      subscriberUniqueKeyId: process.env.SUBSCRIBER_UNIQUE_KEY_ID!,
+    });
 
-//     // Send the request to ONDC Gateway
-//     const response = await fetch(`${process.env.ONDC_GATEWAY_URL}/select`, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//         Authorization: authHeader,
-//       },
-//       body: payloadString,
-//     });
+    // Send the request to ONDC Gateway
+    const response = await fetch(`${process.env.ONDC_GATEWAY_URL}/select`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: authHeader,
+      },
+      body: payloadString,
+    });
 
-//     if (!response.ok) {
-//       const errorText = await response.text();
-//       return res.status(200).json({
-//         message: {
-//           ack: { status: 'NACK' },
-//         },
-//         error: {
-//           type: 'CORE-ERROR',
-//           code: 'GATEWAY_ERROR',
-//           message: `Failed to send select request to ONDC Gateway. ${errorText}`,
-//         },
-//       });
-//     }
+    if (!response.ok) {
+      const errorText = await response.text();
+      return res.status(200).json({
+        message: {
+          ack: { status: 'NACK' },
+        },
+        error: {
+          type: 'CORE-ERROR',
+          code: 'GATEWAY_ERROR',
+          message: `Failed to send select request to ONDC Gateway. ${errorText}`,
+        },
+      });
+    }
 
-//     // Parse and send back the response
-//     const data = await response.json();
-//     res.status(200).json({
-//       message: {
-//         ack: { status: 'ACK' },
-//       },
-//       response: data,
-//     });
-//   } catch (error: any) {
-//     res.status(200).json({
-//       message: {
-//         ack: { status: 'NACK' },
-//       },
-//       error: {
-//         type: 'CORE-ERROR',
-//         code: 'INTERNAL_SERVER_ERROR',
-//         message: error.message || 'An unexpected error occurred while performing select.',
-//       },
-//     });
-//   }
-// });
+    // Parse and send back the response
+    const data = await response.json();
+    res.status(200).json({
+      message: {
+        ack: { status: 'ACK' },
+      },
+      response: data,
+    });
+  } catch (error: any) {
+    res.status(200).json({
+      message: {
+        ack: { status: 'NACK' },
+      },
+      error: {
+        type: 'CORE-ERROR',
+        code: 'INTERNAL_SERVER_ERROR',
+        message: error.message || 'An unexpected error occurred while performing select.',
+      },
+    });
+  }
+});
 
-// ondcRouter.post('/on_select', async (req: any, res: any) => {
-//   try {
-//     const { context, message }: OnSelectRequest = req.body;
+ondcRouter.post('/on_select', async (req: any, res: any) => {
+  try {
+    const { context, message }: OnSelectRequest = req.body;
 
-//     // Validate message and order
-//     if (!context || !message?.order) {
-//       return res.status(200).json({
-//         message: {
-//           ack: { status: 'NACK' },
-//         },
-//         error: {
-//           type: 'DOMAIN-ERROR',
-//           code: 'INVALID_CALLBACK',
-//           message: 'Invalid on_select callback data. Ensure context and order are specified.',
-//         },
-//       });
-//     }
+    // Validate message and order
+    if (!context || !message?.order) {
+      return res.status(200).json({
+        message: {
+          ack: { status: 'NACK' },
+        },
+        error: {
+          type: 'DOMAIN-ERROR',
+          code: 'INVALID_CALLBACK',
+          message: 'Invalid on_select callback data. Ensure context and order are specified.',
+        },
+      });
+    }
 
-//     // Process the received order
-//     console.log('Received on_select callback:', JSON.stringify(message.order, null, 2));
+    // Process the received order
+    console.log('Received on_select callback:', JSON.stringify(message.order, null, 2));
 
-//     // Send ACK response
-//     res.status(200).json({
-//       message: {
-//         ack: { status: 'ACK' },
-//       },
-//     });
-//   } catch (error: any) {
-//     console.error('Error in /on_select:', error.message);
-//     res.status(200).json({
-//       message: {
-//         ack: { status: 'NACK' },
-//       },
-//       error: {
-//         type: 'CORE-ERROR',
-//         code: 'INTERNAL_SERVER_ERROR',
-//         message: error.message || 'An unexpected error occurred while handling on_select callback.',
-//       },
-//     });
-//   }
-// });
+    // Send ACK response
+    res.status(200).json({
+      message: {
+        ack: { status: 'ACK' },
+      },
+    });
+  } catch (error: any) {
+    console.error('Error in /on_select:', error.message);
+    res.status(200).json({
+      message: {
+        ack: { status: 'NACK' },
+      },
+      error: {
+        type: 'CORE-ERROR',
+        code: 'INTERNAL_SERVER_ERROR',
+        message: error.message || 'An unexpected error occurred while handling on_select callback.',
+      },
+    });
+  }
+});
 
-// ondcRouter.post('/init', async (req: any, res: any) => {
-//   try {
-//     const { order }: { order: Order} = req.body;
+ondcRouter.post('/init', async (req: any, res: any) => {
+  try {
+    const { order }: { order: Order} = req.body;
 
-//     const payload = {
-//       context: {
-//         domain: ONDC_DOMAIN,
-//         action: 'init',
-//         transaction_id: order.transaction_id,
-//         message_id: uuidv4(),
-//         timestamp: new Date().toISOString(),
-//         bap_id: ONDC_BPP_ID,
-//         bap_uri: ONDC_BPP_URI,
-//       },
-//       message: { order },
-//     };
+    const payload = {
+      context: {
+        domain: ONDC_DOMAIN,
+        action: 'init',
+        transaction_id: order.transaction_id,
+        message_id: uuidv4(),
+        timestamp: new Date().toISOString(),
+        bap_id: ONDC_BPP_ID,
+        bap_uri: ONDC_BPP_URI,
+      },
+      message: { order },
+    };
 
-//     const response = await fetch(`${process.env.ONDC_GATEWAY_URL}/init`, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//         Authorization: `Bearer ${process.env.AUTH_TOKEN}`,
-//       },
-//       body: JSON.stringify(payload),
-//     });
+    const response = await fetch(`${process.env.ONDC_GATEWAY_URL}/init`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.AUTH_TOKEN}`,
+      },
+      body: JSON.stringify(payload),
+    });
 
-//     const data = await response.json();
-//     res.status(200).json(data);
-//   } catch (error: any) {
-//     res.status(500).json({ error: 'Failed to perform init' });
-//   }
-// });
+    const data = await response.json();
+    res.status(200).json(data);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to perform init' });
+  }
+});
 
-// ondcRouter.post('/on_init', async (req: any, res: any) => {
-//   try {
-//     const { context, message }: OnInitRequest = req.body;
+ondcRouter.post('/on_init', async (req: any, res: any) => {
+  try {
+    const { context, message }: OnInitRequest = req.body;
 
-//     // Validate message and order
-//     if (!message || (!message.order && !message.error)) {
-//       return res.status(400).json({ error: 'Invalid on_init callback data' });
-//     }
+    // Validate message and order
+    if (!message || (!message.order && !message.error)) {
+      return res.status(400).json({ error: 'Invalid on_init callback data' });
+    }
 
-//     if (message.error) {
-//       console.error('Error in on_init callback:', message.error);
-//       return res.status(400).json({ error: message.error });
-//     }
+    if (message.error) {
+      console.error('Error in on_init callback:', message.error);
+      return res.status(400).json({ error: message.error });
+    }
 
-//     // Process the received order
-//     console.log('Received on_init callback:', JSON.stringify(message.order, null, 2));
+    // Process the received order
+    console.log('Received on_init callback:', JSON.stringify(message.order, null, 2));
 
-//     // Respond with ACK
-//     res.status(200).json({
-//       message: {
-//         ack: { status: 'ACK' },
-//       },
-//     });
-//   } catch (error: any) {
-//     res.status(500).json({ error: 'Failed to handle on_init callback' });
-//   }
-// });
+    // Respond with ACK
+    res.status(200).json({
+      message: {
+        ack: { status: 'ACK' },
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to handle on_init callback' });
+  }
+});
 
-// ondcRouter.post('/confirm', async (req: any, res: any) => {
-//   try {
-//     const { order }: ConfirmRequest = req.body;
+ondcRouter.post('/confirm', async (req: any, res: any) => {
+  try {
+    const { order }: ConfirmRequest = req.body;
 
-//     // Validate the order object
-//     if (!order || !order.transaction_id || !order.billing || !order.fulfillment || !order.payment) {
-//       return res.status(400).json({ error: 'Invalid order data for confirm' });
-//     }
+    // Validate the order object
+    if (!order || !order.transaction_id || !order.billing || !order.fulfillment || !order.payment) {
+      return res.status(400).json({ error: 'Invalid order data for confirm' });
+    }
 
-//     // Build the payload
-//     const payload = {
-//       context: {
-//         domain: ONDC_DOMAIN,
-//         action: 'confirm',
-//         transaction_id: order.transaction_id,
-//         message_id: uuidv4(),
-//         timestamp: new Date().toISOString(),
-//         bap_id: ONDC_BPP_ID,
-//         bap_uri: ONDC_BPP_URI,
-//       },
-//       message: { order },
-//     };
+    // Build the payload
+    const payload = {
+      context: {
+        domain: ONDC_DOMAIN,
+        action: 'confirm',
+        transaction_id: order.transaction_id,
+        message_id: uuidv4(),
+        timestamp: new Date().toISOString(),
+        bap_id: ONDC_BPP_ID,
+        bap_uri: ONDC_BPP_URI,
+      },
+      message: { order },
+    };
 
-//     // Send the request to the ONDC Gateway
-//     const response = await fetch(`${process.env.ONDC_GATEWAY_URL}/confirm`, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//         Authorization: `Bearer ${process.env.AUTH_TOKEN}`,
-//       },
-//       body: JSON.stringify(payload),
-//     });
+    // Send the request to the ONDC Gateway
+    const response = await fetch(`${process.env.ONDC_GATEWAY_URL}/confirm`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.AUTH_TOKEN}`,
+      },
+      body: JSON.stringify(payload),
+    });
 
-//     // Parse and return the response
-//     const data = await response.json();
-//     res.status(200).json(data);
-//   } catch (error: any) {
-//     res.status(500).json({ error: 'Failed to confirm order' });
-//   }
-// });
+    // Parse and return the response
+    const data = await response.json();
+    res.status(200).json(data);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to confirm order' });
+  }
+});
 
-// ondcRouter.post('/on_confirm', async (req: any, res: any) => {
-//   try {
-//     const { context, message }: OnConfirmRequest = req.body;
+ondcRouter.post('/on_confirm', async (req: any, res: any) => {
+  try {
+    const { context, message }: OnConfirmRequest = req.body;
 
-//     // Validate the incoming message
-//     if (!message || (!message.order && !message.error)) {
-//       return res.status(400).json({ error: 'Invalid on_confirm callback data' });
-//     }
+    // Validate the incoming message
+    if (!message || (!message.order && !message.error)) {
+      return res.status(400).json({ error: 'Invalid on_confirm callback data' });
+    }
 
-//     // Handle the error scenario
-//     if (message.error) {
-//       console.error('Error in on_confirm callback:', message.error);
-//       return res.status(400).json({
-//         error: {
-//           type: message.error.type,
-//           code: message.error.code,
-//           message: message.error.message,
-//         },
-//       });
-//     }
+    // Handle the error scenario
+    if (message.error) {
+      console.error('Error in on_confirm callback:', message.error);
+      return res.status(400).json({
+        error: {
+          type: message.error.type,
+          code: message.error.code,
+          message: message.error.message,
+        },
+      });
+    }
 
-//     // Process the confirmed order
-//     console.log('Received on_confirm callback:', JSON.stringify(message.order, null, 2));
+    // Process the confirmed order
+    console.log('Received on_confirm callback:', JSON.stringify(message.order, null, 2));
 
-//     // Respond with ACK
-//     res.status(200).json({
-//       message: {
-//         ack: { status: 'ACK' },
-//       },
-//     });
-//   } catch (error: any) {
-//     res.status(500).json({ error: 'Failed to handle on_confirm callback' });
-//   }
-// });
+    // Respond with ACK
+    res.status(200).json({
+      message: {
+        ack: { status: 'ACK' },
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to handle on_confirm callback' });
+  }
+});
 
 export default ondcRouter;
