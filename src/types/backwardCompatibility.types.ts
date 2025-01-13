@@ -6,42 +6,42 @@
 
 // CartReponse
 export type _CartResponseType = {
-    aiStoreId: string;
-    cartId: string;
-    items: _CartReponseItem[];
-    recommendedItems: _CartReponseItem[];
-    orderSummary: {
-      subTotal: number;
-      total: number;
-      deliverytime: string;
-      freeDeliveryThreshold: number;
-      deliveryCharges: number;
-      saved: string;
-      discount: number;
-    };
-    storeInfo: {
-      storeName: string;
-      storePhone: string;
-      storeContactPerson: string;
-      storeAddress: string;
-    };
-    additionalInfo: {
-      savingsMessage: string;
-      cartNote: string;
-    };
+  aiStoreId: string;
+  cartId: string;
+  items: _CartReponseItem[];
+  recommendedItems: _CartReponseItem[];
+  orderSummary: {
+    subTotal: number;
+    total: number;
+    deliverytime: string;
+    freeDeliveryThreshold: number;
+    deliveryCharges: number;
+    saved: string;
+    discount: number;
+  };
+  storeInfo: {
+    storeName: string;
+    storePhone: string;
+    storeContactPerson: string;
+    storeAddress: string;
+  };
+  additionalInfo: {
+    savingsMessage: string;
+    cartNote: string;
+  };
 };
 
 export type _CartReponseItem = {
-    itemId: string;
-    itemName: string;
-    itemDescription: string;
-    itemImageUrl: string[];
-    itemQuantity: number;
-    itemOriginalPrice: number;
-    itemDiscountedPrice: number;
-    itemStockStatus: string;
-    itemWeight: number;
-    itemWeightUnit: string;
+  itemId: string;
+  itemName: string;
+  itemDescription: string;
+  itemImageUrl: string[];
+  itemQuantity: number;
+  itemOriginalPrice: number;
+  itemDiscountedPrice: number;
+  itemStockStatus: string;
+  itemWeight: number;
+  itemWeightUnit: string;
 }
 
 export type _CartItemsModelType = {
@@ -66,6 +66,10 @@ export type _OrderResponse = {
   address: _AddressType;
   orderStatus: string;
   orderDeliveryStatus: string;
+  endOTP: string;
+  trackingURL: string;
+  riderName: string;
+  riderPhone: string;
   createdDate: string;
   phone: string;
   userId: string;
@@ -85,24 +89,3 @@ export type _AddressType = {
   landmark: string;
   postalCode: string;
 }
-
-type AICartResponse = {
-    items: CartItems[],
-    id: string;
-    vendorId: string;
-    userId: string;
-}
-
-type CartItems = {
-    id?: number;
-    name: string;
-    cartId?: string;
-    externalProductId?: string;
-    description: string;
-    quantity: number;
-    units: string;
-    price: number;
-    image: string;
-    recommended: boolean | null
-}
-  

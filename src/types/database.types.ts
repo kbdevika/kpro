@@ -45,6 +45,10 @@ export type OrderModelType = {
   id?: string;
   orderStatus: string;
   orderDeliveryStatus: string;
+  endOTP: string;
+  trackingURL: string;
+  riderName: string;
+  riderPhone: string;
   addressId: string;
   cartId: string;
   userId: string;
@@ -56,6 +60,10 @@ export type OrderResponse = {
   id: string;
   cart: CartModelType;
   address: UserAddressModelType;
+  endOTP: string;
+  trackingURL: string;
+  riderName: string;
+  riderPhone: string;
   createdDate: Date;
   orderStatus: string;
   orderDeliveryStatus: string;
