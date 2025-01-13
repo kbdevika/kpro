@@ -13,6 +13,10 @@ interface UpdateOrderRequest {
   orderId: string;
   orderStatus: string;
   deliveryStatus: string;
+  endOTP: string;
+  trackingURL: string;
+  riderName: string;
+  riderPhone: string;
 }
 
 @Route("kikoOrderStatus")
@@ -48,7 +52,7 @@ export class KikoController extends Controller {
       throw new Error("Unauthorized request");
     }
 
-    const { orderId, orderStatus, deliveryStatus } = request;
+    const { orderId, orderStatus, deliveryStatus, endOTP, trackingURL, riderName, riderPhone  } = request;
 
     if (!orderId || !orderStatus || !deliveryStatus) {
       this.setStatus(400);
@@ -74,6 +78,10 @@ export class KikoController extends Controller {
         data: {
           orderStatus: normalizedOrderStatus,
           orderDeliveryStatus: normalizedDeliveryStatus,
+          endOTP,
+          trackingURL,
+          riderName,
+          riderPhone
         },
       });
 

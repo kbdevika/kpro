@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "OrderModel" ADD COLUMN     "endOTP" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "riderName" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "riderPhone" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "trackingURL" TEXT NOT NULL DEFAULT '';

@@ -276,6 +276,10 @@ model OrderModel {
   id                  String           @id @default(cuid())
   orderStatus         String
   orderDeliveryStatus String
+  endOTP              String           @default("")
+  trackingURL         String           @default("")
+  riderName           String           @default("")
+  riderPhone          String           @default("")
   createdDate         DateTime         @default(now())
   addressId           String
   cartId              String

@@ -601,13 +601,29 @@
 					},
 					"deliveryStatus": {
 						"type": "string"
+					},
+					"endOTP": {
+						"type": "string"
+					},
+					"trackingURL": {
+						"type": "string"
+					},
+					"riderName": {
+						"type": "string"
+					},
+					"riderPhone": {
+						"type": "string"
 					}
 				},
 				"required": [
 					"apiKey",
 					"orderId",
 					"orderStatus",
-					"deliveryStatus"
+					"deliveryStatus",
+					"endOTP",
+					"trackingURL",
+					"riderName",
+					"riderPhone"
 				],
 				"type": "object",
 				"additionalProperties": false
