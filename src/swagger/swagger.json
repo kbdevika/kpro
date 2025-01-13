@@ -439,6 +439,18 @@
 					"createdDate": {
 						"type": "string"
 					},
+					"riderPhone": {
+						"type": "string"
+					},
+					"riderName": {
+						"type": "string"
+					},
+					"trackingURL": {
+						"type": "string"
+					},
+					"endOTP": {
+						"type": "string"
+					},
 					"orderDeliveryStatus": {
 						"type": "string"
 					},
@@ -459,6 +471,10 @@
 					"userId",
 					"phone",
 					"createdDate",
+					"riderPhone",
+					"riderName",
+					"trackingURL",
+					"endOTP",
 					"orderDeliveryStatus",
 					"orderStatus",
 					"address",
@@ -2402,6 +2418,27 @@
 						}
 					}
 				]
+			}
+		},
+		"/live": {
+			"get": {
+				"operationId": "GetLiveStats",
+				"responses": {
+					"200": {
+						"description": "Fetched live stats successfully"
+					},
+					"204": {
+						"description": "No content"
+					},
+					"500": {
+						"description": "Internal Server error"
+					}
+				},
+				"tags": [
+					"Live"
+				],
+				"security": [],
+				"parameters": []
 			}
 		},
 		"/kikoOrderStatus": {

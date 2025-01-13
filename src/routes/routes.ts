@@ -14,6 +14,8 @@ import { OrdersController } from './../controllers/order.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { NotificationController } from './../controllers/notification.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { KikoController } from './../controllers/live.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { KikoController } from './../controllers/kiko.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { HomeController } from './../controllers/home.controller';
@@ -143,7 +145,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "_OrderResponse": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"userId":{"dataType":"string","required":true},"phone":{"dataType":"string","required":true},"createdDate":{"dataType":"string","required":true},"orderDeliveryStatus":{"dataType":"string","required":true},"orderStatus":{"dataType":"string","required":true},"address":{"ref":"_AddressType","required":true},"cart":{"ref":"_CartResponseType","required":true},"id":{"dataType":"string","required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"userId":{"dataType":"string","required":true},"phone":{"dataType":"string","required":true},"createdDate":{"dataType":"string","required":true},"riderPhone":{"dataType":"string","required":true},"riderName":{"dataType":"string","required":true},"trackingURL":{"dataType":"string","required":true},"endOTP":{"dataType":"string","required":true},"orderDeliveryStatus":{"dataType":"string","required":true},"orderStatus":{"dataType":"string","required":true},"address":{"ref":"_AddressType","required":true},"cart":{"ref":"_CartResponseType","required":true},"id":{"dataType":"string","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "VerifyPaymentRequest": {
@@ -1013,6 +1015,35 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
 
               await templateService.apiHandler({
                 methodName: 'deleteNotification',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsKikoController_getLiveStats: Record<string, TsoaRoute.ParameterSchema> = {
+        };
+        app.get('/live',
+            ...(fetchMiddlewares<RequestHandler>(KikoController)),
+            ...(fetchMiddlewares<RequestHandler>(KikoController.prototype.getLiveStats)),
+
+            async function KikoController_getLiveStats(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsKikoController_getLiveStats, request, response });
+
+                const controller = new KikoController();
+
+              await templateService.apiHandler({
+                methodName: 'getLiveStats',
                 controller,
                 response,
                 next,
