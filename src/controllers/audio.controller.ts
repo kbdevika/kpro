@@ -2,6 +2,7 @@ import { Route, Tags, Post, UploadedFile, Header, Security, Controller } from 't
 import validateHeaders from '../helper/validateHeader';
 import getPincodeFromCoordinates from '../helper/convertLatLongToPincode';
 import fetchJwtToken from '../helper/fetchAiJwtToken';
+import { AI_BASE_URL } from '../constants';
 
 interface AudioProcessResponse {
   taskId: string;
@@ -48,7 +49,7 @@ export class AudioController extends Controller {
     formData.append('audio', new Blob([audio.buffer], { type: audio.mimetype }), audio.originalname);
     formData.append('pincode', pincode);
 
-    const response = await fetch('https://dev-ai-api.kpro42.com/api/audio/cart/enrich', {
+    const response = await fetch(`${AI_BASE_URL}/api/audio/cart/enrich`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${jwtToken}`,

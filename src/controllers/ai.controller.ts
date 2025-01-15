@@ -8,6 +8,7 @@ import { _CartReponseItem, _CartResponseType } from "../types/backwardCompatibil
 import { cartMapper } from "../helper/backwardMapper";
 import { searchProductMapper } from "../helper/productSearchMapper";
 import { CartItemsModelType } from "../types/database.types";
+import { AI_BASE_URL } from "../constants";
 
 interface SearchRequest {
   query: string;
@@ -49,7 +50,7 @@ public async getCartStatus(@Path() taskId: string, @Request() req: any): Promise
     if (!task || task.taskStatus !== "success") {
       const jwtToken = await fetchJwtToken();
 
-      const response = await fetch(`https://dev-ai-api.kpro42.com/api/cart/enrich/${taskId}`, {
+      const response = await fetch(`${AI_BASE_URL}/api/cart/enrich/${taskId}`, {
         method: "GET",
         headers: { Authorization: `Bearer ${jwtToken}` },
       });
@@ -115,7 +116,7 @@ public async getCartStatus(@Path() taskId: string, @Request() req: any): Promise
     const filters = `storeId="${aiStoreId}"`;
     const jwtToken = await fetchJwtToken();
     const response = await fetch(
-      `https://dev-ai-api.kpro42.com/api/item/search?q=${query}&filters=${encodeURIComponent(filters)}`,
+      `${AI_BASE_URL}/api/item/search?q=${query}&filters=${encodeURIComponent(filters)}`,
       {
         method: "GET",
         headers: { Authorization: `Bearer ${jwtToken}` },
@@ -154,7 +155,7 @@ public async getCartStatus(@Path() taskId: string, @Request() req: any): Promise
     }
 
     const jwtToken = await fetchJwtToken();
-    const response = await fetch(`https://dev-ai-api.kpro42.com/api/stores/${pincode}`, {
+    const response = await fetch(`${AI_BASE_URL}/api/stores/${pincode}`, {
       method: "GET",
       headers: { Authorization: `Bearer ${jwtToken}` },
     });

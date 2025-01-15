@@ -1,3 +1,4 @@
+import { AI_BASE_URL } from "../constants";
 
 // Helper function to fetch JWT token
 const fetchJwtToken = async (): Promise<string> => {
@@ -12,7 +13,7 @@ const fetchJwtToken = async (): Promise<string> => {
      * Create a new API call with APIKEY to fetch a JWT Token
      * used for further Audio Process;
      */
-    const loginResponse = await fetch('https://dev-ai-api.kpro42.com/api/auth/login', {
+    const loginResponse = await fetch(`${AI_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ apiKey }),
