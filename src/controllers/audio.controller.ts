@@ -49,7 +49,7 @@ export class AudioController extends Controller {
     formData.append('audio', new Blob([audio.buffer], { type: audio.mimetype }), audio.originalname);
     formData.append('pincode', pincode);
 
-    const response = await fetch(`${AI_BASE_URL}/api/audio/cart/enrich`, {
+    const response = await fetch(`${AI_BASE_URL}/api/agent/audio/cart/enrich`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${jwtToken}`,
