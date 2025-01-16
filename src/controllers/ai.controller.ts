@@ -30,107 +30,72 @@ export class AIController extends Controller {
    * @returns The cart status or cart details.
    */
   @Get("/{taskId}")
-@Response(400, "Task ID missing!")
-public async getCartStatus(@Path() taskId: string, @Request() req: any): Promise<{cartStatus: string, error?: string, cart?: _CartResponseType}> {
-  try {
-    if (!taskId) {
-      this.setStatus(400);
-      return { cartStatus: 'error', error: "Task ID missing!" };
-    }
+  @Response(400, "Task ID missing!")
+  public async getCartStatus(@Path() taskId: string, @Request() req: any): Promise<{ cartStatus: string, error?: string, cart?: _CartResponseType }> {
+    try {
+      if (!taskId) {
+        this.setStatus(400);
+        return { cartStatus: 'error', error: "Task ID missing!" };
+      }
 
-    if (!req.user || !req.user.id) {
-      this.setStatus(401); // Unauthorized
-      return { cartStatus: 'error', error: "User not authenticated or user ID missing!" };
-    }
+      if (!req.user || !req.user.id) {
+        this.setStatus(401); // Unauthorized
+        return { cartStatus: 'error', error: "User not authenticated or user ID missing!" };
+      }
 
-    const task = await prisma.taskModel.findUnique({
-      where: { taskExternalId: taskId, userId: req.user.id },
-    });
-
-    if (!task || task.taskStatus !== "success") {
-      const jwtToken = await fetchJwtToken();
-
-      const response = await fetch(`${AI_BASE_URL}/api/cart/enrich/${taskId}`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${jwtToken}` },
+      const task = await prisma.taskModel.findUnique({
+        where: { taskExternalId: taskId, userId: req.user.id },
       });
 
-      if (!response.ok) {
-        this.setStatus(response.status);
-        const errorText = await response.text();
-        return { cartStatus: 'error', error: `Error occurred while fetching AI response: ${errorText}` };
+      if (!task || task.taskStatus !== "success") {
+        const jwtToken = await fetchJwtToken();
+
+        const response = await fetch(`${AI_BASE_URL}/api/task/${taskId}`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${jwtToken}` },
+        });
+
+        if (!response.ok) {
+          this.setStatus(response.status);
+          const errorText = await response.text();
+          return { cartStatus: 'error', error: `Error occurred while fetching AI response: ${errorText}` };
+        }
+
+        const data = await response.json();
+        if (data.state === "failed") {
+          return { cartStatus: "failed" };
+        }
+
+        if (data.result === null && data.state === "active") {
+          return { cartStatus: "in-progress" };
+        }
+
+        const cart = await convertToCart(data, taskId, req.user.id);
+        if (cart) {
+          return { cartStatus: "success", cart };
+        }
+
+        this.setStatus(400);
+        return { cartStatus: 'error', error: "Something went wrong while converting to cart! Try again." };
       }
 
-      const data = await response.json();
-      if (data.state === "failed") {
-        return { cartStatus: "failed" };
-      }
+      const _cart = await prisma.cartModel.findUnique({
+        where: { id: task.cartId },
+        include: { cartItems: true },
+      });
 
-      if (data.result === null && data.state === "active") {
-        return { cartStatus: "in-progress" };
-      }
-
-      const cart = await convertToCart(data, taskId, req.user.id);
-      if (cart) {
+      if (_cart) {
+        const cart = cartMapper(_cart.id, _cart)
         return { cartStatus: "success", cart };
       }
 
       this.setStatus(400);
-      return { cartStatus: 'error', error: "Something went wrong while converting to cart! Try again." };
+      return { cartStatus: 'error', error: "Cart not found. Something went wrong!" };
+
+    } catch (error: any) {
+      this.setStatus(500);
+      return { cartStatus: 'error', error: "Internal server error. Please try again later." + error.message };
     }
-
-    const _cart = await prisma.cartModel.findUnique({
-      where: { id: task.cartId },
-      include: { cartItems: true },
-    });
-
-    if (_cart) {
-      const cart = cartMapper(_cart.id, _cart)
-      return { cartStatus: "success", cart };
-    }
-
-    this.setStatus(400);
-    return { cartStatus: 'error', error: "Cart not found. Something went wrong!" };
-
-  } catch (error:any) {
-    this.setStatus(500);
-    return { cartStatus: 'error', error: "Internal server error. Please try again later." + error.message };
-  }
-}
-
-  /**
-   * Searches for items based on a query and AI store ID.
-   * @param body The search request containing the query and AI store ID.
-   * @returns The search results.
-   */
-  @Post("/search")
-  @Response(400, "Missing or invalid inputs!")
-  public async searchItems(@Body() body: SearchRequest): Promise<CartItemsModelType[]> {
-    const { query, aiStoreId } = body;
-
-    if (!query || !aiStoreId) {
-      this.setStatus(400);
-      throw new Error("Missing or invalid inputs!");
-    }
-
-    const filters = `storeId="${aiStoreId}"`;
-    const jwtToken = await fetchJwtToken();
-    const response = await fetch(
-      `${AI_BASE_URL}/api/item/search?q=${query}&filters=${encodeURIComponent(filters)}`,
-      {
-        method: "GET",
-        headers: { Authorization: `Bearer ${jwtToken}` },
-      }
-    );
-
-    if (!response.ok) {
-      this.setStatus(response.status);
-      throw new Error(`Error occurred while fetching AI response: ${await response.text()}`);
-    }
-    
-    const data = await response.json();
-    return searchProductMapper(data)
-    
   }
 
   /**
