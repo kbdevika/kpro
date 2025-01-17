@@ -54,7 +54,6 @@ export class V1Router {
     this.router.post('/audio', upload.single('audio'), this.processAudio);
     this.router.get("/ai", this.getPincodeAvailability);
     this.router.get("/ai/:taskId", this.getCartStatus);
-    this.router.post("/ai/search", this.searchItems);
     this.router.get("/home", this.getHome);
     this.router.get("/cart", this.getAllCarts);
     this.router.get("/cart/:id", this.getCartbyId);
@@ -103,15 +102,6 @@ export class V1Router {
   private getCartStatus = async (req: any, res: any) => {
     try {
       const data = await this.aiController.getCartStatus(req.params.taskId, req);
-      res.status(200).json(data);
-    } catch (error) {
-      handleError(error, res);
-    }
-  };
-
-  private searchItems = async (req: any, res: any) => {
-    try {
-      const data = await this.aiController.searchItems(req.body);
       res.status(200).json(data);
     } catch (error) {
       handleError(error, res);

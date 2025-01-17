@@ -14,8 +14,6 @@ import { OrdersController } from './../controllers/order.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { NotificationController } from './../controllers/notification.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { KikoController } from './../controllers/live.controller';
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { KikoController } from './../controllers/kiko.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { HomeController } from './../controllers/home.controller';
@@ -300,15 +298,6 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "taskId": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "SearchRequest": {
-        "dataType": "refObject",
-        "properties": {
-            "query": {"dataType":"string","required":true},
-            "aiStoreId": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -1026,35 +1015,6 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsKikoController_getLiveStats: Record<string, TsoaRoute.ParameterSchema> = {
-        };
-        app.get('/live',
-            ...(fetchMiddlewares<RequestHandler>(KikoController)),
-            ...(fetchMiddlewares<RequestHandler>(KikoController.prototype.getLiveStats)),
-
-            async function KikoController_getLiveStats(request: ExRequest, response: ExResponse, next: any) {
-
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsKikoController_getLiveStats, request, response });
-
-                const controller = new KikoController();
-
-              await templateService.apiHandler({
-                methodName: 'getLiveStats',
-                controller,
-                response,
-                next,
-                validatedArgs,
-                successStatus: undefined,
-              });
-            } catch (err) {
-                return next(err);
-            }
-        });
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsKikoController_updateOrder: Record<string, TsoaRoute.ParameterSchema> = {
                 request: {"in":"body","name":"request","required":true,"ref":"UpdateOrderRequest"},
         };
@@ -1430,37 +1390,6 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
 
               await templateService.apiHandler({
                 methodName: 'getCartStatus',
-                controller,
-                response,
-                next,
-                validatedArgs,
-                successStatus: undefined,
-              });
-            } catch (err) {
-                return next(err);
-            }
-        });
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsAIController_searchItems: Record<string, TsoaRoute.ParameterSchema> = {
-                body: {"in":"body","name":"body","required":true,"ref":"SearchRequest"},
-        };
-        app.post('/ai/search',
-            authenticateMiddleware([{"jwt":[]}]),
-            ...(fetchMiddlewares<RequestHandler>(AIController)),
-            ...(fetchMiddlewares<RequestHandler>(AIController.prototype.searchItems)),
-
-            async function AIController_searchItems(request: ExRequest, response: ExResponse, next: any) {
-
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsAIController_searchItems, request, response });
-
-                const controller = new AIController();
-
-              await templateService.apiHandler({
-                methodName: 'searchItems',
                 controller,
                 response,
                 next,

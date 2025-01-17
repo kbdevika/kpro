@@ -151,3 +151,5 @@ ondcRouter.get('/ondc-site-verification.html', async (req: any, res: any) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+export default ondcRouter

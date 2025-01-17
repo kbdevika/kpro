@@ -93,6 +93,10 @@ export const orderMapper = (order: OrderResponse): _OrderResponse| null => {
             createdDate: order.createdDate.toISOString(),
             orderDeliveryStatus: order.orderDeliveryStatus,
             orderStatus: order.orderStatus,
+            endOTP: order.endOTP,
+            riderName: order.riderName,
+            riderPhone: order.riderPhone,
+            trackingURL: order.trackingURL,
             userId: order.userId
         }
     }
