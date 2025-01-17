@@ -6,7 +6,7 @@ const fetchJwtToken = async (): Promise<string> => {
      * Check and Retrieve APIKEY from Environment Variable if it is Present,
      * else throw new error
      */
-    const apiKey = process.env.AI_MICROSERVICE_API_KEY || '61c1fbd5-96da-4c6a-93a1-fc06dd4f71fe';
+    const apiKey = process.env.AI_MICROSERVICE_API_KEY || '4359fcbc-86e6-4020-a96d-c5636e539603';
     if (!apiKey) throw new Error('AI Microservice API Key is not set.');
 
     /**
