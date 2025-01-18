@@ -50,7 +50,7 @@ export class AIController extends Controller {
       if (!task || task.taskStatus !== "success") {
         const jwtToken = await fetchJwtToken();
 
-        const response = await fetch(`${AI_BASE_URL}/api/task/${taskId}`, {
+        const response = await fetch(`${AI_BASE_URL}/api/task/${taskId}?type=cart-enrichment`, {
           method: "GET",
           headers: { Authorization: `Bearer ${jwtToken}` },
         });
@@ -120,7 +120,7 @@ export class AIController extends Controller {
     }
 
     const jwtToken = await fetchJwtToken();
-    const response = await fetch(`${AI_BASE_URL}/api/stores/${pincode}`, {
+    const response = await fetch(`${AI_BASE_URL}/api/catalog/stores/pincode/${pincode}`, {
       method: "GET",
       headers: { Authorization: `Bearer ${jwtToken}` },
     });
