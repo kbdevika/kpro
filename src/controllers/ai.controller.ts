@@ -99,6 +99,41 @@ export class AIController extends Controller {
   }
 
   /**
+     * Searches for items based on a query and AI store ID.
+     * @param body The search request containing the query and AI store ID.
+     * @returns The search results.
+     */
+  @Post("/search")
+  @Response(400, "Missing or invalid inputs!")
+  public async searchItems(@Body() body: SearchRequest): Promise<CartItemsModelType[]> {
+    const { query, aiStoreId } = body;
+
+    if (!query || !aiStoreId) {
+      this.setStatus(400);
+      throw new Error("Missing or invalid inputs!");
+    }
+
+    const filters = `storeId="${aiStoreId}"`;
+    const jwtToken = await fetchJwtToken();
+    const response = await fetch(
+      `${AI_BASE_URL}/api/catalog/item/search?q=${query}&filters=${encodeURIComponent(filters)}`,
+      {
+        method: "GET",
+        headers: { Authorization: `Bearer ${jwtToken}` },
+      }
+    );
+
+    if (!response.ok) {
+      this.setStatus(response.status);
+      throw new Error(`Error occurred while fetching AI response: ${await response.text()}`);
+    }
+
+    const data = await response.json();
+    return searchProductMapper(data)
+
+  }
+
+  /**
    * Retrieves the pincode from the User-Agent header.
    * @param userAgent The User-Agent header.
    * @returns Whether stores are available in the pincode.

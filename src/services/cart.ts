@@ -1,5 +1,6 @@
 import prisma from "../config/prisma.config";
 import { cartDiscount, cartFreeDeliveryThreshold, deliveryCharges, deliveryTime } from "../constants";
+import calculateDiscountedTotal from "../helper/discountMapper";
 import TaskResult from "../types/ai.types";
 import { _CartItemsModelType } from "../types/backwardCompatibility.types";
 import { CartItemsModelType, CartModelType } from "../types/database.types";
@@ -16,30 +17,30 @@ export async function createCart(userId: string, data: TaskResult, combinedTotal
     try {
         const cart = await prisma.cartModel.create({
             data: {
-            userId: userId,
-            cartStoreId: data.result.storeData._id,
-            cartaiStoreId: data.result.storeId,
-            cartStoreName: data.result.storeData.storeName,
-            cartStoreAddress: `${data.result.storeData.storeAddress.address1}, ${data.result.storeData.storeAddress.address2}, ${data.result.storeData.storeAddress.city}, ${data.result.storeData.storeAddress.state}, ${data.result.storeData.storeAddress.pincode}, IND`,
-            cartDeliveryCharges: deliveryCharges,
-            cartDeliverytime: deliveryTime,
-            cartDiscount: cartDiscount,
-            cartFreeDeliveryThreshold: cartFreeDeliveryThreshold,
-            cartNote: `Your's truly, Kiranapro!`,
-            cartSaved: combinedTotalSavedAmount,
-            cartSavingsMessage:
-                combinedTotalSavedAmount === 0
-                ? "Add more items for more saving!"
-                : `You saved ₹${combinedTotalSavedAmount.toFixed(2)}!`,
-            cartStoreContact: data.result.storeData.name,
-            cartStorePhone: data.result.storeData.mobile,
-            cartSubTotal: combinedSubTotal,
-            cartTotal: total,
+                userId: userId,
+                cartStoreId: data.result.storeData._id,
+                cartaiStoreId: data.result.storeId,
+                cartStoreName: data.result.storeData.storeName,
+                cartStoreAddress: `${data.result.storeData.storeAddress.address1}, ${data.result.storeData.storeAddress.address2}, ${data.result.storeData.storeAddress.city}, ${data.result.storeData.storeAddress.state}, ${data.result.storeData.storeAddress.pincode}, IND`,
+                cartDeliveryCharges: deliveryCharges,
+                cartDeliverytime: deliveryTime,
+                cartDiscount: cartDiscount,
+                cartFreeDeliveryThreshold: cartFreeDeliveryThreshold,
+                cartNote: `Your's truly, Kiranapro!`,
+                cartSaved: combinedTotalSavedAmount,
+                cartSavingsMessage:
+                    combinedTotalSavedAmount === 0
+                        ? "Add more items for more saving!"
+                        : `You saved ₹${combinedTotalSavedAmount.toFixed(2)}!`,
+                cartStoreContact: data.result.storeData.name,
+                cartStorePhone: data.result.storeData.mobile,
+                cartSubTotal: combinedSubTotal,
+                cartTotal: total,
             }
         });
 
         return cart;
-    } catch(error: any){
+    } catch (error: any) {
         throw new Error(`Create cart failed! ${error.message}`)
     }
 }
@@ -59,19 +60,19 @@ export async function createCartItems(combinedCartItems: CartItemsModelType[], c
                     cartId: cartId,
                 })),
             });
-        
+
             // Retrieve the created cart items
             const createdItems = await prisma.cartItemsModel.findMany({
                 where: {
                     cartId: cartId,
                 },
             });
-        
+
             cartItems.push(...createdItems);
         }
         return cartItems
-        
-    } catch(error: any){
+
+    } catch (error: any) {
         throw new Error(`Create cartItems failed! ${error.message}`)
     }
 }
@@ -83,50 +84,50 @@ export async function createCartItems(combinedCartItems: CartItemsModelType[], c
  * @param updatedItems 
  * @returns 
  */
-export async function updatedCart(userId: string, cartId: string, updatedItems: _CartItemsModelType[]): Promise<CartModelType> {
+export async function updatedCart(userId: string, cartId: string, updatedItems: _CartItemsModelType[], couponCode?: string): Promise<CartModelType> {
     try {
         // Fetch all existing cart items
         const existingCartItems = await prisma.cartItemsModel.findMany({
             where: { cartId },
         });
-        
+
         // Determine which items should be removed
         const updatedExternalProductIds = updatedItems.map((item: _CartItemsModelType) => item.itemExternalId);
         const itemsToRemove = existingCartItems.filter(
             (existingItem) => !updatedExternalProductIds.includes(existingItem.itemExternalId)
         );
-        
+
         // Remove items that are in the existing cart but not in the updated cart
         await Promise.all(
             itemsToRemove.map(async (item) => {
-            await prisma.cartItemsModel.deleteMany({
-                where: { cartId, itemExternalId: item.itemExternalId },
-            });
+                await prisma.cartItemsModel.deleteMany({
+                    where: { cartId, itemExternalId: item.itemExternalId },
+                });
             })
         );
-        
+
         // Iterate over the updated items to add or update them
         await Promise.all(
             updatedItems.map(async (item: _CartItemsModelType) => {
                 const existingCartItem = existingCartItems.find(
                     (existingItem) => existingItem.itemExternalId === item.itemExternalId
                 );
-            
+
                 if (item.itemQuantity <= 0) {
                     if (existingCartItem) {
-                    // Remove the item from the cart if quantity is zero or less and it exists
-                    await prisma.cartItemsModel.deleteMany({
-                        where: { cartId, itemExternalId: item.itemExternalId },
-                    });
+                        // Remove the item from the cart if quantity is zero or less and it exists
+                        await prisma.cartItemsModel.deleteMany({
+                            where: { cartId, itemExternalId: item.itemExternalId },
+                        });
                     }
                 } else if (existingCartItem) {
                     // Update the quantity of the item if it exists
                     await prisma.cartItemsModel.updateMany({
-                    where: { cartId, itemExternalId: item.itemExternalId },
-                    data: { 
-                        itemQuantity: item.itemQuantity,
-                        itemRecommended: false
-                    },
+                        where: { cartId, itemExternalId: item.itemExternalId },
+                        data: {
+                            itemQuantity: item.itemQuantity,
+                            itemRecommended: false
+                        },
                     });
                 } else {
                     // Add the item to the cart if it does not exist
@@ -169,17 +170,76 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
         // You can calculate 'total' here by adding any additional charges (e.g., taxes, shipping, etc.)
         const total = subtotal + deliveryCharges;
 
-        // Update the cart with the new subtotal and total
-        await prisma.cartModel.update({
-            where: { id: cartId },
-            data: {
-                cartSubTotal: subtotal,
-                cartTotal: total,
-            },
-            include: { cartItems: true },
-        });
-        
-    } catch (error: any){
+        // Calculate any discount if applicable
+        let discountedTotal = 0;
+
+        // Apply coupon code
+        if (couponCode) {
+            const coupon = await prisma.couponCodeModel.findUnique({
+                where: { couponCode },
+            });
+
+            if (!coupon) {
+                throw new Error('Invalid coupon code.');
+            }
+
+            // Check if the coupon is expired
+            const currentDate = new Date();
+            if (coupon.expiryDate < currentDate) {
+                throw new Error('Coupon has expired.');
+            }
+
+            // Check the cart total against the coupon's minimum and maximum order value
+            if (existingCart.cartTotal < parseFloat(coupon.minimumOrderValue)) {
+                throw new Error(
+                    `Cart total is less than the minimum order value of ${coupon.minimumOrderValue}.`
+                );
+            }
+
+            if (coupon.maximumOrderValue && existingCart.cartTotal >= parseFloat(coupon.maximumOrderValue)) {
+                throw new Error(
+                    `Cart total exceeds the maximum order value of ${coupon.maximumOrderValue}.`
+                );
+            }
+
+            if (coupon.usageCount > coupon.usageLimit) {
+                throw new Error(
+                    `Coupon code has been used till its limit of ${coupon.usageLimit}.`
+                );
+            }
+
+            discountedTotal = calculateDiscountedTotal(total, coupon.discountType, parseFloat(coupon.discountValue))
+
+            // Update the cart with the new subtotal and total
+            await prisma.cartModel.update({
+                where: { id: cartId },
+                data: {
+                    cartSubTotal: subtotal,
+                    couponId: coupon.id,
+                    cartTotal: discountedTotal,
+                },
+                include: { cartItems: true },
+            });
+
+            await prisma.couponCodeModel.update({
+                where: { id: coupon.id},
+                data: {
+                    usageCount: { increment: 1 }
+                }
+            })
+
+        } else {
+            // Update the cart with the new subtotal and total
+            await prisma.cartModel.update({
+                where: { id: cartId },
+                data: {
+                    cartSubTotal: subtotal,
+                    cartTotal: total,
+                },
+                include: { cartItems: true },
+            });
+        }
+    } catch (error: any) {
         throw new Error(`Cart was not updated! ${error.message}`)
     }
 
@@ -189,7 +249,7 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
         include: { cartItems: true },
     });
 
-    if(!updateCart){
+    if (!updateCart) {
         throw new Error('Cart was not updated! Try again')
     }
 
@@ -197,7 +257,7 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
     updateCart.cartItems = updatedItems
         .map((item) => updateCart.cartItems.find((cartItem) => cartItem.itemExternalId === item.itemExternalId))
         .filter((item): item is NonNullable<typeof item> => item !== undefined);
-        
+
     return updateCart;
 }
 
@@ -206,17 +266,17 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
  * @param cartId 
  * @returns 
  */
-export async function fetchCartbyId(cartId: string): Promise<CartModelType>{
+export async function fetchCartbyId(cartId: string): Promise<CartModelType> {
     const cart = await prisma.cartModel.findUnique({
         where: {
-          id: cartId
+            id: cartId
         },
         include: {
             cartItems: true
         }
-      });
+    });
 
-    if(!cart){
+    if (!cart) {
         throw new Error('Cart was not found! Try again')
     }
     return cart
@@ -227,33 +287,33 @@ export async function fetchCartbyId(cartId: string): Promise<CartModelType>{
  * @param userId 
  * @returns 
  */
-export async function fetchAllCart(userId: string): Promise<CartModelType[]>{
+export async function fetchAllCart(userId: string): Promise<CartModelType[]> {
     const cart = await prisma.cartModel.findMany({
         where: {
-          userId: userId
+            userId: userId
         },
         include: {
             cartItems: true
         }
-      });
+    });
 
-    if(!cart){
+    if (!cart) {
         throw new Error('Cart(s) was not found! Try again')
     }
     return cart
 }
 
-export async function deleteCartbyId(cartId: string, userId: string): Promise<CartModelType>{
+export async function deleteCartbyId(cartId: string, userId: string): Promise<CartModelType> {
     const cart = await prisma.cartModel.delete({
         where: {
-          id: cartId
+            id: cartId
         },
         include: {
             cartItems: true
         }
-      });
+    });
 
-    if(!cart){
+    if (!cart) {
         throw new Error('Cart is not found! Try again')
     }
     return cart

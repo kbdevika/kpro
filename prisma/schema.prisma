@@ -179,6 +179,8 @@ model CartModel {
   task                      TaskModel?
   userId                    String
   user                      UserModel        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  couponId                  String?          // References the applied coupon
+  coupon                    CouponCodeModel? @relation(fields: [couponId], references: [id]) // Many-to-one relationship with CouponCodeModel
 
   @@index([id])
   @@index([cartStoreId])
@@ -293,3 +295,17 @@ model OrderModel {
   @@index([cartId])
   @@index([addressId])
 }
+
+model CouponCodeModel {
+  id                 String         @id @default(cuid())
+  couponCode         String         @unique
+  discountType       String         // 'percentage' or 'flat'
+  discountValue      String         // Discount value (e.g., 10 for $10 or 10% discount)
+  startDate          DateTime       // Starting date of coupon
+  expiryDate         DateTime       // Expiration date of the coupon
+  minimumOrderValue  String         // Minimum order value for coupon
+  maximumOrderValue  String         // Maximum order value for coupon
+  usageLimit         Int            // Maximum number of times the coupon can be used
+  usageCount         Int            @default(0) // Tracks usage
+  carts              CartModel[]    // One-to-many relationship with carts
+} 

@@ -19,7 +19,8 @@ export class CartController extends Controller {
         @Request() req: any, 
         @Path('cartId') cartId: string,
         @Body() body: { 
-            updatedItems: _CartItemsModelType[] 
+            updatedItems: _CartItemsModelType[],
+            couponCode?: String
         }
     ): Promise<_CartResponseType> {
         try {

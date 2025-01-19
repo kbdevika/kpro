@@ -177,6 +177,36 @@ healthCheckRouter.post('/admin/orders/recreate', middleware.authenticateAdminTok
     }
 });
 
+healthCheckRouter.get('/add-coupons', middleware.authenticateAdminToken, async (req: any, res: any) => {
+    try {
+        const { couponCode,
+            discountType,
+            discountValue,
+            expiryDate,
+            maximumOrderValue,
+            minimumOrderValue,
+            startDate,
+            usageLimit,
+        } = req.body;
+
+        const coupon = await prisma.couponCodeModel.create({
+            data: {
+                couponCode,
+                discountType,
+                discountValue,
+                expiryDate,
+                maximumOrderValue,
+                minimumOrderValue,
+                startDate,
+                usageLimit,
+            }
+        })
+        return res.json(coupon);
+    } catch (error) {
+        handleError(error, res);
+    }
+});
+
 healthCheckRouter.get('/telemetry', middleware.authenticateAdminToken, async (req: any, res: any) => {
     try {
         // Server stats (CPU, memory, etc.)

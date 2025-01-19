@@ -1378,6 +1378,22 @@
 				],
 				"type": "object",
 				"additionalProperties": false
+			},
+			"SearchRequest": {
+				"properties": {
+					"query": {
+						"type": "string"
+					},
+					"aiStoreId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"query",
+					"aiStoreId"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {
@@ -2594,6 +2610,9 @@
 						"application/json": {
 							"schema": {
 								"properties": {
+									"couponCode": {
+										"type": "string"
+									},
 									"updatedItems": {
 										"items": {
 											"$ref": "#/components/schemas/_CartItemsModelType"
@@ -3010,6 +3029,51 @@
 						}
 					}
 				]
+			}
+		},
+		"/ai/search": {
+			"post": {
+				"operationId": "SearchItems",
+				"responses": {
+					"200": {
+						"description": "The search results.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/CartItemsModelType"
+									},
+									"type": "array"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Missing or invalid inputs!"
+					}
+				},
+				"description": "Searches for items based on a query and AI store ID.",
+				"tags": [
+					"AI"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "The search request containing the query and AI store ID.",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/SearchRequest",
+								"description": "The search request containing the query and AI store ID."
+							}
+						}
+					}
+				}
 			}
 		},
 		"/ai": {
