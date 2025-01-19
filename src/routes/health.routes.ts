@@ -167,8 +167,9 @@ healthCheckRouter.post('/admin/orders/recreate', middleware.authenticateAdminTok
             const data = await response.json();
 
             return { message: "success", ...data };
-        } else return { message: "failed" }
-
+        } else {
+            return { message: "failed" }
+        }
     } catch (error) {
         handleError(error, res);
     }
