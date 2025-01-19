@@ -156,7 +156,7 @@ healthCheckRouter.post('/admin/orders/recreate', middleware.authenticateAdminTok
         if (!order) {
             return res.status(404).json({ message: "Order not found" });
         }
-        
+
         const kikoOrder = mapIncomingToOutgoing(order.id, order.cart, order.cart.cartItems, order.address)
 
         const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
@@ -171,8 +171,7 @@ healthCheckRouter.post('/admin/orders/recreate', middleware.authenticateAdminTok
         }
 
         const data = await response.json();
-
-        return { message: "success", ...data };
+        return res.json({ message: "success", ...data });
     } catch (error) {
         handleError(error, res);
     }
