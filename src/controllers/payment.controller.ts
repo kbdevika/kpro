@@ -5,6 +5,7 @@ import orderToKikoOrder from "../helper/orderToKikoOrder";
 import kikoUrl, { disabledActualOrder } from "../constants";
 import { _OrderResponse } from "../types/backwardCompatibility.types";
 import { orderMapper } from "../helper/backwardMapper";
+import prisma from "../config/prisma.config";
 
 interface VerifyPaymentRequest {
   order_id: string;
@@ -46,8 +47,31 @@ export class PaymentsController extends Controller {
    */
   @Post("/")
   @Response(400, "Missing or invalid inputs")
-  public async createPayment(@Body() body: { amount: number }): Promise<RazorPayOrderResponse> {
-    const { amount: inputAmount } = body;
+  public async createPayment(@Body() body: { amount: number, cartId?: string }): Promise<RazorPayOrderResponse> {
+    const { amount: inputAmount, cartId } = body;
+
+    // if coupon code expired should throw error
+    const cart = await prisma.cartModel.findUnique({
+      where: {
+        id: cartId
+      }
+    })
+
+    if (cart && cart.couponId) {
+      const coupon = await prisma.couponCodeModel.findUnique({
+        where: {
+          id: cart.couponId
+        }
+      })
+
+      if (!coupon) {
+        throw new Error('Invalid Coupon Code')
+      }
+      const currentDate = new Date();
+      if (coupon.expiryDate < currentDate || coupon.usageCount > coupon.usageLimit) {
+        throw new Error('Coupon code is invalid! Please refresh cart')
+      }
+    }
 
     if (!inputAmount || typeof inputAmount !== "number" || inputAmount <= 0) {
       this.setStatus(400);
@@ -70,7 +94,7 @@ export class PaymentsController extends Controller {
   @Post("/verify")
   @Response(400, "Missing or invalid inputs")
   public async verifyPayment(
-    @Request() req: any, 
+    @Request() req: any,
     @Body() body: VerifyPaymentRequest
   ): Promise<{ success: boolean; message: string; order?: _OrderResponse }> {
     const { order_id, payment_id, signature, cart_id, address_id } = body;
@@ -98,8 +122,8 @@ export class PaymentsController extends Controller {
 
     const { kikoOrder, order } = await orderToKikoOrder(cart_id, req.user.id, address_id);
     const _ = orderMapper(order)
-    
-    if(_ == null){
+
+    if (_ == null) {
       throw new Error('Order not found')
     }
 
@@ -127,11 +151,26 @@ export class PaymentsController extends Controller {
 
     const data = await response.json();
 
-    if (data.Status === false && data.outOfStock === true) {
+    const existingCart = await prisma.cartModel.findUnique({
+      where: { id: body.cart_id },
+    });
+
+    if (existingCart && existingCart.couponId) {
+      await prisma.couponCodeModel.update({
+        where: {
+          id: existingCart.couponId
+        },
+        data: {
+          usageCount: { increment: 1 }
+        }
+      })
+    }
+
+    if (data.outOfStock === true) {
       return { success: true, message: "out-of-stock" };
     }
 
-    if (data.Status === true || data.Success === true) {
+    if (data.Success === true) {
       return { success: true, message: "order-success", order: _ };
     }
 

@@ -9,7 +9,7 @@ import express, { Application } from 'express';
 import jwt from 'jsonwebtoken';
 import { WebSocket, WebSocketServer } from 'ws';
 import * as dotenv from 'dotenv';
-import healthCheckRouter from './src/routes/health.routes';
+import adminRouter from './src/routes/admin.routes';
 import ondcRouter from './src/routes/ondc.routes';
 import v1Routers from './src/routes/v1';
 import { RegisterRoutes } from "./src/routes/routes";
@@ -54,7 +54,7 @@ const handleWebSocket = (socket: WebSocket, req: any) => {
 };
 
 // Apply routes
-app.use('/', healthCheckRouter);
+app.use('/', adminRouter);
 app.use('/', ondcRouter);
 app.use('/v1', v1Routers);
 

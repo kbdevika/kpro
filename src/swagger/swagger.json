@@ -2022,6 +2022,9 @@
 						"application/json": {
 							"schema": {
 								"properties": {
+									"cartId": {
+										"type": "string"
+									},
 									"amount": {
 										"type": "number",
 										"format": "double"
@@ -2660,9 +2663,6 @@
 						"application/json": {
 							"schema": {
 								"properties": {
-									"couponCode": {
-										"type": "string"
-									},
 									"updatedItems": {
 										"items": {
 											"$ref": "#/components/schemas/_CartItemsModelType"
@@ -2911,16 +2911,23 @@
 									"properties": {
 										"coupon": {
 											"properties": {
-												"applied": {
-													"type": "boolean"
-												},
 												"values": {
 													"$ref": "#/components/schemas/CouponModelType"
+												},
+												"discountedAmount": {
+													"type": "number",
+													"format": "double"
+												},
+												"message": {
+													"type": "string"
+												},
+												"applied": {
+													"type": "boolean"
 												}
 											},
 											"required": [
-												"applied",
-												"values"
+												"message",
+												"applied"
 											],
 											"type": "object"
 										},

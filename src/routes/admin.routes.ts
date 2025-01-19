@@ -7,13 +7,13 @@ import os from 'os';
 import { mapIncomingToOutgoing } from '../helper/orderToKikoOrder';
 import kikoUrl from '../constants';
 
-const healthCheckRouter = express.Router();
+const adminRouter = express.Router();
 
 /** Check if the service is down or not */
-healthCheckRouter.get('/health', (req: any, res: any) => { res.status(200).json({ health: "OK" }) });
+adminRouter.get('/health', (req: any, res: any) => { res.status(200).json({ health: "OK" }) });
 
 /** Add new admins */
-healthCheckRouter.post('/admin', middleware.authenticateAdminToken, async (req: Request, res: any) => {
+adminRouter.post('/admin', middleware.authenticateAdminToken, async (req: Request, res: any) => {
     const { email, password } = req.body;
 
     // Ensure password is provided
@@ -51,7 +51,7 @@ healthCheckRouter.post('/admin', middleware.authenticateAdminToken, async (req: 
     }
 });
 
-healthCheckRouter.get('/database', middleware.authenticateAdminToken, async (req: any, res: any) => {
+adminRouter.get('/database', middleware.authenticateAdminToken, async (req: any, res: any) => {
     try {
         // Get the number of users
         const userCount = await prisma.userModel.count();
@@ -110,7 +110,7 @@ healthCheckRouter.get('/database', middleware.authenticateAdminToken, async (req
     }
 });
 
-healthCheckRouter.get('/admin/orders', middleware.authenticateAdminToken, async (req: any, res: any) => {
+adminRouter.get('/admin/orders', middleware.authenticateAdminToken, async (req: any, res: any) => {
     try {
         // Get the total number of orders
         const orderCount = await prisma.orderModel.count();
@@ -135,7 +135,7 @@ healthCheckRouter.get('/admin/orders', middleware.authenticateAdminToken, async 
     }
 });
 
-healthCheckRouter.post('/admin/orders/recreate', middleware.authenticateAdminToken, async (req: any, res: any) => {
+adminRouter.post('/admin/orders/recreate', middleware.authenticateAdminToken, async (req: any, res: any) => {
     try {
         const { orderId } = req.body;
         // Fetch orders created today
@@ -177,7 +177,7 @@ healthCheckRouter.post('/admin/orders/recreate', middleware.authenticateAdminTok
     }
 });
 
-healthCheckRouter.get('/add-coupons', middleware.authenticateAdminToken, async (req: any, res: any) => {
+adminRouter.get('/add-coupons', middleware.authenticateAdminToken, async (req: any, res: any) => {
     try {
         const { couponCode,
             discountType,
@@ -207,7 +207,7 @@ healthCheckRouter.get('/add-coupons', middleware.authenticateAdminToken, async (
     }
 });
 
-healthCheckRouter.get('/telemetry', middleware.authenticateAdminToken, async (req: any, res: any) => {
+adminRouter.get('/telemetry', middleware.authenticateAdminToken, async (req: any, res: any) => {
     try {
         // Server stats (CPU, memory, etc.)
         const cpuUsage = os.loadavg(); // Array of 1, 5, 15 minute CPU load averages
@@ -232,4 +232,4 @@ healthCheckRouter.get('/telemetry', middleware.authenticateAdminToken, async (re
     }
 });
 
-export default healthCheckRouter;
+export default adminRouter;

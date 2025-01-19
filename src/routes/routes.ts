@@ -715,7 +715,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsPaymentsController_createPayment: Record<string, TsoaRoute.ParameterSchema> = {
-                body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"amount":{"dataType":"double","required":true}}},
+                body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"cartId":{"dataType":"string"},"amount":{"dataType":"double","required":true}}},
         };
         app.post('/payment',
             authenticateMiddleware([{"jwt":[]}]),
@@ -1093,7 +1093,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         const argsCartController_updateCart: Record<string, TsoaRoute.ParameterSchema> = {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
                 cartId: {"in":"path","name":"cartId","required":true,"dataType":"string"},
-                body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"couponCode":{"dataType":"string"},"updatedItems":{"dataType":"array","array":{"dataType":"refAlias","ref":"_CartItemsModelType"},"required":true}}},
+                body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"updatedItems":{"dataType":"array","array":{"dataType":"refAlias","ref":"_CartItemsModelType"},"required":true}}},
         };
         app.put('/cart/:cartId',
             authenticateMiddleware([{"jwt":[]}]),

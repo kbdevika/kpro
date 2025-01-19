@@ -112,7 +112,7 @@ export class CartController extends Controller {
             cartId: string
             couponCode: string
         }
-    ): Promise<{ cart: _CartResponseType, coupon: { values: CouponModelType, applied: boolean } }> {
+    ): Promise<{ cart: _CartResponseType, coupon: { applied: boolean, message: string, discountedAmount?: number, values?: CouponModelType } }> {
         try {
             if (!body.cartId || !body.couponCode) {
                 throw new Error('Missing or invalid inputs!')
@@ -120,7 +120,6 @@ export class CartController extends Controller {
 
             // Calculate any discount if applicable
             let discountedTotal = 0;
-
             const existingCart = await prisma.cartModel.findUnique({
                 where: { id: body.cartId },
             });
@@ -128,38 +127,73 @@ export class CartController extends Controller {
             if (!existingCart) {
                 throw new Error('Invalid Cart ID.');
             }
-
+            const exposedCart = cartMapper(body.cartId, existingCart)
             const coupon = await prisma.couponCodeModel.findUnique({
                 where: { couponCode: body.couponCode },
             });
 
             if (!coupon) {
-                throw new Error('Invalid coupon code.');
+                return {
+                    cart: exposedCart,
+                    coupon: {
+                        message: 'Invalid coupon code!',
+                        applied: false
+                    },
+                }
             }
 
             // Check if the coupon is expired
             const currentDate = new Date();
+
+            if (coupon.startDate > currentDate) {
+                return {
+                    cart: exposedCart,
+                    coupon: {
+                        message: 'You are not eligible for this offer. Please use another cheat code!',
+                        applied: false,
+                    },
+                };
+            }
+
             if (coupon.expiryDate < currentDate) {
-                throw new Error('Coupon has expired.');
+                return {
+                    cart: exposedCart,
+                    coupon: {
+                        message: 'You are not eligible for this offer. Please use another cheat code!',
+                        applied: false,
+                    },
+                };
             }
 
             // Check the cart total against the coupon's minimum and maximum order value
             if (existingCart.cartTotal < parseFloat(coupon.minimumOrderValue)) {
-                throw new Error(
-                    `Cart total is less than the minimum order value of ${coupon.minimumOrderValue}.`
-                );
+                return {
+                    cart: exposedCart,
+                    coupon: {
+                        message: `You are not eligible for this offer as you have is less than the minimum order value of ₹${coupon.minimumOrderValue}!`,
+                        applied: false
+                    },
+                }
             }
 
             if (coupon.maximumOrderValue && existingCart.cartTotal >= parseFloat(coupon.maximumOrderValue)) {
-                throw new Error(
-                    `Cart total exceeds the maximum order value of ${coupon.maximumOrderValue}.`
-                );
+                return {
+                    cart: exposedCart,
+                    coupon: {
+                        message: `You are not eligible for this offer as you have already added items worth more than ₹${coupon.maximumOrderValue}!`,
+                        applied: false
+                    },
+                }
             }
 
             if (coupon.usageCount > coupon.usageLimit) {
-                throw new Error(
-                    `Coupon code has been used till its limit of ${coupon.usageLimit}.`
-                );
+                return {
+                    cart: exposedCart,
+                    coupon: {
+                        message: `You are not eligible for this offer. Please use another cheat code!`,
+                        applied: false
+                    },
+                }
             }
 
             discountedTotal = calculateDiscountedTotal(existingCart.cartTotal, coupon.discountType, parseFloat(coupon.discountValue))
@@ -174,21 +208,16 @@ export class CartController extends Controller {
                 include: { cartItems: true }
             });
 
-            const updatedcoupon = await prisma.couponCodeModel.update({
-                where: { id: coupon.id },
-                data: {
-                    usageCount: { increment: 1 }
-                }
-            })
-
             const returnCart = cartMapper(body.cartId, updatedCart)
 
             return {
                 cart: returnCart,
                 coupon: {
-                    values: updatedcoupon, 
+                    message: `Congratulation! You will receive these products for just ₹${discountedTotal}`,
+                    discountedAmount: existingCart.cartTotal - updatedCart.cartTotal,
+                    values: {...coupon, usageCount: coupon.usageCount + 1},
                     applied: true
-                }, 
+                },
             }
 
         } catch (error: any) {
