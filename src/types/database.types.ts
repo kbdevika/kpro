@@ -53,7 +53,7 @@ export type OrderModelType = {
   cartId: string;
   userId: string;
   address: UserAddressModelType;
-  cart?: CartModelType 
+  cart?: CartModelType
 };
 
 export type OrderResponse = {
@@ -94,12 +94,12 @@ export type UserAddressModelType = {
 export type UserModelType = {
   id?: string;
   userArchived: boolean;
-  settings: UserSettingsModelType[];  
-  addresses: UserAddressModelType[]; 
+  settings: UserSettingsModelType[];
+  addresses: UserAddressModelType[];
   notifications: NotificationModelType[];
   order: OrderModelType[];
-  task: TaskModelType[]; 
-  cart: CartModelType[]; 
+  task: TaskModelType[];
+  cart: CartModelType[];
 };
 
 
@@ -140,6 +140,19 @@ export type HomeModelType = {
     deeplink?: string;
   }[],
   title: string;
+}
+
+export type CouponModelType = {
+  id?: string;
+  couponCode: string;
+  discountType: string;
+  discountValue: string;
+  startDate: Date;
+  expiryDate: Date;
+  minimumOrderValue: string;
+  maximumOrderValue: string;
+  usageLimit: number;
+  usageCount: number;
 }
 
 export default UserModelType;

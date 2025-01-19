@@ -276,6 +276,11 @@ const models: TsoaRoute.Models = {
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"itemExternalId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},"itemRecommended":{"dataType":"boolean","required":true},"itemWeightUnit":{"dataType":"string","required":true},"itemWeight":{"dataType":"double","required":true},"itemStockStatus":{"dataType":"string","required":true},"itemDiscountedPrice":{"dataType":"double","required":true},"itemOriginalPrice":{"dataType":"double","required":true},"itemQuantity":{"dataType":"double","required":true},"itemImageUrl":{"dataType":"string","required":true},"itemDescription":{"dataType":"string","required":true},"itemName":{"dataType":"string","required":true},"id":{"dataType":"string"}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CouponModelType": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"usageCount":{"dataType":"double","required":true},"usageLimit":{"dataType":"double","required":true},"maximumOrderValue":{"dataType":"string","required":true},"minimumOrderValue":{"dataType":"string","required":true},"expiryDate":{"dataType":"datetime","required":true},"startDate":{"dataType":"datetime","required":true},"discountValue":{"dataType":"string","required":true},"discountType":{"dataType":"string","required":true},"couponCode":{"dataType":"string","required":true},"id":{"dataType":"string"}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "JWTAuthResponse": {
         "dataType": "refObject",
         "properties": {
@@ -1172,6 +1177,37 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
 
               await templateService.apiHandler({
                 methodName: 'createCartItems',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsCartController_updateCartWithCouponCode: Record<string, TsoaRoute.ParameterSchema> = {
+                body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"couponCode":{"dataType":"string","required":true},"cartId":{"dataType":"string","required":true}}},
+        };
+        app.post('/cart/coupon',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(CartController)),
+            ...(fetchMiddlewares<RequestHandler>(CartController.prototype.updateCartWithCouponCode)),
+
+            async function CartController_updateCartWithCouponCode(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsCartController_updateCartWithCouponCode, request, response });
+
+                const controller = new CartController();
+
+              await templateService.apiHandler({
+                methodName: 'updateCartWithCouponCode',
                 controller,
                 response,
                 next,

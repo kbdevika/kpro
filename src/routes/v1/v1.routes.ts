@@ -57,6 +57,7 @@ export class V1Router {
     this.router.get("/home", this.getHome);
     this.router.get("/cart", this.getAllCarts);
     this.router.get("/cart/:id", this.getCartbyId);
+    this.router.post("/cart/coupon", this.updateCartWithCoupon);
     this.router.post("/cart", this.createCart);
     this.router.put("/cart/:id", this.updateCart);
     this.router.delete("/cart/:id", this.deleteCartbyId);
@@ -173,6 +174,15 @@ export class V1Router {
   private deleteCartbyId = async (req: any, res: any) => {
     try {
       const data = await this.cartController.deleteCartbyId(req.params.id, req)
+      res.json(data);
+    } catch (error) {
+      handleError(error, res);
+    }
+  };
+
+  private updateCartWithCoupon = async (req: any, res: any) => {
+    try {
+      const data = await this.cartController.updateCartWithCouponCode(req.body)
       res.json(data);
     } catch (error) {
       handleError(error, res);

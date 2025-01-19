@@ -1336,6 +1336,56 @@
 				"type": "object",
 				"description": "Cart Items"
 			},
+			"CouponModelType": {
+				"properties": {
+					"usageCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"usageLimit": {
+						"type": "number",
+						"format": "double"
+					},
+					"maximumOrderValue": {
+						"type": "string"
+					},
+					"minimumOrderValue": {
+						"type": "string"
+					},
+					"expiryDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"startDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"discountValue": {
+						"type": "string"
+					},
+					"discountType": {
+						"type": "string"
+					},
+					"couponCode": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"usageCount",
+					"usageLimit",
+					"maximumOrderValue",
+					"minimumOrderValue",
+					"expiryDate",
+					"startDate",
+					"discountValue",
+					"discountType",
+					"couponCode"
+				],
+				"type": "object"
+			},
 			"JWTAuthResponse": {
 				"properties": {
 					"access_token": {
@@ -2840,6 +2890,81 @@
 								},
 								"required": [
 									"combinedCartItems"
+								],
+								"type": "object",
+								"description": "contains a list of CartItems and cartId"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/cart/coupon": {
+			"post": {
+				"operationId": "UpdateCartWithCouponCode",
+				"responses": {
+					"200": {
+						"description": "A list of CartItems which are inserted",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"coupon": {
+											"properties": {
+												"applied": {
+													"type": "boolean"
+												},
+												"values": {
+													"$ref": "#/components/schemas/CouponModelType"
+												}
+											},
+											"required": [
+												"applied",
+												"values"
+											],
+											"type": "object"
+										},
+										"cart": {
+											"$ref": "#/components/schemas/_CartResponseType"
+										}
+									},
+									"required": [
+										"coupon",
+										"cart"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create multiple cartItems for a specific cart with cartId",
+				"tags": [
+					"Cart"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "contains a list of CartItems and cartId",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"couponCode": {
+										"type": "string"
+									},
+									"cartId": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"couponCode",
+									"cartId"
 								],
 								"type": "object",
 								"description": "contains a list of CartItems and cartId"

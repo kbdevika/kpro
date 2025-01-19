@@ -1,6 +1,5 @@
 import prisma from "../config/prisma.config";
 import { cartDiscount, cartFreeDeliveryThreshold, deliveryCharges, deliveryTime } from "../constants";
-import calculateDiscountedTotal from "../helper/discountMapper";
 import TaskResult from "../types/ai.types";
 import { _CartItemsModelType } from "../types/backwardCompatibility.types";
 import { CartItemsModelType, CartModelType } from "../types/database.types";
@@ -170,75 +169,16 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
         // You can calculate 'total' here by adding any additional charges (e.g., taxes, shipping, etc.)
         const total = subtotal + deliveryCharges;
 
-        // Calculate any discount if applicable
-        let discountedTotal = 0;
+        // Update the cart with the new subtotal and total
+        await prisma.cartModel.update({
+            where: { id: cartId },
+            data: {
+                cartSubTotal: subtotal,
+                cartTotal: total,
+            },
+            include: { cartItems: true },
+        });
 
-        // Apply coupon code
-        if (couponCode) {
-            const coupon = await prisma.couponCodeModel.findUnique({
-                where: { couponCode },
-            });
-
-            if (!coupon) {
-                throw new Error('Invalid coupon code.');
-            }
-
-            // Check if the coupon is expired
-            const currentDate = new Date();
-            if (coupon.expiryDate < currentDate) {
-                throw new Error('Coupon has expired.');
-            }
-
-            // Check the cart total against the coupon's minimum and maximum order value
-            if (existingCart.cartTotal < parseFloat(coupon.minimumOrderValue)) {
-                throw new Error(
-                    `Cart total is less than the minimum order value of ${coupon.minimumOrderValue}.`
-                );
-            }
-
-            if (coupon.maximumOrderValue && existingCart.cartTotal >= parseFloat(coupon.maximumOrderValue)) {
-                throw new Error(
-                    `Cart total exceeds the maximum order value of ${coupon.maximumOrderValue}.`
-                );
-            }
-
-            if (coupon.usageCount > coupon.usageLimit) {
-                throw new Error(
-                    `Coupon code has been used till its limit of ${coupon.usageLimit}.`
-                );
-            }
-
-            discountedTotal = calculateDiscountedTotal(total, coupon.discountType, parseFloat(coupon.discountValue))
-
-            // Update the cart with the new subtotal and total
-            await prisma.cartModel.update({
-                where: { id: cartId },
-                data: {
-                    cartSubTotal: subtotal,
-                    couponId: coupon.id,
-                    cartTotal: discountedTotal,
-                },
-                include: { cartItems: true },
-            });
-
-            await prisma.couponCodeModel.update({
-                where: { id: coupon.id},
-                data: {
-                    usageCount: { increment: 1 }
-                }
-            })
-
-        } else {
-            // Update the cart with the new subtotal and total
-            await prisma.cartModel.update({
-                where: { id: cartId },
-                data: {
-                    cartSubTotal: subtotal,
-                    cartTotal: total,
-                },
-                include: { cartItems: true },
-            });
-        }
     } catch (error: any) {
         throw new Error(`Cart was not updated! ${error.message}`)
     }
