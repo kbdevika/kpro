@@ -4,6 +4,8 @@ import prisma from '../config/prisma.config';
 import handleError from '../helper/handleError';
 import crypto from 'crypto';
 import os from 'os';
+import { mapIncomingToOutgoing } from '../helper/orderToKikoOrder';
+import kikoUrl from '../constants';
 
 const healthCheckRouter = express.Router();
 
@@ -37,8 +39,8 @@ healthCheckRouter.post('/admin', middleware.authenticateAdminToken, async (req: 
 
         // Create a new admin with the hashed password
         const data = await prisma.adminModel.create({
-            data: { 
-                adminEmail: email, 
+            data: {
+                adminEmail: email,
                 adminPassword: hashedPassword,
             },
         });
@@ -75,19 +77,19 @@ healthCheckRouter.get('/database', middleware.authenticateAdminToken, async (req
             cityUserCounts,
             pincodeUserCounts,
         };
-        
+
         // Get the total number of orders
         const orderCount = await prisma.orderModel.count();
-        
+
         // Get the total number of carts
         const cartCount = await prisma.cartModel.count();
-        
+
         // Get the total number of processed audios
         const processedAudioCount = await prisma.taskModel.count();
-        
+
         // Get the number of admins
         const adminCount = await prisma.adminModel.findMany();
-        
+
         // Get database health status by running a simple query
         const dbHealthStatus = 'ok'; // You can perform additional checks if necessary
 
@@ -128,6 +130,45 @@ healthCheckRouter.get('/admin/orders', middleware.authenticateAdminToken, async 
 
         // Respond with the stats
         return res.json(stats);
+    } catch (error) {
+        handleError(error, res);
+    }
+});
+
+healthCheckRouter.post('/admin/orders/recreate', middleware.authenticateAdminToken, async (req: any, res: any) => {
+    try {
+        const { orderId } = req.body;
+        // Fetch orders created today
+        const order = await prisma.orderModel.findUnique({
+            where: { id: orderId }, include: {
+                address: true,
+                cart: {
+                    include: {
+                        cartItems: true
+                    }
+                }
+            }
+        });
+
+        if (order) {
+            const kikoOrder = mapIncomingToOutgoing(order.id, order.cart, order.cart.cartItems, order.address)
+
+            const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(kikoOrder),
+            });
+
+            if (!response.ok) {
+                const errorMessage = await response.text();
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+
+            return { message: "success", ...data };
+        } else return { message: "failed" }
+
     } catch (error) {
         handleError(error, res);
     }
