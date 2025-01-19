@@ -140,7 +140,10 @@ healthCheckRouter.post('/admin/orders/recreate', middleware.authenticateAdminTok
         const { orderId } = req.body;
         // Fetch orders created today
         const order = await prisma.orderModel.findUnique({
-            where: { id: orderId }, include: {
+            where: {
+                id: orderId
+            },
+            include: {
                 address: true,
                 cart: {
                     include: {
@@ -150,26 +153,26 @@ healthCheckRouter.post('/admin/orders/recreate', middleware.authenticateAdminTok
             }
         });
 
-        if (order) {
-            const kikoOrder = mapIncomingToOutgoing(order.id, order.cart, order.cart.cartItems, order.address)
-
-            const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(kikoOrder),
-            });
-
-            if (!response.ok) {
-                const errorMessage = await response.text();
-                throw new Error(errorMessage);
-            }
-
-            const data = await response.json();
-
-            return { message: "success", ...data };
-        } else {
-            return { message: "failed" }
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
         }
+        
+        const kikoOrder = mapIncomingToOutgoing(order.id, order.cart, order.cart.cartItems, order.address)
+
+        const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(kikoOrder),
+        });
+
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error(errorMessage);
+        }
+
+        const data = await response.json();
+
+        return { message: "success", ...data };
     } catch (error) {
         handleError(error, res);
     }
