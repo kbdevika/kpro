@@ -84,7 +84,7 @@ export async function createCartItems(combinedCartItems: CartItemsModelType[], c
  * @param updatedItems 
  * @returns 
  */
-export async function updatedCart(userId: string, cartId: string, updatedItems: _CartItemsModelType[], couponCode?: string): Promise<CartModelType> {
+export async function updatedCart(userId: string, cartId: string, updatedItems: _CartItemsModelType[], couponCode?: string): Promise<{updateCart: CartModelType, coupon: CouponCodeModel | null}> {
     try {
         // Fetch all existing cart items
         const existingCartItems = await prisma.cartItemsModel.findMany({
@@ -187,7 +187,7 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
     // Fetch the updated cart
     const updateCart = await prisma.cartModel.findUnique({
         where: { id: cartId },
-        include: { cartItems: true },
+        include: { cartItems: true, coupon: true },
     });
 
     if (!updateCart) {
@@ -199,7 +199,7 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
         .map((item) => updateCart.cartItems.find((cartItem) => cartItem.itemExternalId === item.itemExternalId))
         .filter((item): item is NonNullable<typeof item> => item !== undefined);
 
-    return updateCart;
+    return { updateCart, coupon: updateCart.coupon };
 }
 
 /**

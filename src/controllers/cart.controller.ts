@@ -31,8 +31,8 @@ export class CartController extends Controller {
                 throw new Error('Missing or invalid inputs!')
             }
 
-            const updateCart = await updatedCart(req.user.id, cartId, updatedItems)
-            const returnCart = cartMapper(cartId, updateCart, null)
+            const { updateCart, coupon } = await updatedCart(req.user.id, cartId, updatedItems)
+            const returnCart = cartMapper(cartId, updateCart, coupon)
             return returnCart
         } catch (error: any) {
             throw new Error(error.message)
