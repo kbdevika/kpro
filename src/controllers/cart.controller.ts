@@ -129,12 +129,12 @@ export class CartController extends Controller {
                 throw new Error('Invalid Cart ID.');
             }
 
-            const coupon = await prisma.couponCodeModel.findUnique({
+            let coupon = await prisma.couponCodeModel.findUnique({
                 where: { couponCode: body.couponCode },
             });
 
             if (!coupon) {
-                throw new Error('No coupon found!');
+                coupon = null;
             }
 
             const exposedCoupon = couponApplier(existingCart, coupon)
@@ -143,7 +143,7 @@ export class CartController extends Controller {
             const updatedCart = await prisma.cartModel.update({
                 where: { id: body.cartId },
                 data: {
-                    couponId: coupon.id,
+                    couponId: exposedCoupon.exposedCoupon.values?.id,
                     cartTotal: exposedCoupon.discountedTotal,
                 },
                 include: { cartItems: true, coupon: true }
