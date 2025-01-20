@@ -4,6 +4,7 @@ import { cartDiscount, cartFreeDeliveryThreshold, deliveryCharges, deliveryTime 
 import TaskResult from "../types/ai.types";
 import { _CartItemsModelType } from "../types/backwardCompatibility.types";
 import { CartItemsModelType, CartModelType, ExposedCouponModel } from "../types/database.types";
+import { couponApplier } from "../helper/discountMapper";
 
 /**
  * 
@@ -84,7 +85,7 @@ export async function createCartItems(combinedCartItems: CartItemsModelType[], c
  * @param updatedItems 
  * @returns 
  */
-export async function updatedCart(userId: string, cartId: string, updatedItems: _CartItemsModelType[], couponCode?: string): Promise<{updateCart: CartModelType, coupon: CouponCodeModel | null}> {
+export async function updatedCart(userId: string, cartId: string, updatedItems: _CartItemsModelType[]): Promise<{updateCart: CartModelType, coupon: CouponCodeModel | null}> {
     try {
         // Fetch all existing cart items
         const existingCartItems = await prisma.cartItemsModel.findMany({
@@ -154,7 +155,7 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
         // Ensure the cart belongs to the user
         const existingCart = await prisma.cartModel.findUnique({
             where: { id: cartId, userId: userId },
-            include: { cartItems: true },
+            include: { cartItems: true, coupon: true },
         });
 
         if (!existingCart) {
@@ -170,12 +171,14 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
         // You can calculate 'total' here by adding any additional charges (e.g., taxes, shipping, etc.)
         const total = subtotal + deliveryCharges;
 
+        const exposedCoupon = couponApplier(existingCart, existingCart.coupon)
+
         // Update the cart with the new subtotal and total
         await prisma.cartModel.update({
             where: { id: cartId },
             data: {
                 cartSubTotal: subtotal,
-                cartTotal: total,
+                cartTotal: exposedCoupon.discountedTotal,
             },
             include: { cartItems: true },
         });
