@@ -143,7 +143,7 @@ export class CartController extends Controller {
             const updatedCart = await prisma.cartModel.update({
                 where: { id: body.cartId },
                 data: {
-                    couponId: exposedCoupon.exposedCoupon.values?.id,
+                    couponId: exposedCoupon.exposedCoupon.values ? exposedCoupon.exposedCoupon.values.id : null,
                     cartTotal: exposedCoupon.discountedTotal,
                 },
                 include: { cartItems: true, coupon: true }
