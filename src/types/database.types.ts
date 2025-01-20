@@ -22,6 +22,7 @@ export type CartModelType = {
   cartSavingsMessage: string;
   cartNote: string;
   userId: string;
+  couponId: string | null;
 };
 
 /** Cart Items */
@@ -143,7 +144,7 @@ export type HomeModelType = {
 }
 
 export type CouponModelType = {
-  id?: string;
+  id: string | null;
   couponCode: string;
   discountType: string;
   discountValue: string;
@@ -153,6 +154,13 @@ export type CouponModelType = {
   maximumOrderValue: string;
   usageLimit: number;
   usageCount: number;
+}
+
+export type ExposedCouponModel = {
+  message: string;
+  applied: boolean;
+  discountedAmount: number | null;
+  values: CouponModelType | null
 }
 
 export default UserModelType;

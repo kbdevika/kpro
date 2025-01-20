@@ -36,11 +36,11 @@ export default async function convertToCart(data: TaskResult, taskId: string, us
     await createCartItems(combinedCartItems, cart.id);
     await createTask(taskId, cart.id, userId);
     await createNotification(userId);
-    const responseCart = await fetchCartbyId(cart.id);
+    const { responseCart, coupon } = await fetchCartbyId(cart.id);
     if(!responseCart.id){
       throw new Error('Cart not found')
     }
-    return cartMapper(responseCart.id, responseCart)
+    return cartMapper(responseCart.id, responseCart, coupon)
 
   } catch(error: any){
     throw new Error(`Something went wrong in creating cart! ${error.message}`)

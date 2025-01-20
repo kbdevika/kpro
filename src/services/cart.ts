@@ -1,8 +1,9 @@
+import { CouponCodeModel } from "@prisma/client";
 import prisma from "../config/prisma.config";
 import { cartDiscount, cartFreeDeliveryThreshold, deliveryCharges, deliveryTime } from "../constants";
 import TaskResult from "../types/ai.types";
 import { _CartItemsModelType } from "../types/backwardCompatibility.types";
-import { CartItemsModelType, CartModelType } from "../types/database.types";
+import { CartItemsModelType, CartModelType, ExposedCouponModel } from "../types/database.types";
 
 /**
  * 
@@ -206,20 +207,21 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
  * @param cartId 
  * @returns 
  */
-export async function fetchCartbyId(cartId: string): Promise<CartModelType> {
+export async function fetchCartbyId(cartId: string): Promise<{responseCart: CartModelType, coupon: CouponCodeModel | null}> {
     const cart = await prisma.cartModel.findUnique({
         where: {
             id: cartId
         },
         include: {
-            cartItems: true
+            cartItems: true,
+            coupon: true
         }
     });
 
     if (!cart) {
         throw new Error('Cart was not found! Try again')
     }
-    return cart
+    return {responseCart: cart, coupon: cart.coupon}
 }
 
 /**

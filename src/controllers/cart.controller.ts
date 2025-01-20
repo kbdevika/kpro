@@ -5,7 +5,7 @@ import TaskResult from "../types/ai.types";
 import { _CartItemsModelType, _CartResponseType } from "../types/backwardCompatibility.types";
 import { cartMapper } from "../helper/backwardMapper";
 import prisma from "../config/prisma.config";
-import calculateDiscountedTotal from "../helper/discountMapper";
+import { couponApplier } from "../helper/discountMapper";
 
 @Route("cart")
 @Tags("Cart")
@@ -32,7 +32,7 @@ export class CartController extends Controller {
             }
 
             const updateCart = await updatedCart(req.user.id, cartId, updatedItems)
-            const returnCart = cartMapper(cartId, updateCart)
+            const returnCart = cartMapper(cartId, updateCart, null)
             return returnCart
         } catch (error: any) {
             throw new Error(error.message)
@@ -65,7 +65,7 @@ export class CartController extends Controller {
             if (!cart || !cart.id) {
                 throw new Error('Cart creation unsuccessful! Try again!')
             }
-            const returnCart = cartMapper(cart.id, cart)
+            const returnCart = cartMapper(cart.id, cart, null)
             return returnCart
         } catch (error: any) {
             throw new Error(error.message)
@@ -112,113 +112,46 @@ export class CartController extends Controller {
             cartId: string
             couponCode: string
         }
-    ): Promise<{ cart: _CartResponseType, coupon: { applied: boolean, message: string, discountedAmount?: number, values?: CouponModelType } }> {
+    ): Promise<{ cart: _CartResponseType }> {
         try {
             if (!body.cartId || !body.couponCode) {
                 throw new Error('Missing or invalid inputs!')
             }
 
-            // Calculate any discount if applicable
-            let discountedTotal = 0;
             const existingCart = await prisma.cartModel.findUnique({
                 where: { id: body.cartId },
+                include: {
+                    coupon: true
+                }
             });
 
             if (!existingCart) {
                 throw new Error('Invalid Cart ID.');
             }
-            const exposedCart = cartMapper(body.cartId, existingCart)
+
             const coupon = await prisma.couponCodeModel.findUnique({
                 where: { couponCode: body.couponCode },
             });
 
             if (!coupon) {
-                return {
-                    cart: exposedCart,
-                    coupon: {
-                        message: 'Invalid coupon code!',
-                        applied: false
-                    },
-                }
+                throw new Error('No coupon found!');
             }
 
-            // Check if the coupon is expired
-            const currentDate = new Date();
-
-            if (coupon.startDate > currentDate) {
-                return {
-                    cart: exposedCart,
-                    coupon: {
-                        message: 'You are not eligible for this offer. Please use another cheat code!',
-                        applied: false,
-                    },
-                };
-            }
-
-            if (coupon.expiryDate < currentDate) {
-                return {
-                    cart: exposedCart,
-                    coupon: {
-                        message: 'You are not eligible for this offer. Please use another cheat code!',
-                        applied: false,
-                    },
-                };
-            }
-
-            // Check the cart total against the coupon's minimum and maximum order value
-            if (existingCart.cartTotal < parseFloat(coupon.minimumOrderValue)) {
-                return {
-                    cart: exposedCart,
-                    coupon: {
-                        message: `You are not eligible for this offer as you have is less than the minimum order value of ₹${coupon.minimumOrderValue}!`,
-                        applied: false
-                    },
-                }
-            }
-
-            if (coupon.maximumOrderValue && existingCart.cartTotal >= parseFloat(coupon.maximumOrderValue)) {
-                return {
-                    cart: exposedCart,
-                    coupon: {
-                        message: `You are not eligible for this offer as you have already added items worth more than ₹${coupon.maximumOrderValue}!`,
-                        applied: false
-                    },
-                }
-            }
-
-            if (coupon.usageCount > coupon.usageLimit) {
-                return {
-                    cart: exposedCart,
-                    coupon: {
-                        message: `You are not eligible for this offer. Please use another cheat code!`,
-                        applied: false
-                    },
-                }
-            }
-
-            discountedTotal = calculateDiscountedTotal(existingCart.cartTotal, coupon.discountType, parseFloat(coupon.discountValue))
+            const exposedCoupon = couponApplier(existingCart, coupon)
 
             // Update the cart with the new subtotal and total
             const updatedCart = await prisma.cartModel.update({
                 where: { id: body.cartId },
                 data: {
                     couponId: coupon.id,
-                    cartTotal: discountedTotal,
+                    cartTotal: exposedCoupon.discountedTotal,
                 },
-                include: { cartItems: true }
+                include: { cartItems: true, coupon: true }
             });
 
-            const returnCart = cartMapper(body.cartId, updatedCart)
+            const returnCart = cartMapper(body.cartId, updatedCart, coupon)
 
-            return {
-                cart: returnCart,
-                coupon: {
-                    message: `Congratulation! You will receive these products for just ₹${discountedTotal}`,
-                    discountedAmount: existingCart.cartTotal - updatedCart.cartTotal,
-                    values: {...coupon, usageCount: coupon.usageCount + 1},
-                    applied: true
-                },
-            }
+            return { cart: returnCart }
 
         } catch (error: any) {
             throw new Error(error.message)
@@ -240,7 +173,7 @@ export class CartController extends Controller {
                 if (!cart || !cart.id) {
                     throw new Error('Carts fetch unsuccessful! Try again!')
                 }
-                return cartMapper(cart.id, cart)
+                return cartMapper(cart.id, cart, null)
             })
             return mappedCarts
         } catch (error: any) {
@@ -260,11 +193,11 @@ export class CartController extends Controller {
         @Path('cartId') cartId: string,
     ): Promise<_CartResponseType> {
         try {
-            const cart = await fetchCartbyId(cartId)
-            if (!cart || !cart.id) {
+            const { responseCart, coupon } = await fetchCartbyId(cartId)
+            if (!responseCart || !responseCart.id) {
                 throw new Error('Cart fetch unsuccessful! Try again!')
             }
-            const returnCart = cartMapper(cart.id, cart)
+            const returnCart = cartMapper(responseCart.id, responseCart, coupon)
             return returnCart
         } catch (error: any) {
             throw new Error(error.message)
@@ -286,7 +219,7 @@ export class CartController extends Controller {
             if (!cart || !cart.id) {
                 throw new Error('Cart delete unsuccessful! Try again!')
             }
-            const returnCart = cartMapper(cart.id, cart)
+            const returnCart = cartMapper(cart.id, cart, null)
             return returnCart
         } catch (error: any) {
             throw new Error(error.message)

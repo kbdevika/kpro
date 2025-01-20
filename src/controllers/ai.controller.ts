@@ -81,11 +81,11 @@ export class AIController extends Controller {
 
       const _cart = await prisma.cartModel.findUnique({
         where: { id: task.cartId },
-        include: { cartItems: true },
+        include: { cartItems: true, coupon: true },
       });
 
       if (_cart) {
-        const cart = cartMapper(_cart.id, _cart)
+        const cart = cartMapper(_cart.id, _cart, _cart.coupon)
         return { cartStatus: "success", cart };
       }
 

@@ -1,18 +1,19 @@
-import { CartItemsModelType, CartModelType, OrderResponse, UserAddressModelType } from "../types/database.types"
+import { CartItemsModelType, CartModelType, CouponModelType, ExposedCouponModel, OrderResponse, UserAddressModelType } from "../types/database.types"
 import { _AddressType, _CartReponseItem, _CartResponseType, _OrderResponse } from "../types/backwardCompatibility.types"
+import calculateDiscountedTotal, { couponApplier } from "./discountMapper";
 
 const cartItemMapper = (cartItems: CartItemsModelType[]): _CartReponseItem[] => {
     const data = cartItems.map((items: CartItemsModelType) => {
-      return {
-        itemId: items.id || '', // Use a fallback if `items.id` is undefined
-        ...items,
-        itemImageUrl: Array.isArray(items.itemImageUrl) ? items.itemImageUrl : [items.itemImageUrl],
-      };
+        return {
+            itemId: items.id || '', // Use a fallback if `items.id` is undefined
+            ...items,
+            itemImageUrl: Array.isArray(items.itemImageUrl) ? items.itemImageUrl : [items.itemImageUrl],
+        };
     });
     return data;
-  };
+};
 
-export const cartMapper = (cartId: string, cart: CartModelType): _CartResponseType => {
+export const cartMapper = (cartId: string, cart: CartModelType, coupon: CouponModelType | null): _CartResponseType => {
     return {
         orderSummary: {
             deliveryCharges: cart.cartDeliveryCharges,
@@ -40,7 +41,8 @@ export const cartMapper = (cartId: string, cart: CartModelType): _CartResponseTy
             storeName: cart.cartStoreName,
             storeContactPerson: cart.cartStoreContact,
             storePhone: cart.cartStorePhone
-        }
+        },
+        coupon: { ...couponApplier(cart, coupon).exposedCoupon }
     }
 }
 
@@ -80,10 +82,10 @@ export const addressResponseMapper = (userId: string, address: _AddressType, nam
     }
 }
 
-export const orderMapper = (order: OrderResponse): _OrderResponse| null => {
+export const orderMapper = (order: OrderResponse): _OrderResponse | null => {
 
-    if(order.cart.id){
-        const cart = cartMapper(order.cart.id, order.cart)
+    if (order.cart.id) {
+        const cart = cartMapper(order.cart.id, order.cart, null)
         const address = addressMapper(order.address);
         return {
             address: address,

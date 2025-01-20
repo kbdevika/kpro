@@ -317,8 +317,93 @@
 				],
 				"type": "object"
 			},
+			"CouponModelType": {
+				"properties": {
+					"usageCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"usageLimit": {
+						"type": "number",
+						"format": "double"
+					},
+					"maximumOrderValue": {
+						"type": "string"
+					},
+					"minimumOrderValue": {
+						"type": "string"
+					},
+					"expiryDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"startDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"discountValue": {
+						"type": "string"
+					},
+					"discountType": {
+						"type": "string"
+					},
+					"couponCode": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": [
+					"usageCount",
+					"usageLimit",
+					"maximumOrderValue",
+					"minimumOrderValue",
+					"expiryDate",
+					"startDate",
+					"discountValue",
+					"discountType",
+					"couponCode",
+					"id"
+				],
+				"type": "object"
+			},
+			"ExposedCouponModel": {
+				"properties": {
+					"values": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/CouponModelType"
+							}
+						],
+						"nullable": true
+					},
+					"discountedAmount": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"applied": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"values",
+					"discountedAmount",
+					"applied",
+					"message"
+				],
+				"type": "object"
+			},
 			"_CartResponseType": {
 				"properties": {
+					"coupon": {
+						"$ref": "#/components/schemas/ExposedCouponModel"
+					},
 					"additionalInfo": {
 						"properties": {
 							"cartNote": {
@@ -417,6 +502,7 @@
 					}
 				},
 				"required": [
+					"coupon",
 					"additionalInfo",
 					"storeInfo",
 					"orderSummary",
@@ -425,8 +511,7 @@
 					"cartId",
 					"aiStoreId"
 				],
-				"type": "object",
-				"description": "For Backward compactability,\r\nOutgoing response mapped from service is to be in specific Types,\r\nwhich are specified here"
+				"type": "object"
 			},
 			"_OrderResponse": {
 				"properties": {
@@ -1335,56 +1420,6 @@
 				],
 				"type": "object",
 				"description": "Cart Items"
-			},
-			"CouponModelType": {
-				"properties": {
-					"usageCount": {
-						"type": "number",
-						"format": "double"
-					},
-					"usageLimit": {
-						"type": "number",
-						"format": "double"
-					},
-					"maximumOrderValue": {
-						"type": "string"
-					},
-					"minimumOrderValue": {
-						"type": "string"
-					},
-					"expiryDate": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"startDate": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"discountValue": {
-						"type": "string"
-					},
-					"discountType": {
-						"type": "string"
-					},
-					"couponCode": {
-						"type": "string"
-					},
-					"id": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"usageCount",
-					"usageLimit",
-					"maximumOrderValue",
-					"minimumOrderValue",
-					"expiryDate",
-					"startDate",
-					"discountValue",
-					"discountType",
-					"couponCode"
-				],
-				"type": "object"
 			},
 			"JWTAuthResponse": {
 				"properties": {
@@ -2909,34 +2944,11 @@
 							"application/json": {
 								"schema": {
 									"properties": {
-										"coupon": {
-											"properties": {
-												"values": {
-													"$ref": "#/components/schemas/CouponModelType"
-												},
-												"discountedAmount": {
-													"type": "number",
-													"format": "double"
-												},
-												"message": {
-													"type": "string"
-												},
-												"applied": {
-													"type": "boolean"
-												}
-											},
-											"required": [
-												"message",
-												"applied"
-											],
-											"type": "object"
-										},
 										"cart": {
 											"$ref": "#/components/schemas/_CartResponseType"
 										}
 									},
 									"required": [
-										"coupon",
 										"cart"
 									],
 									"type": "object"

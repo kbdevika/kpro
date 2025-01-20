@@ -4,6 +4,8 @@
  * which are specified here
  */
 
+import { ExposedCouponModel } from "./database.types";
+
 // CartReponse
 export type _CartResponseType = {
   aiStoreId: string;
@@ -29,6 +31,7 @@ export type _CartResponseType = {
     savingsMessage: string;
     cartNote: string;
   };
+  coupon: ExposedCouponModel
 };
 
 export type _CartReponseItem = {
