@@ -1,6 +1,8 @@
+import { deliveryCharges } from "../constants";
 import { CartModelType, CouponModelType, ExposedCouponModel } from "../types/database.types";
 
 export default function calculateDiscountedTotal(
+    subtotal: number,
     total: number,
     discountType: string,
     discountValue: number
@@ -17,7 +19,7 @@ export default function calculateDiscountedTotal(
         // Fixed total amount (total does not affect this)
         discountedTotal = discountValue;
     } else {
-        discountedTotal = total
+        discountedTotal = subtotal + deliveryCharges
     }
 
     // Ensure discountedTotal is not negative
@@ -90,7 +92,7 @@ export function couponApplier(cart: CartModelType, coupon: CouponModelType | nul
         discountedTotal: cart.cartTotal
     }
 
-    const discountedTotal = calculateDiscountedTotal(cart.cartTotal, coupon.discountType, parseFloat(coupon.discountValue))
+    const discountedTotal = calculateDiscountedTotal(cart.cartSubTotal, cart.cartTotal, coupon.discountType, parseFloat(coupon.discountValue))
     return {
         exposedCoupon: {
             message: `Congratulation! You will receive these products for just ₹${discountedTotal}`,
