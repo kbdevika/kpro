@@ -114,7 +114,7 @@ export class CartController extends Controller {
         }
     ): Promise<_CartResponseType> {
         try {
-            if (!body.cartId || !body.couponCode) {
+            if (!body.cartId) {
                 throw new Error('Missing or invalid inputs!')
             }
 
@@ -133,7 +133,7 @@ export class CartController extends Controller {
                 where: { couponCode: body.couponCode },
             });
 
-            if (!coupon) {
+            if (!coupon || !body.couponCode) {
                 coupon = null;
             }
 
