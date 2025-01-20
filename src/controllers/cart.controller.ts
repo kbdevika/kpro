@@ -112,7 +112,7 @@ export class CartController extends Controller {
             cartId: string
             couponCode: string
         }
-    ): Promise<{ cart: _CartResponseType }> {
+    ): Promise<_CartResponseType> {
         try {
             if (!body.cartId || !body.couponCode) {
                 throw new Error('Missing or invalid inputs!')
@@ -149,9 +149,7 @@ export class CartController extends Controller {
                 include: { cartItems: true, coupon: true }
             });
 
-            const returnCart = cartMapper(body.cartId, updatedCart, coupon)
-
-            return { cart: returnCart }
+            return cartMapper(body.cartId, updatedCart, coupon)
 
         } catch (error: any) {
             throw new Error(error.message)

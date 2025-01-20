@@ -2943,15 +2943,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"properties": {
-										"cart": {
-											"$ref": "#/components/schemas/_CartResponseType"
-										}
-									},
-									"required": [
-										"cart"
-									],
-									"type": "object"
+									"$ref": "#/components/schemas/_CartResponseType"
 								}
 							}
 						}
