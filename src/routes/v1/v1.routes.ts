@@ -53,8 +53,8 @@ export class V1Router {
   
     this.router.post('/audio', upload.single('audio'), this.processAudio);
     this.router.get("/ai", this.getPincodeAvailability);
+    this.router.post("/ai/search", this.searchItems);
     this.router.get("/ai/:taskId", this.getCartStatus);
-    this.router.get("/ai/search", this.searchItems);
     this.router.get("/home", this.getHome);
     this.router.get("/cart", this.getAllCarts);
     this.router.get("/cart/:id", this.getCartbyId);
