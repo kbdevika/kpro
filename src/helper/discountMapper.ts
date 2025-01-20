@@ -35,7 +35,7 @@ export function couponApplier(cart: CartModelType, coupon: CouponModelType | nul
             discountedAmount: null,
             values: null
         },
-        discountedTotal: cart.cartTotal
+        discountedTotal: cart.cartSubTotal + deliveryCharges
     }
 
     // Check if the coupon is expired
