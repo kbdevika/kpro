@@ -13,7 +13,7 @@ const adminRouter = express.Router();
 adminRouter.get('/health', (req: any, res: any) => { res.status(200).json({ health: "OK" }) });
 
 /** Add new admins */
-adminRouter.post('/admin', middleware.authenticateAdminToken, async (req: Request, res: any) => {
+adminRouter.post('/admin',  async (req: Request, res: any) => {
     const { email, password } = req.body;
 
     // Ensure password is provided
