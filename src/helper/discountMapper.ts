@@ -30,7 +30,7 @@ export function couponApplier(cart: CartModelType, coupon: CouponModelType | nul
 
     if (coupon === null) return {
         exposedCoupon: {
-            message: 'No Coupons applied!',
+            message: "",
             applied: false,
             discountedAmount: null,
             values: null

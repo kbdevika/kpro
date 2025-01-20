@@ -51,25 +51,27 @@ export class PaymentsController extends Controller {
     const { amount: inputAmount, cartId } = body;
 
     // if coupon code expired should throw error
-    const cart = await prisma.cartModel.findUnique({
-      where: {
-        id: cartId
-      }
-    })
-
-    if (cart && cart.couponId) {
-      const coupon = await prisma.couponCodeModel.findUnique({
+    if (cartId) {
+      const cart = await prisma.cartModel.findUnique({
         where: {
-          id: cart.couponId
+          id: cartId
         }
       })
-
-      if (!coupon) {
-        throw new Error('Invalid Coupon Code')
-      }
-      const currentDate = new Date();
-      if (coupon.expiryDate < currentDate || coupon.usageCount > coupon.usageLimit) {
-        throw new Error('Coupon code is invalid! Please refresh cart')
+  
+      if (cart && cart.couponId) {
+        const coupon = await prisma.couponCodeModel.findUnique({
+          where: {
+            id: cart.couponId
+          }
+        })
+  
+        if (!coupon) {
+          throw new Error('Invalid Coupon Code')
+        }
+        const currentDate = new Date();
+        if (coupon.expiryDate < currentDate || coupon.usageCount > coupon.usageLimit) {
+          throw new Error('Coupon code is invalid! Please refresh cart')
+        }
       }
     }
 
