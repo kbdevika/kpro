@@ -177,7 +177,7 @@ adminRouter.post('/admin/orders/recreate', middleware.authenticateAdminToken, as
     }
 });
 
-adminRouter.get('/add-coupons', middleware.authenticateAdminToken, async (req: any, res: any) => {
+adminRouter.post('/add-coupons', middleware.authenticateAdminToken, async (req: any, res: any) => {
     try {
         const { couponCode,
             discountType,
@@ -192,6 +192,38 @@ adminRouter.get('/add-coupons', middleware.authenticateAdminToken, async (req: a
         const coupon = await prisma.couponCodeModel.create({
             data: {
                 couponCode,
+                discountType,
+                discountValue,
+                expiryDate,
+                maximumOrderValue,
+                minimumOrderValue,
+                startDate,
+                usageLimit,
+            }
+        })
+        return res.json(coupon);
+    } catch (error) {
+        handleError(error, res);
+    }
+});
+
+adminRouter.put('/update-coupons', middleware.authenticateAdminToken, async (req: any, res: any) => {
+    try {
+        const { couponCode,
+            discountType,
+            discountValue,
+            expiryDate,
+            maximumOrderValue,
+            minimumOrderValue,
+            startDate,
+            usageLimit,
+        } = req.body;
+
+        const coupon = await prisma.couponCodeModel.update({
+            where: {
+                couponCode
+            },
+            data: {
                 discountType,
                 discountValue,
                 expiryDate,
