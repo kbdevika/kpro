@@ -260,8 +260,35 @@ adminRouter.get('/fetch-kiko-stores', middleware.authenticateAdminToken, async (
     }
 });
 
+interface StoresIndexingAPIResponse {
+    Success: boolean;
+    Message: string;
+    StoreDetails: StoreDetail[];
+}
+
+interface StoreDetail {
+    storeAddress: StoreAddress;
+    _id: string;
+    storeName: string;
+}
+
+interface StoreAddress {
+    pincode: number;
+    address1: string;
+    address2: string;
+    nearBy: string;
+    state: string;
+    city: string;
+    country: string;
+    latitude: number;
+    longitude: number;
+    contactPersonName: string;
+    contactPersonMobile: string;
+}
+
 adminRouter.get('/index-stores', middleware.authenticateAdminToken, async (req: any, res: any) => {
     try {
+        // Fetch store details
         const response = await fetch(`${kikoUrl}/getStoreDetails`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
@@ -272,18 +299,18 @@ adminRouter.get('/index-stores', middleware.authenticateAdminToken, async (req: 
             throw new Error(errorMessage);
         }
 
-        const data = await response.json();
+        const data: StoresIndexingAPIResponse = await response.json();
 
-        const pincodes = data.map((item: any) => item.StoreDetails.map((store: any) => store.storeAddress.pincode));
+        // Map pincodes from store details
+        const pincodes = data.StoreDetails.map((store) => store.storeAddress.pincode);
 
-        if (!Array.isArray(pincodes)) {
-            return res.status(400).json({ error: "Invalid input, 'pincodes' should be an array." });
-        }
+        // Get unique pincodes
+        const uniquePincodes = [...new Set(pincodes)];
 
-        const uniquePincodes = [...new Set(pincodes.flat())];
-
+        // Fetch JWT token
         const jwtToken = await fetchJwtToken();
-        
+
+        // Function to fetch data for each pincode
         const fetchPincodeData = async (pincode: number) => {
             const response = await fetch(`${AI_BASE_URL}/api/catalog/refresh`, {
                 method: "POST",
@@ -302,12 +329,21 @@ adminRouter.get('/index-stores', middleware.authenticateAdminToken, async (req: 
             return await response.json();
         };
 
-        // Use Promise.all for concurrent requests
-        const responses = await Promise.all(
-            uniquePincodes.map((pincode) => fetchPincodeData(pincode).catch((error) => ({ error: error.message })))
+        // Fetch pincode data concurrently
+        const responses = await Promise.allSettled(
+            uniquePincodes.map((pincode) => fetchPincodeData(pincode))
         );
 
-        return res.json({ responses, uniquePincodes });
+        // Separate successful and failed responses
+        const successResponses = responses
+            .filter((result): result is PromiseFulfilledResult<any> => result.status === "fulfilled")
+            .map((result) => result.value);
+
+        const failedResponses = responses
+            .filter((result): result is PromiseRejectedResult => result.status === "rejected")
+            .map((result) => result.reason);
+
+        return res.json({ successResponses, failedResponses, uniquePincodes });
     } catch (error) {
         handleError(error, res);
     }
