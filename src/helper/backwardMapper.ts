@@ -1,6 +1,6 @@
 import { CartItemsModelType, CartModelType, CouponModelType, ExposedCouponModel, OrderResponse, UserAddressModelType } from "../types/database.types"
 import { _AddressType, _CartReponseItem, _CartResponseType, _OrderResponse } from "../types/backwardCompatibility.types"
-import calculateDiscountedTotal, { couponApplier } from "./discountMapper";
+import { couponApplier } from "./discountMapper";
 
 const cartItemMapper = (cartItems: CartItemsModelType[]): _CartReponseItem[] => {
     const data = cartItems.map((items: CartItemsModelType) => {
@@ -22,7 +22,7 @@ export const cartMapper = (cartId: string, cart: CartModelType, coupon: CouponMo
             freeDeliveryThreshold: cart.cartFreeDeliveryThreshold,
             saved: cart.cartSavingsMessage,
             subTotal: cart.cartSubTotal,
-            total: cart.cartTotal,
+            total: couponApplier(cart, coupon).discountedTotal,
         },
         additionalInfo: {
             cartNote: cart.cartNote,
