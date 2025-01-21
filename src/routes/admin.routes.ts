@@ -267,10 +267,10 @@ adminRouter.get('/index-stores', middleware.authenticateAdminToken, async (req: 
         if (!Array.isArray(pincodes)) {
             return res.status(400).json({ error: "Invalid input, 'pincodes' should be an array." });
         }
-
+        
+        const jwtToken = await fetchJwtToken();
+        
         const fetchPincodeData = async (pincode: number) => {
-            const jwtToken = await fetchJwtToken();
-
             const response = await fetch(`${AI_BASE_URL}/api/catalog/refresh`, {
                 method: "POST",
                 headers: {
