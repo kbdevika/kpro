@@ -47,7 +47,9 @@ export class AudioController extends Controller {
     // Create FormData for the API call
     const formData = new FormData();
     formData.append('audio', new Blob([audio.buffer], { type: audio.mimetype }), audio.originalname);
-    formData.append('pincode', pincode);
+formData.append('latitude, latitude);
+formData.append('longitude, longitude);
+formData.append('distance', 15);
 
     const response = await fetch(`${AI_BASE_URL}/api/agent/audio/cart/enrich`, {
       method: 'POST',
