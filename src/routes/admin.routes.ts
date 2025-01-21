@@ -239,7 +239,7 @@ adminRouter.put('/update-coupons', middleware.authenticateAdminToken, async (req
     }
 });
 
-adminRouter.put('/fetch-kiko-stores', middleware.authenticateAdminToken, async (req: any, res: any) => {
+adminRouter.get('/fetch-kiko-stores', middleware.authenticateAdminToken, async (req: any, res: any) => {
     try {
 
         const response = await fetch(`${kikoUrl}/getStoreDetails`, {
