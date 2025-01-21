@@ -307,11 +307,10 @@ adminRouter.get('/index-stores', middleware.authenticateAdminToken, async (req: 
         // Get unique pincodes
         const uniquePincodes = [...new Set(pincodes)];
 
-        // Fetch JWT token
-        const jwtToken = await fetchJwtToken();
-
         // Function to fetch data for each pincode
         const fetchPincodeData = async (pincode: number) => {
+            // Fetch JWT token
+            const jwtToken = await fetchJwtToken();
             const response = await fetch(`${AI_BASE_URL}/api/catalog/refresh`, {
                 method: "POST",
                 headers: {
