@@ -5,7 +5,8 @@ import handleError from '../helper/handleError';
 import crypto from 'crypto';
 import os from 'os';
 import { mapIncomingToOutgoing } from '../helper/orderToKikoOrder';
-import kikoUrl from '../constants';
+import kikoUrl, { AI_BASE_URL } from '../constants';
+import fetchJwtToken from '../helper/fetchAiJwtToken';
 
 const adminRouter = express.Router();
 
@@ -254,6 +255,45 @@ adminRouter.get('/fetch-kiko-stores', middleware.authenticateAdminToken, async (
 
         const data = await response.json();
         return res.json(data);
+    } catch (error) {
+        handleError(error, res);
+    }
+});
+
+adminRouter.get('/index-stores', middleware.authenticateAdminToken, async (req: any, res: any) => {
+    try {
+        const { pincodes } = req.body;
+
+        if (!Array.isArray(pincodes)) {
+            return res.status(400).json({ error: "Invalid input, 'pincodes' should be an array." });
+        }
+
+        const fetchPincodeData = async (pincode: number) => {
+            const jwtToken = await fetchJwtToken();
+
+            const response = await fetch(`${AI_BASE_URL}/api/catalog/refresh`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${jwtToken}`,
+                },
+                body: JSON.stringify({ pincode }),
+            });
+
+            if (!response.ok) {
+                const errorMessage = await response.text();
+                throw new Error(`Error for pincode ${pincode}: ${errorMessage}`);
+            }
+
+            return await response.json();
+        };
+
+        // Use Promise.all for concurrent requests
+        const responses = await Promise.all(
+            pincodes.map((pincode) => fetchPincodeData(pincode).catch((error) => ({ error: error.message })))
+        );
+
+        return res.json(responses);
     } catch (error) {
         handleError(error, res);
     }
