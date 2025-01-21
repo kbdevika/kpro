@@ -262,12 +262,26 @@ adminRouter.get('/fetch-kiko-stores', middleware.authenticateAdminToken, async (
 
 adminRouter.get('/index-stores', middleware.authenticateAdminToken, async (req: any, res: any) => {
     try {
-        const { pincodes } = req.body;
+        const response = await fetch(`${kikoUrl}/getStoreDetails`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error(errorMessage);
+        }
+
+        const data = await response.json();
+
+        const pincodes = data.map((item: any) => item.StoreDetails.map((store: any) => store.storeAddress.pincode));
 
         if (!Array.isArray(pincodes)) {
             return res.status(400).json({ error: "Invalid input, 'pincodes' should be an array." });
         }
-        
+
+        const uniquePincodes = [...new Set(pincodes.flat())];
+
         const jwtToken = await fetchJwtToken();
         
         const fetchPincodeData = async (pincode: number) => {
@@ -290,10 +304,10 @@ adminRouter.get('/index-stores', middleware.authenticateAdminToken, async (req: 
 
         // Use Promise.all for concurrent requests
         const responses = await Promise.all(
-            pincodes.map((pincode) => fetchPincodeData(pincode).catch((error) => ({ error: error.message })))
+            uniquePincodes.map((pincode) => fetchPincodeData(pincode).catch((error) => ({ error: error.message })))
         );
 
-        return res.json(responses);
+        return res.json({ responses, uniquePincodes });
     } catch (error) {
         handleError(error, res);
     }
