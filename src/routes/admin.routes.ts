@@ -239,6 +239,26 @@ adminRouter.put('/update-coupons', middleware.authenticateAdminToken, async (req
     }
 });
 
+adminRouter.put('/fetch-kiko-stores', middleware.authenticateAdminToken, async (req: any, res: any) => {
+    try {
+
+        const response = await fetch(`${kikoUrl}/getStoreDetails`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error(errorMessage);
+        }
+
+        const data = await response.json();
+        return res.json(data);
+    } catch (error) {
+        handleError(error, res);
+    }
+});
+
 adminRouter.get('/telemetry', middleware.authenticateAdminToken, async (req: any, res: any) => {
     try {
         // Server stats (CPU, memory, etc.)
