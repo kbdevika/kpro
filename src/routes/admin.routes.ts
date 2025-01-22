@@ -120,6 +120,15 @@ adminRouter.get('/admin/orders', middleware.authenticateAdminToken, async (req: 
         const latestOrderPerDay = await prisma.orderModel.findMany({
             orderBy: {
                 createdDate: 'desc',
+            },
+            include: {
+                address: true,
+                cart: {
+                    include: {
+                        cartItems: true
+                    }
+                },
+                user: true
             }
         });
 
@@ -253,8 +262,14 @@ adminRouter.get('/fetch-kiko-stores', middleware.authenticateAdminToken, async (
             throw new Error(errorMessage);
         }
 
-        const data = await response.json();
-        return res.json(data);
+        const data: StoresIndexingAPIResponse = await response.json();
+
+        // Map pincodes from store details
+        const pincodes = data.StoreDetails.map((store) => store.storeAddress.pincode);
+
+        // Get unique pincodes
+        const uniquePincodes = [...new Set(pincodes)];
+        return res.json(uniquePincodes);
     } catch (error) {
         handleError(error, res);
     }

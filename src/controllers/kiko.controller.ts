@@ -35,17 +35,6 @@ export class KikoController extends Controller {
     @Body() request: UpdateOrderRequest
   ): Promise<UpdateOrderResponse> {
     const validApiKey = process.env.KIKO_APIKEY || "7e563319-978e-4248-9474-5c0b8e767768";
-    const orderStatusRef = ["in-progress", "completed", "cancelled"];
-    const deliveryStatusRef = [
-      "accepted",
-      "agent-assigned",
-      "order-picked-up",
-      "out-for-delivery",
-      "order-delivered",
-      "rto-initiated",
-      "rto-delivered",
-      "cancelled",
-    ];
 
     if (request.apiKey !== validApiKey) {
       this.setStatus(401);
@@ -61,16 +50,6 @@ export class KikoController extends Controller {
 
     const normalizedOrderStatus = orderStatus.toLowerCase();
     const normalizedDeliveryStatus = deliveryStatus.toLowerCase();
-
-    if (!orderStatusRef.includes(normalizedOrderStatus)) {
-      this.setStatus(400);
-      throw new Error("Invalid order status");
-    }
-
-    if (!deliveryStatusRef.includes(normalizedDeliveryStatus)) {
-      this.setStatus(400);
-      throw new Error("Invalid delivery status");
-    }
 
     try {
       const updatedOrder = await prisma.orderModel.update({
