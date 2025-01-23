@@ -319,6 +319,12 @@
 			},
 			"CouponModelType": {
 				"properties": {
+					"users": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"usageCount": {
 						"type": "number",
 						"format": "double"
@@ -356,6 +362,7 @@
 					}
 				},
 				"required": [
+					"users",
 					"usageCount",
 					"usageLimit",
 					"maximumOrderValue",

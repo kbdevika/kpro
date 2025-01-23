@@ -154,6 +154,7 @@ export type CouponModelType = {
   maximumOrderValue: string;
   usageLimit: number;
   usageCount: number;
+  users: string[];
 }
 
 export type ExposedCouponModel = {

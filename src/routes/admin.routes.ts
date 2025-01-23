@@ -111,6 +111,21 @@ adminRouter.get('/database', middleware.authenticateAdminToken, async (req: any,
     }
 });
 
+// fetch unique users using email
+adminRouter.get('/admin/fetch-admin-by-email', async (req: any, res: any) => {
+    try {
+        const { email } = req.body;
+        const user = await prisma.adminModel.findUnique({
+            where: {
+                adminEmail: email
+            }
+        });
+        return res.json(user);
+    } catch (error) {
+        handleError(error, res);
+    }
+});
+
 adminRouter.get('/admin/orders', middleware.authenticateAdminToken, async (req: any, res: any) => {
     try {
         // Get the total number of orders

@@ -163,6 +163,9 @@ export class PaymentsController extends Controller {
           id: existingCart.couponId
         },
         data: {
+          users: {
+            push: req.user.id
+          },
           usageCount: { increment: 1 }
         }
       })

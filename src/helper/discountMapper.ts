@@ -60,6 +60,16 @@ export function couponApplier(cart: CartModelType, coupon: CouponModelType | nul
         discountedTotal: cart.cartSubTotal + deliveryCharges
     }
 
+    if (coupon.users.includes(cart.userId)) return {
+        exposedCoupon: {
+            message: 'You are not eligible for this offer. Please use another cheat code!',
+            applied: false,
+            discountedAmount: null,
+            values: null
+        },
+        discountedTotal: cart.cartSubTotal + deliveryCharges
+    }
+
     // Check the cart total against the coupon's minimum and maximum order value
     if ((cart.cartSubTotal + deliveryCharges) < parseFloat(coupon.minimumOrderValue)) return {
         exposedCoupon: {

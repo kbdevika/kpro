@@ -308,4 +308,5 @@ model CouponCodeModel {
   usageLimit         Int            // Maximum number of times the coupon can be used
   usageCount         Int            @default(0) // Tracks usage
   carts              CartModel[]    // One-to-many relationship with carts
+  users              String[]       @default([]) // Users who have used the coupon
 } 
