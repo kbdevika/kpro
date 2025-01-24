@@ -138,7 +138,11 @@ adminRouter.get('/admin/orders', middleware.authenticateAdminToken, async (req: 
             },
             include: {
                 address: true,
-                cart: true
+                cart: {
+                    include: {
+                        cartItems: true
+                    }
+                }
             }
         });
 
