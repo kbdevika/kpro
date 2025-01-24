@@ -166,6 +166,6 @@ export class AIController extends Controller {
     }
 
     const data = await response.json();
-    return { pincode: data.stores.length > 0 };
+    return { pincode: true }; //data.stores.length > 0 };
   }
 }
