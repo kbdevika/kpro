@@ -36,20 +36,33 @@ export class AudioController extends Controller {
       throw new Error('Invalid User-Agent header for extracting coordinates.');
     }
 
-    const { latitude, longitude } = coordinates;
-
-    // Get pincode from coordinates
-    const pincode = await getPincodeFromCoordinates(latitude, longitude);
+    let { latitude, longitude } = coordinates;
 
     // Fetch JWT token
     const jwtToken = await fetchJwtToken();
+    
+    const checkPincodeResponse = await fetch(`${AI_BASE_URL}/api/catalog/stores/nearby`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${jwtToken}` },
+    });
+
+    if (!checkPincodeResponse.ok) {
+      this.setStatus(checkPincodeResponse.status);
+      throw new Error(`Error occurred while fetching AI response: ${await checkPincodeResponse.text()}`);
+    }
+
+    const dataForPincode = await checkPincodeResponse.json();
+
+    if (dataForPincode.count === 0) {
+      latitude = 12.891314;
+      longitude = 77.578550;
+    }
 
     // Create FormData for the API call
     const formData = new FormData();
     formData.append('audio', new Blob([audio.buffer], { type: audio.mimetype }), audio.originalname);
     formData.append('latitude', latitude.toString());
     formData.append('longitude', longitude.toString());
-    formData.append('distance', '15');
 
     const response = await fetch(`${AI_BASE_URL}/api/agent/audio/cart/enrich`, {
       method: 'POST',
