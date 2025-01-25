@@ -41,7 +41,7 @@ export class AudioController extends Controller {
     // Fetch JWT token
     const jwtToken = await fetchJwtToken();
     
-    const checkPincodeResponse = await fetch(`${AI_BASE_URL}/api/catalog/stores/nearby`, {
+    const checkPincodeResponse = await fetch(`${AI_BASE_URL}/api/catalog/stores/nearby?latitude=${latitude}&longitude=${longitude}`, {
       method: "GET",
       headers: { Authorization: `Bearer ${jwtToken}` },
     });
