@@ -58,6 +58,7 @@ export async function createCartItems(combinedCartItems: CartItemsModelType[], c
             await prisma.cartItemsModel.createMany({
                 data: combinedCartItems.map((item) => ({
                     ...item,
+                    itemQuantity: item.itemQuantity <= 3 ? item.itemQuantity : 3,
                     cartId: cartId,
                 })),
             });
@@ -126,7 +127,7 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
                     await prisma.cartItemsModel.updateMany({
                         where: { cartId, itemExternalId: item.itemExternalId },
                         data: {
-                            itemQuantity: item.itemQuantity,
+                            itemQuantity: item.itemQuantity <= 3 ? item.itemQuantity : 3,
                             itemRecommended: false
                         },
                     });
@@ -138,7 +139,7 @@ export async function updatedCart(userId: string, cartId: string, updatedItems: 
                             itemExternalId: item.itemExternalId,
                             itemName: item.itemName,
                             itemDescription: item.itemDescription,
-                            itemQuantity: item.itemQuantity,
+                            itemQuantity: item.itemQuantity <= 3 ? item.itemQuantity : 3,
                             itemWeight: item.itemWeight,
                             itemWeightUnit: item.itemWeightUnit,
                             itemOriginalPrice: item.itemOriginalPrice,

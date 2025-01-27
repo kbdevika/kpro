@@ -34,7 +34,7 @@ export class KikoController extends Controller {
   public async updateOrder(
     @Body() request: UpdateOrderRequest
   ): Promise<UpdateOrderResponse> {
-    const validApiKey = process.env.KIKO_APIKEY || "7e563319-978e-4248-9474-5c0b8e767768";
+    const validApiKey = process.env.KIKO_APIKEY || "7e563319-978e-5588-9474-5c0b8e767768";
 
     if (request.apiKey !== validApiKey) {
       this.setStatus(401);
