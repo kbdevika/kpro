@@ -11,7 +11,7 @@ const v1Routers = express.Router();
 
 /** Routes without middleware or relies on APIKEY */
 v1Routers.use('/auth', authRouter);
-v1Routers.use('/kikoOrderStatus', kikoRouter);
+v1Routers.use('/orderStatus', kikoRouter);
 v1Routers.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 /** Select middleware according to the ENV */

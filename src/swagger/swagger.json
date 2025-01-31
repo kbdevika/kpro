@@ -2515,7 +2515,7 @@
 				]
 			}
 		},
-		"/kikoOrderStatus": {
+		"/orderStatus": {
 			"post": {
 				"operationId": "UpdateOrder",
 				"responses": {

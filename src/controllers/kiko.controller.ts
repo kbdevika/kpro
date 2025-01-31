@@ -19,7 +19,7 @@ interface UpdateOrderRequest {
   riderPhone: string;
 }
 
-@Route("kikoOrderStatus")
+@Route("orderStatus")
 @Tags("Kiko")
 export class KikoController extends Controller {
   /**
@@ -34,7 +34,7 @@ export class KikoController extends Controller {
   public async updateOrder(
     @Body() request: UpdateOrderRequest
   ): Promise<UpdateOrderResponse> {
-    const validApiKey = process.env.KIKO_APIKEY || "7e563319-978e-5588-9474-5c0b8e767768";
+    const validApiKey = "7e563319-978e-5588-9474-5c0b8e767768";
 
     if (request.apiKey !== validApiKey) {
       this.setStatus(401);
@@ -52,6 +52,16 @@ export class KikoController extends Controller {
     const normalizedDeliveryStatus = deliveryStatus.toLowerCase();
 
     try {
+      // prisma to fetch order
+      const order = await prisma.orderModel.findUnique({
+        where: { id: orderId },
+      });
+
+      if (!order) {
+        this.setStatus(404);
+        throw new Error("Order not found");
+      }
+
       const updatedOrder = await prisma.orderModel.update({
         where: { id: orderId },
         data: {

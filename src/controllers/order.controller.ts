@@ -72,29 +72,7 @@ export class OrdersController extends Controller {
       return { message: "Order to Kiko is disabled in development mode", order: _ };
     }
 
-    const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(kikoOrder),
-    });
-
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      this.setStatus(response.status);
-      throw new Error(errorMessage);
-    }
-
-    const data = await response.json();
-
-    if (data.Status === false && data.outOfStock === true) {
-      return { message: "out-of-stock", order: _ };
-    }
-
-    if (data.Status === true) {
-      return { message: "created", order: _ };
-    }
-
-    return { message: "failed", ...data };
+    return { message: "created", order: _ };
   }
 
   /**

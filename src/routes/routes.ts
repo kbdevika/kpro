@@ -1037,7 +1037,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         const argsKikoController_updateOrder: Record<string, TsoaRoute.ParameterSchema> = {
                 request: {"in":"body","name":"request","required":true,"ref":"UpdateOrderRequest"},
         };
-        app.post('/kikoOrderStatus',
+        app.post('/orderStatus',
             ...(fetchMiddlewares<RequestHandler>(KikoController)),
             ...(fetchMiddlewares<RequestHandler>(KikoController.prototype.updateOrder)),
 
