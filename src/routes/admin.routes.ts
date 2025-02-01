@@ -182,20 +182,7 @@ adminRouter.post('/admin/orders/recreate', middleware.authenticateAdminToken, as
         }
 
         const kikoOrder = mapIncomingToOutgoing(order.id, order.cart, order.cart.cartItems, order.address)
-
-        const response = await fetch(`${kikoUrl}/kiranapro-create-order`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(kikoOrder),
-        });
-
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error(errorMessage);
-        }
-
-        const data = await response.json();
-        return res.json({ message: "success", ...data });
+        return res.json({ message: "success", ...kikoOrder });
     } catch (error) {
         handleError(error, res);
     }
