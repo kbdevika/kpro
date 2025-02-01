@@ -181,8 +181,25 @@ adminRouter.post('/admin/orders/recreate', middleware.authenticateAdminToken, as
             return res.status(404).json({ message: "Order not found" });
         }
 
-        const kikoOrder = mapIncomingToOutgoing(order.id, order.cart, order.cart.cartItems, order.address)
-        return res.json({ message: "success", ...kikoOrder });
+        const _order = await prisma.orderModel.create({
+            data: {
+              cartId: order.cartId,
+              orderStatus: 'created',
+              orderDeliveryStatus: 'not-initiated',
+              userId: order.userId,
+              addressId: order.addressId
+            },
+            include: {
+              address: true,
+              cart: {
+                include: {
+                  cartItems: true
+                }
+              }
+            }
+        });
+
+        return res.json({ message: "success", ..._order });
     } catch (error) {
         handleError(error, res);
     }
