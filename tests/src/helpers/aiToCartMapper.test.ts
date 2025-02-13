@@ -85,4 +85,153 @@ describe('getStockStatus', () => {
       expect(result).toBe("In Stock");
     });
   });
+  import { MorRItems,ItemProduct} from "../../../src/types/ai.types";
+import { OndcCatalogue } from ".../../../src/types/ondcStore.types"; describe("parseMatchingProductMetadata", () => {
+    it("should return product metadata when it exists", () => {
+      const sourceItem: MorRItems = {
+        productId: "prod-001",  
+        matchReason: "Best match",  
+        product: {
+          id: "123",
+          kikoId: "kiko-001",
+          lastUpdated: new Date().toISOString(),
+          storeId: "store-001",
+          createdAt: new Date().toISOString(),
+          metadata: {
+            l3: "value1",
+            l4: "value2",
+            __v: 1,
+            _id: "some-id",
+          } as OndcCatalogue,
+        } as ItemProduct,
+      };
   
+      expect(parseMatchingProductMetadata(sourceItem)).toEqual({
+        l3: "value1",
+        l4: "value2",
+        __v: 1,
+        _id: "some-id",
+      });
+    });
+  
+    it("should return null when product metadata does not exist", () => {
+      const sourceItem: MorRItems = {
+        productId: "prod-002",  
+        matchReason: "Similar product",  
+        product: {
+          id: "123",
+          kikoId: "kiko-002",
+          lastUpdated: new Date().toISOString(),
+          storeId: "store-002",
+          createdAt: new Date().toISOString(),
+        } as ItemProduct,
+      };
+  
+      expect(parseMatchingProductMetadata(sourceItem)).toBeNull();
+    });
+  
+    it("should return null when sourceItem is undefined", () => {
+      expect(parseMatchingProductMetadata(undefined as any)).toBeNull();
+    });
+  
+    it("should return null when sourceItem.product is undefined", () => {
+      const sourceItem: MorRItems = {
+        productId: "prod-003",  
+        matchReason: "No match found", 
+      } as MorRItems;
+  
+      expect(parseMatchingProductMetadata(sourceItem)).toBeNull();
+    });
+
+    it("should return null when sourceItem is an empty object", () => {
+      const sourceItem: MorRItems = {} as MorRItems;
+      expect(parseMatchingProductMetadata(sourceItem)).toBeNull();
+    });
+
+    it("should return an empty object when product metadata is empty", () => {
+      const sourceItem: MorRItems = {
+        productId: "prod-005",
+        matchReason: "Moderate match",
+        product: {
+          id: "456",
+          kikoId: "kiko-005",
+          lastUpdated: new Date().toISOString(),
+          storeId: "store-005",
+          createdAt: new Date().toISOString(),
+          metadata: {},
+        } as ItemProduct,
+      };
+  
+      expect(parseMatchingProductMetadata(sourceItem)).toEqual({});
+    });
+  
+  
+  
+   
+    it("should return product metadata even if it contains unexpected fields", () => {
+      const sourceItem: MorRItems = {
+        productId: "prod-008",
+        matchReason: "High match confidence",
+        product: {
+          id: "777",
+          kikoId: "kiko-008",
+          lastUpdated: new Date().toISOString(),
+          storeId: "store-008",
+          createdAt: new Date().toISOString(),
+          metadata: {
+            unexpectedField: "unexpectedValue",
+            l3: "level3Data",
+          } as any,
+        } as ItemProduct,
+      };
+    
+      expect(parseMatchingProductMetadata(sourceItem)).toEqual({
+        unexpectedField: "unexpectedValue",
+        l3: "level3Data",
+      });
+    });
+    
+  });
+
+  it("should return metadata even if sourceItem has extra properties", () => {
+    const sourceItem: MorRItems & { extraProp: string } = {
+      productId: "prod-007",
+      matchReason: "Best seller",
+      extraProp: "some extra data",
+      product: {
+        id: "101",
+        kikoId: "kiko-007",
+        lastUpdated: new Date().toISOString(),
+        storeId: "store-007",
+        createdAt: new Date().toISOString(),
+        metadata: {
+          l3: "categoryA",
+          l4: "categoryB",
+          _id: "meta-002",
+        } as OndcCatalogue,
+      } as ItemProduct,
+    };
+  
+    expect(parseMatchingProductMetadata(sourceItem)).toEqual({
+      l3: "categoryA",
+      l4: "categoryB",
+      _id: "meta-002",
+    });
+ 
+  it("should return null when product metadata is explicitly null", () => {
+    const sourceItem: MorRItems = {
+      productId: "prod-006",
+      matchReason: "Low confidence match",
+      product: {
+        id: "789",
+        kikoId: "kiko-006",
+        lastUpdated: new Date().toISOString(),
+        storeId: "store-006",
+        createdAt: new Date().toISOString(),
+        metadata: null,
+      } as ItemProduct,
+    };
+  
+    expect(parseMatchingProductMetadata(sourceItem)).toBeNull();
+  });
+});
